@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>TOEIC 단어시험</title>
 
-  <!-- ✅ PWA (iOS 설치형 웹앱) -->
+  <!-- ✅ PWA (optional) -->
   <link rel="manifest" href="/manifest.webmanifest">
   <meta name="theme-color" content="#1d4ed8">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -117,7 +117,7 @@
     }
     .chip input{transform:scale(1.15)}
 
-    /* quiz (embedded) */
+    /* quiz */
     .q{font-size:20px;font-weight:1000;margin:10px 0 10px}
     .choices{display:grid;gap:10px}
     .choices button{text-align:left;border:1px solid var(--bd);border-radius:18px;background:#fff}
@@ -229,12 +229,9 @@
       .actions{grid-template-columns: 2fr 1fr;}
     }
 
-    /* ✅ important hide */
     .hidden{display:none !important;}
 
-    /* ================================
-       ✅ FULLSCREEN QUIZ OVERLAY
-       ================================ */
+    /* FULLSCREEN QUIZ OVERLAY */
     #quizOverlay{
       position:fixed; inset:0;
       background:rgba(17,24,39,.55);
@@ -285,8 +282,12 @@
       flex-wrap:wrap;
       align-items:center;
     }
+
+    /* details summary should look like pill */
+    details summary::-webkit-details-marker { display:none; }
   </style>
 </head>
+
 <body>
   <h1>TOEIC 단어시험 📚</h1>
   <div class="sub">내장 로드: <code>./toeic_words_day1_30.csv</code> (같은 폴더)</div>
@@ -294,10 +295,34 @@
   <!-- 시험 설정 -->
   <div class="card">
     <h2>1) 시험 설정</h2>
+
     <div class="grid">
       <div class="field">
         <label>시험 DAY</label>
         <select id="daySelect"></select>
+      </div>
+
+      <!-- ✅ multi day (collapsed) -->
+      <div class="field">
+        <label>여러 DAY</label>
+        <details id="multiDayDetails">
+          <summary class="pill" style="cursor:pointer; user-select:none;">
+            여러 DAY 선택(선택 시 드롭다운 무시)
+            <span class="muted" id="multiDaySummary" style="margin-left:6px"></span>
+          </summary>
+
+          <div style="margin-top:10px">
+            <div class="row" style="margin-bottom:10px">
+              <button id="multiDaySelectAll" class="btn btn-soft" type="button">전체 선택</button>
+              <button id="multiDaySelectNone" class="btn btn-soft" type="button">전체 해제</button>
+              <span class="pill">선택: <b id="multiDayCount">0</b>개</span>
+            </div>
+            <div id="multiDayBox" class="chips"></div>
+            <div class="muted" style="margin-top:8px">
+              체크된 DAY가 2개 이상이면 멀티 모드로 시험이 진행돼요.
+            </div>
+          </div>
+        </details>
       </div>
 
       <div class="field">
@@ -356,9 +381,17 @@
       <button id="openSheetBtn" class="btn btn-ghost" type="button">단어 · 오답 · 기록 보기</button>
       <button id="resetStatsBtn" class="btn btn-danger" type="button">기록 초기화</button>
     </div>
+
     <div class="muted" style="margin-top:8px">
       기록/오답노트는 이 기기(브라우저) 안에만 저장돼요.
       <span id="status"></span>
+    </div>
+
+    <!-- ✅ Selected days / streak pills -->
+    <div class="row" style="margin-top:10px">
+      <span class="pill" id="selectedDaysPill">선택 DAY: -</span>
+      <span class="pill">오늘 푼 문제: <b id="todayCountPill">0</b></span>
+      <span class="pill">연속 학습: <b id="streakPill">0</b>일</span>
     </div>
   </div>
 
@@ -395,11 +428,11 @@
     </div>
 
     <div class="muted" style="margin-top:10px">
-      오답노트 시험은 “가중치 랜덤(적당히)” 🎲 (자주 틀린 단어가 조금 더 자주 나와요)
+      오답노트 시험은 “약점 가중치” 🎯 (자주/최근 틀린 단어가 더 자주 나와요)
     </div>
   </div>
 
-  <!-- ✅ FULLSCREEN QUIZ OVERLAY (same tab) -->
+  <!-- FULLSCREEN QUIZ OVERLAY -->
   <div id="quizOverlay" class="hidden" aria-hidden="true">
     <div id="quizModal" role="dialog" aria-modal="true">
       <div id="quizModalHead">
@@ -408,6 +441,7 @@
           <button id="stopBtn" class="btn btn-ghost" type="button">끝내기</button>
         </div>
       </div>
+
       <div id="quizModalBody">
         <div class="topPills">
           <span class="pill" id="progressPill">0/0</span>
@@ -416,7 +450,6 @@
         </div>
 
         <div class="q" id="question"></div>
-
         <div class="choices" id="choices"></div>
 
         <div id="shortAnswer" class="hidden" style="margin-top:10px">
@@ -439,6 +472,19 @@
 
         <div id="feedback" class="muted" style="margin-top:10px"></div>
         <button id="nextBtn" class="hidden btn btn-soft" type="button">다음 문제 ▶</button>
+
+        <!-- ✅ 즉시 재시험 박스 -->
+        <div id="retestBox" class="hidden" style="margin-top:10px">
+          <div class="row">
+            <button id="retest10Btn" class="btn btn-soft" type="button">틀린 것 10문제 재시험</button>
+            <button id="retestAllBtn" class="btn btn-ghost" type="button">틀린 것 전부 재시험</button>
+          </div>
+          <div class="row" style="margin-top:8px">
+            <button id="retest10SaBtn" class="btn btn-soft" type="button">틀린 것 10문제 주관식</button>
+            <button id="retestAllSaBtn" class="btn btn-ghost" type="button">틀린 것 전부 주관식</button>
+          </div>
+          <div class="muted" style="margin-top:8px">주관식 재시험은 잠깐 모드를 바꿔서 진행하고, 끝나면 원래 모드로 돌아와요.</div>
+        </div>
       </div>
     </div>
   </div>
@@ -450,6 +496,7 @@
         <div class="sheetTitle">단어 · 오답 · 기록</div>
         <button id="closeSheetBtn" class="btn btn-ghost" type="button">닫기</button>
       </div>
+
       <div class="sheetBody">
         <div class="tabs">
           <button id="tabWords" class="tab active" type="button">단어리스트</button>
@@ -534,13 +581,12 @@
           </div>
           <div id="listHistory" class="list"></div>
         </div>
-
       </div>
     </div>
   </div>
 
 <script>
-  // ---------------- PWA service worker ----------------
+  // ---------------- PWA SW (optional) ----------------
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
       navigator.serviceWorker.register("/sw.js").catch(()=>{});
@@ -565,9 +611,10 @@
   const el = (id)=>document.getElementById(id);
 
   // ---------------- keys ----------------
-  const WORDS_KEY = "toeic_words_v1_device";
-  const STATS_KEY = "toeic_stats_v2_device";
+  const WORDS_KEY   = "toeic_words_v1_device";
+  const STATS_KEY   = "toeic_stats_v2_device";
   const SESSION_KEY = "toeic_sessions_v1_device";
+  const DAILY_KEY   = "toeic_daily_v1_device"; // ✅ streak / today
 
   // ---------------- sync (tabs/windows) ----------------
   const bc = ("BroadcastChannel" in window) ? new BroadcastChannel("toeic_sync_v1") : null;
@@ -598,11 +645,24 @@
 
   const resetStatsBtn = el("resetStatsBtn");
 
-  // ✅ fullscreen quiz overlay elements
+  // multi-day UI
+  const multiDayDetails = el("multiDayDetails");
+  const multiDayBox = el("multiDayBox");
+  const multiDaySelectAll = el("multiDaySelectAll");
+  const multiDaySelectNone = el("multiDaySelectNone");
+  const multiDayCountEl = el("multiDayCount");
+  const multiDaySummary = el("multiDaySummary");
+  const selectedDaysPill = el("selectedDaysPill");
+
+  // streak / today pills
+  const todayCountPill = el("todayCountPill");
+  const streakPill = el("streakPill");
+
+  // fullscreen quiz overlay
   const quizOverlay = el("quizOverlay");
   const quizMeta = el("quizMeta");
 
-  // quiz elements (inside modal)
+  // quiz elements
   const question = el("question");
   const choicesEl = el("choices");
   const feedback = el("feedback");
@@ -615,6 +675,13 @@
   const submitAnswerBtn = el("submitAnswerBtn");
   const showAnswerBtn = el("showAnswerBtn");
   const nextBtn = el("nextBtn");
+
+  // retest buttons
+  const retestBox = el("retestBox");
+  const retest10Btn = el("retest10Btn");
+  const retestAllBtn = el("retestAllBtn");
+  const retest10SaBtn = el("retest10SaBtn");
+  const retestAllSaBtn = el("retestAllSaBtn");
 
   // sheet
   const overlay = el("overlay");
@@ -662,28 +729,59 @@
   };
   const saveSessions = (arr) => safeSetItem(SESSION_KEY, JSON.stringify(arr));
 
-  // ---------------- live sync refresh ----------------
-  function refreshIfSheetOpen(){
-    if(!overlay.classList.contains("hidden")){
-      renderWrongList();
-      renderHistory();
-      renderWordsList();
-    }
+  function loadDaily(){
+    try{ return JSON.parse(safeGetItem(DAILY_KEY) || "{}"); }
+    catch(e){ return {}; }
+  }
+  function saveDaily(obj){
+    safeSetItem(DAILY_KEY, JSON.stringify(obj));
   }
 
-  window.addEventListener("storage", (e) => {
-    if(e.key === STATS_KEY || e.key === SESSION_KEY){
-      refreshIfSheetOpen();
-    }
-  });
+  function ymd(d=new Date()){
+    const y=d.getFullYear();
+    const m=String(d.getMonth()+1).padStart(2,"0");
+    const dd=String(d.getDate()).padStart(2,"0");
+    return `${y}-${m}-${dd}`;
+  }
+  function addDays(dateStr, delta){
+    const [y,m,d] = dateStr.split("-").map(n=>parseInt(n,10));
+    const dt = new Date(y, (m-1), d);
+    dt.setDate(dt.getDate() + delta);
+    return ymd(dt);
+  }
 
-  if(bc){
-    bc.onmessage = (ev) => {
-      const t = ev.data?.type;
-      if(t === "stats_updated" || t === "sessions_updated" || t === "reset_updated"){
-        refreshIfSheetOpen();
-      }
-    };
+  function updateStreakUI(){
+    const daily = loadDaily();
+    const today = ymd();
+    const todayCount = daily[today]?.count || 0;
+    const streak = daily.__streak || 0;
+    if(todayCountPill) todayCountPill.textContent = String(todayCount);
+    if(streakPill) streakPill.textContent = String(streak);
+  }
+
+  function recordStudy(totalSolved){
+    const daily = loadDaily();
+    const today = ymd();
+
+    if(!daily[today]) daily[today] = { count:0 };
+    daily[today].count = (daily[today].count || 0) + (totalSolved || 0);
+
+    const last = daily.__lastDate || "";
+    let streak = daily.__streak || 0;
+
+    if(last === today){
+      // same day: keep streak
+    } else if(last && addDays(last, 1) === today){
+      streak += 1;
+    } else {
+      streak = 1;
+    }
+
+    daily.__lastDate = today;
+    daily.__streak = streak;
+
+    saveDaily(daily);
+    updateStreakUI();
   }
 
   function fmtDate(d){
@@ -787,20 +885,74 @@
     return false;
   }
 
+  function dayNum(dayStr){
+    return parseInt(String(dayStr||"").replace(/\D/g,""), 10) || 0;
+  }
+  function getAllDaysSorted(){
+    const all = loadWordsAll();
+    return Object.keys(all).sort((a,b)=> dayNum(a)-dayNum(b));
+  }
+  function getCheckedDays(){
+    return [...document.querySelectorAll('#multiDayBox input[type="checkbox"]:checked')]
+      .map(cb => cb.value);
+  }
+  function getSelectedDays(){
+    const checked = getCheckedDays();
+    if(checked.length >= 2) return checked;
+    return [daySelect.value];
+  }
+
+  function updateSelectedDaysPill(){
+    const days = getSelectedDays();
+    if(!selectedDaysPill) return;
+
+    const checked = getCheckedDays();
+    if(checked.length >= 2){
+      const shown = checked.slice(0,5).join(", ");
+      const more = checked.length > 5 ? ` 외 ${checked.length-5}개` : "";
+      selectedDaysPill.textContent = `선택 DAY: ${shown}${more}`;
+    } else {
+      selectedDaysPill.textContent = `선택 DAY: ${daySelect.value || "-"}`;
+    }
+  }
+
+  function updateMultiDayUI(){
+    const checked = getCheckedDays();
+    if(multiDayCountEl) multiDayCountEl.textContent = String(checked.length);
+
+    if(!multiDaySummary) return;
+    if(checked.length === 0){
+      multiDaySummary.textContent = "· 선택 없음(드롭다운 사용)";
+    } else if(checked.length === 1){
+      multiDaySummary.textContent = `· ${checked[0]} (1개면 드롭다운과 동일)`;
+    } else {
+      const shown = checked.slice(0,4).join(", ");
+      const more = checked.length > 4 ? ` 외 ${checked.length-4}개` : "";
+      multiDaySummary.textContent = `· ${shown}${more}`;
+    }
+    updateSelectedDaysPill();
+  }
+
   function getDayList(day){
     const all = loadWordsAll();
     return (all[day] || []).map(x => ({...x, day}));
   }
 
   function getActiveList(){
-    const day = daySelect.value;
-    const list = getDayList(day);
+    const days = getSelectedDays();
     const intervals = selectedIntervals();
     if(intervals.length === 0) return [];
 
-    const hasNo = list.some(x => (x.n || 0) > 0);
-    if(!hasNo) return list;
-    return list.filter(x => inIntervals(x.n || 0, intervals));
+    let merged = [];
+    for(const d of days){
+      merged = merged.concat(getDayList(d));
+    }
+    if(merged.length === 0) return [];
+
+    const hasNo = merged.some(x => (x.n || 0) > 0);
+    if(!hasNo) return merged;
+
+    return merged.filter(x => inIntervals(x.n || 0, intervals));
   }
 
   function updateActiveCount(){
@@ -826,14 +978,14 @@
 
   function getWrongNoteList(scope){
     const stats = loadStats();
-    const curDay = daySelect.value;
+    const curDays = getSelectedDays();
 
     let arr = Object.values(stats)
       .filter(x => x && x.w && x.m)
       .filter(x => (x.wrong || 0) > 0)
-      .filter(x => scope === "all" ? true : (x.day === curDay))
+      .filter(x => scope === "all" ? true : curDays.includes(x.day))
       .map(x => ({
-        day: x.day || curDay,
+        day: x.day || (curDays[0] || daySelect.value),
         n: x.n || 0,
         w: x.w,
         m: x.m,
@@ -863,10 +1015,30 @@
     return arr;
   }
 
-  // ---------------- weighted random (moderate) ----------------
+  // ---------------- weighted random (enhanced) ----------------
   function getWrongWeight(item){
-    return Math.sqrt((item.wrong || 0) + 1);
+    const wrong = (item.wrong || 0);
+    const right = (item.right || 0);
+    const total = wrong + right;
+
+    // 많이 틀릴수록 (완만하게)
+    let w = Math.pow(wrong + 1, 0.65);
+
+    // 오답률이 높을수록
+    const rate = total ? (wrong / total) : 0;
+    w *= (1 + rate); // 최대 2배
+
+    // 최근성: 3일 안이면 강하게, 오래되면 약하게
+    const last = item.last || 0;
+    if(last){
+      const ageDays = (Date.now() - last) / (1000*60*60*24);
+      const recencyBoost = 1 + 0.9 * Math.exp(-ageDays / 3); // 1.9 ~ 1.0
+      w *= recencyBoost;
+    }
+
+    return w;
   }
+
   function weightedSampleNoReplace(items, k, weightFn){
     const src = items.map(it => ({ it, w: Math.max(0, Number(weightFn(it)) || 0) })).filter(x=>x.w>0);
     const out = [];
@@ -894,31 +1066,46 @@
     return out;
   }
 
-  // ---------------- UI: day dropdown ----------------
+  // ---------------- UI: day dropdown + multi list ----------------
   function refreshDayList(){
     const all = loadWordsAll();
-    const days = Object.keys(all).sort((a,b)=>{
-      const na = parseInt(a.replace(/\D/g,"")) || 0;
-      const nb = parseInt(b.replace(/\D/g,"")) || 0;
-      return na-nb;
-    });
+    const days = Object.keys(all).sort((a,b)=> dayNum(a)-dayNum(b));
 
+    // single day select
     daySelect.innerHTML = "";
-    listDaySelect.innerHTML = "";
     for(const d of days){
-      const opt1 = document.createElement("option");
-      opt1.value = d;
-      opt1.textContent = `${d} (${(all[d]||[]).length})`;
-      daySelect.appendChild(opt1);
+      const opt = document.createElement("option");
+      opt.value = d;
+      opt.textContent = `${d} (${(all[d]||[]).length})`;
+      daySelect.appendChild(opt);
+    }
 
-      const opt2 = opt1.cloneNode(true);
+    // list day select (words pane)
+    listDaySelect.innerHTML = "";
+    const optSel = document.createElement("option");
+    optSel.value = "__selected__";
+    optSel.textContent = "선택 DAY 전체 보기";
+    listDaySelect.appendChild(optSel);
+
+    for(const d of days){
+      const opt2 = document.createElement("option");
+      opt2.value = d;
+      opt2.textContent = `${d} (${(all[d]||[]).length})`;
       listDaySelect.appendChild(opt2);
     }
 
     dayCountEl.textContent = String(days.length);
-    if(days.length){
-      listDaySelect.value = daySelect.value;
+
+    // multi-day checkbox build
+    multiDayBox.innerHTML = "";
+    for(const d of days){
+      const lb = document.createElement("label");
+      lb.className = "chip";
+      lb.innerHTML = `<input type="checkbox" value="${esc(d)}" /> ${esc(d)}`;
+      multiDayBox.appendChild(lb);
     }
+    updateMultiDayUI();
+    updateSelectedDaysPill();
     updateActiveCount();
   }
 
@@ -959,10 +1146,18 @@
   tabWrong.onclick = ()=>setTab("wrong");
   tabHistory.onclick = ()=>setTab("history");
 
-  // ---------------- Render: words list (cards) ----------------
+  // ---------------- Render: words list ----------------
   function renderWordsList(){
-    const day = listDaySelect.value || daySelect.value;
-    let list = getDayList(day);
+    let list = [];
+
+    const chosen = listDaySelect.value;
+    if(chosen === "__selected__"){
+      const days = getSelectedDays();
+      for(const d of days) list = list.concat(getDayList(d));
+    } else {
+      const day = chosen || daySelect.value;
+      list = getDayList(day);
+    }
 
     if(listFilter.value === "selected"){
       const intervals = selectedIntervals();
@@ -1009,7 +1204,7 @@
     }
   }
 
-  // ---------------- Render: wrong list (cards) ----------------
+  // ---------------- Render: wrong list ----------------
   function renderWrongList(){
     const scope = wrongScope.value || "day";
     const list = getWrongNoteList(scope);
@@ -1069,12 +1264,7 @@
   }
 
   // ---------------- events (sheet filters) ----------------
-  listDaySelect.addEventListener("change", ()=>{
-    daySelect.value = listDaySelect.value;
-    updateActiveCount();
-    renderWordsList();
-    renderWrongList();
-  });
+  listDaySelect.addEventListener("change", renderWordsList);
   listSearch.addEventListener("input", renderWordsList);
   listFilter.addEventListener("change", renderWordsList);
   listSort.addEventListener("change", renderWordsList);
@@ -1082,6 +1272,27 @@
   wrongScope.addEventListener("change", renderWrongList);
   wrongSort.addEventListener("change", renderWrongList);
   wrongSearch.addEventListener("input", renderWrongList);
+
+  // ---------------- multi-day events ----------------
+  multiDayBox.addEventListener("change", ()=>{
+    updateMultiDayUI();
+    updateActiveCount();
+    if(!overlay.classList.contains("hidden")){
+      renderWordsList();
+      renderWrongList();
+    }
+  });
+
+  multiDaySelectAll.onclick = ()=>{
+    multiDayBox.querySelectorAll('input[type="checkbox"]').forEach(cb=>cb.checked=true);
+    updateMultiDayUI();
+    updateActiveCount();
+  };
+  multiDaySelectNone.onclick = ()=>{
+    multiDayBox.querySelectorAll('input[type="checkbox"]').forEach(cb=>cb.checked=false);
+    updateMultiDayUI();
+    updateActiveCount();
+  };
 
   // ---------------- quiz logic ----------------
   let pool = [];
@@ -1096,6 +1307,7 @@
 
   let quizStartedAt = 0;
   let quizSource = "day"; // "day" | "wrongnote"
+  let retestPrevMode = null; // to restore mode after retest
 
   function clearTimer(){
     if(timerId){
@@ -1115,9 +1327,11 @@
   function getChoicePool(){
     if(Array.isArray(quizAll) && quizAll.length >= 8) return quizAll;
 
-    const dayAll = getDayList(daySelect.value);
-    if(dayAll.length >= 8) return dayAll;
+    // use active pool first
+    const active = getActiveList();
+    if(active.length >= 8) return active;
 
+    // fallback all merged
     const all = loadWordsAll();
     const merged = [];
     for(const d of Object.keys(all)){
@@ -1220,7 +1434,7 @@
     else stats[k].wrong += 1;
     stats[k].last = Date.now();
     saveStats(stats);
-    broadcast("stats_updated"); // ✅ sync
+    broadcast("stats_updated");
 
     scheduleNext();
   }
@@ -1254,6 +1468,7 @@
     clearTimer();
     enableInteractions();
     nextBtn.classList.add("hidden");
+    if(retestBox) retestBox.classList.add("hidden");
 
     progressPill.textContent = `${idx+1}/${pool.length}`;
     scoreEl.textContent = String(score);
@@ -1268,8 +1483,10 @@
     choicesEl.innerHTML = "";
     feedback.textContent = "";
 
+    // meta
     const srcLabel = (quizSource === "wrongnote") ? "오답노트" : "DAY";
-    quizMeta.textContent = `· ${srcLabel} ${quizSource==="day" ? daySelect.value : (pool[0]?.day || daySelect.value)} · ${mode==="mc"?"4지선다":"주관식"} · ${dir==="en2ko"?"영→뜻":"뜻→영"}`;
+    const dayLabel = (quizSource === "wrongnote") ? "선택 DAY" : (getCheckedDays().length >= 2 ? "선택 DAY" : daySelect.value);
+    quizMeta.textContent = `· ${srcLabel} ${dayLabel} · ${mode==="mc"?"4지선다":"주관식"} · ${dir==="en2ko"?"영→뜻":"뜻→영"}`;
 
     if(mode === "sa"){
       choicesEl.classList.add("hidden");
@@ -1337,7 +1554,7 @@
       ts: Date.now(),
       date: fmtDate(new Date()),
       source: quizSource,
-      day: (quizSource==="day") ? daySelect.value : (pool[0]?.day || daySelect.value),
+      day: (getCheckedDays().length >= 2) ? "선택" : daySelect.value,
       count: total,
       dir: dirSelect.value,
       mode: modeSelect.value,
@@ -1347,13 +1564,22 @@
       durationSec
     });
     saveSessions(sessions.slice(0, 400));
-    broadcast("sessions_updated"); // ✅ sync
+    broadcast("sessions_updated");
+
+    // ✅ streak/today 기록
+    recordStudy(total);
 
     feedback.innerHTML = `끝! 점수 <b>${score}</b> / ${total} (오답 ${wrongCnt}) · 정확도 ${acc}% · ${durationSec}s`;
     lastWrong = wrong;
-    if(wrong.length > 0) redoWrongBtn.classList.remove("hidden");
 
+    if(wrong.length > 0) redoWrongBtn.classList.remove("hidden");
     stopBtn.textContent = "닫기";
+
+    // ✅ 즉시 재시험 UI
+    if(retestBox){
+      if(wrong.length > 0) retestBox.classList.remove("hidden");
+      else retestBox.classList.add("hidden");
+    }
 
     if(!overlay.classList.contains("hidden")){
       renderWrongList();
@@ -1387,6 +1613,13 @@
     pool = shuffle([...src]).slice(0, n);
 
     redoWrongBtn.classList.add("hidden");
+
+    // retest mode restore if pending
+    if(retestPrevMode !== null){
+      modeSelect.value = retestPrevMode;
+      retestPrevMode = null;
+    }
+
     showQuizOverlay();
     render();
   }
@@ -1411,6 +1644,46 @@
     pool = weightedSampleNoReplace(src, n, getWrongWeight);
 
     redoWrongBtn.classList.add("hidden");
+
+    // retest mode restore if pending
+    if(retestPrevMode !== null){
+      modeSelect.value = retestPrevMode;
+      retestPrevMode = null;
+    }
+
+    showQuizOverlay();
+    render();
+  }
+
+  // ✅ 즉시 재시험(객관식/주관식)
+  function startRetest(limit, forceMode){
+    const src = lastWrong || [];
+    if(src.length === 0){
+      alert("방금 틀린 문제가 없어요 😼");
+      return;
+    }
+
+    // forceMode: "mc" | "sa" | null
+    if(forceMode){
+      if(retestPrevMode === null) retestPrevMode = modeSelect.value;
+      modeSelect.value = forceMode;
+    } else {
+      if(retestPrevMode !== null){
+        modeSelect.value = retestPrevMode;
+        retestPrevMode = null;
+      }
+    }
+
+    idx = 0; score = 0; wrong = []; locked=false;
+    clearTimer();
+    quizStartedAt = Date.now();
+    quizSource = "day";
+    stopBtn.textContent = "끝내기";
+
+    quizAll = getActiveList(); // 선택 DAY + 구간 풀로 보기 풀 유지
+    pool = shuffle([...src]).slice(0, Math.min(limit, src.length));
+
+    if(retestBox) retestBox.classList.add("hidden");
     showQuizOverlay();
     render();
   }
@@ -1421,10 +1694,21 @@
   startWrongBtn.onclick = startWrongNoteQuiz;
   startWrongBtn2.onclick = startWrongNoteQuiz;
 
+  retest10Btn.onclick = ()=> startRetest(10, "mc");
+  retestAllBtn.onclick = ()=> startRetest(9999, "mc");
+  retest10SaBtn.onclick = ()=> startRetest(10, "sa");
+  retestAllSaBtn.onclick = ()=> startRetest(9999, "sa");
+
   stopBtn.onclick = ()=>{
     clearTimer();
     hideQuizOverlay();
     stopBtn.textContent = "끝내기";
+
+    // retest forced mode restore
+    if(retestPrevMode !== null){
+      modeSelect.value = retestPrevMode;
+      retestPrevMode = null;
+    }
   };
 
   [cbCore, cbBasic, cb800, cb900].forEach(cb => cb.addEventListener("change", ()=>{
@@ -1433,8 +1717,8 @@
   }));
 
   daySelect.addEventListener("change", ()=>{
-    listDaySelect.value = daySelect.value;
     updateActiveCount();
+    updateSelectedDaysPill();
     if(!overlay.classList.contains("hidden")){
       renderWordsList();
       renderWrongList();
@@ -1456,8 +1740,10 @@
     if(confirm("이 기기에서 저장된 오답률/오답노트/기록을 전부 초기화할까요?")){
       safeRemoveItem(STATS_KEY);
       safeRemoveItem(SESSION_KEY);
-      broadcast("reset_updated"); // ✅ sync
+      safeRemoveItem(DAILY_KEY);
+      broadcast("reset_updated");
       alert("초기화 완료!");
+      updateStreakUI();
       if(!overlay.classList.contains("hidden")){
         renderWrongList();
         renderHistory();
@@ -1471,6 +1757,9 @@
     await ensureLoaded();
     refreshDayList();
     updateActiveCount();
+    updateMultiDayUI();
+    updateSelectedDaysPill();
+    updateStreakUI();
   })();
 </script>
 </body>

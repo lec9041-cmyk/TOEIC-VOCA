@@ -4,6 +4,14 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>TOEIC 단어시험</title>
+
+  <!-- ✅ PWA (iOS 설치형 웹앱) -->
+  <link rel="manifest" href="/manifest.webmanifest">
+  <meta name="theme-color" content="#1d4ed8">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+
   <style>
     :root{
       --bd:#e5e7eb;
@@ -109,7 +117,7 @@
     }
     .chip input{transform:scale(1.15)}
 
-    /* quiz */
+    /* quiz (embedded) */
     .q{font-size:20px;font-weight:1000;margin:10px 0 10px}
     .choices{display:grid;gap:10px}
     .choices button{text-align:left;border:1px solid var(--bd);border-radius:18px;background:#fff}
@@ -149,7 +157,7 @@
     }
     .sheet{
       width:min(980px, 100%);
-      max-height:84dvh; /* ✅ 키보드/주소창 변화 대응 */
+      max-height:84dvh;
       background:#fff;
       border:1px solid var(--bd);
       border-radius:24px;
@@ -221,8 +229,62 @@
       .actions{grid-template-columns: 2fr 1fr;}
     }
 
-    /* ✅ 중요: overlay/quiz를 확실히 숨기기 (CSS 우선순위 문제 해결) */
+    /* ✅ important hide */
     .hidden{display:none !important;}
+
+    /* ================================
+       ✅ FULLSCREEN QUIZ OVERLAY
+       ================================ */
+    #quizOverlay{
+      position:fixed; inset:0;
+      background:rgba(17,24,39,.55);
+      z-index:80;
+      display:flex;
+      align-items:stretch;
+      justify-content:center;
+      padding:12px;
+      padding-top: calc(12px + env(safe-area-inset-top));
+      padding-bottom: calc(12px + env(safe-area-inset-bottom));
+      overscroll-behavior: contain;
+    }
+    #quizModal{
+      width:min(980px, 100%);
+      background:#fff;
+      border:1px solid var(--bd);
+      border-radius:24px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      max-height: 100dvh;
+    }
+    #quizModalHead{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:12px;
+      border-bottom:1px solid var(--bd);
+      gap:10px;
+    }
+    #quizModalTitle{
+      font-weight:1000;
+      font-size:15px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    #quizModalBody{
+      padding:12px;
+      overflow:auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .topPills{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
   </style>
 </head>
 <body>
@@ -337,39 +399,48 @@
     </div>
   </div>
 
-  <!-- 퀴즈 -->
-  <div id="quiz" class="card hidden">
-    <div class="row">
-      <span class="pill" id="progressPill">0/0</span>
-      <span class="pill">점수: <b id="score">0</b></span>
-      <span class="pill">오답: <b id="wrongN">0</b></span>
-      <button id="stopBtn" class="btn btn-ghost" type="button">끝내기</button>
-    </div>
-
-    <div class="q" id="question"></div>
-
-    <div class="choices" id="choices"></div>
-
-    <div id="shortAnswer" class="hidden" style="margin-top:10px">
-      <div class="grid">
-        <div class="field" style="grid-column: span 2;">
-          <label>정답 입력</label>
-          <input id="answerInput" placeholder="정답 입력" />
-        </div>
-        <div class="field">
-          <label>&nbsp;</label>
-          <button id="submitAnswerBtn" class="btn btn-soft" type="button">제출</button>
-        </div>
-        <div class="field">
-          <label>&nbsp;</label>
-          <button id="showAnswerBtn" class="btn btn-ghost" type="button">정답</button>
+  <!-- ✅ FULLSCREEN QUIZ OVERLAY (same tab) -->
+  <div id="quizOverlay" class="hidden" aria-hidden="true">
+    <div id="quizModal" role="dialog" aria-modal="true">
+      <div id="quizModalHead">
+        <div id="quizModalTitle">시험 진행중 ✍️ <span class="muted" id="quizMeta"></span></div>
+        <div class="row">
+          <button id="stopBtn" class="btn btn-ghost" type="button">끝내기</button>
         </div>
       </div>
-      <div class="muted" style="margin-top:8px">뜻(한글)은 일부만 입력해도 정답 처리(포함 인정)</div>
-    </div>
+      <div id="quizModalBody">
+        <div class="topPills">
+          <span class="pill" id="progressPill">0/0</span>
+          <span class="pill">점수: <b id="score">0</b></span>
+          <span class="pill">오답: <b id="wrongN">0</b></span>
+        </div>
 
-    <div id="feedback" class="muted" style="margin-top:10px"></div>
-    <button id="nextBtn" class="hidden btn btn-soft" type="button">다음 문제 ▶</button>
+        <div class="q" id="question"></div>
+
+        <div class="choices" id="choices"></div>
+
+        <div id="shortAnswer" class="hidden" style="margin-top:10px">
+          <div class="grid">
+            <div class="field" style="grid-column: span 2;">
+              <label>정답 입력</label>
+              <input id="answerInput" placeholder="정답 입력" />
+            </div>
+            <div class="field">
+              <label>&nbsp;</label>
+              <button id="submitAnswerBtn" class="btn btn-soft" type="button">제출</button>
+            </div>
+            <div class="field">
+              <label>&nbsp;</label>
+              <button id="showAnswerBtn" class="btn btn-ghost" type="button">정답</button>
+            </div>
+          </div>
+          <div class="muted" style="margin-top:8px">뜻(한글)은 일부만 입력해도 정답 처리(포함 인정)</div>
+        </div>
+
+        <div id="feedback" class="muted" style="margin-top:10px"></div>
+        <button id="nextBtn" class="hidden btn btn-soft" type="button">다음 문제 ▶</button>
+      </div>
+    </div>
   </div>
 
   <!-- Bottom Sheet -->
@@ -469,6 +540,13 @@
   </div>
 
 <script>
+  // ---------------- PWA service worker ----------------
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("/sw.js").catch(()=>{});
+    });
+  }
+
   // ---------------- safe localStorage ----------------
   function safeSetItem(key, val){ try{ localStorage.setItem(key, val); } catch(e){ console.warn("저장 실패:", e); } }
   function safeGetItem(key){ try{ return localStorage.getItem(key); } catch(e){ return null; } }
@@ -490,6 +568,10 @@
   const WORDS_KEY = "toeic_words_v1_device";
   const STATS_KEY = "toeic_stats_v2_device";
   const SESSION_KEY = "toeic_sessions_v1_device";
+
+  // ---------------- sync (tabs/windows) ----------------
+  const bc = ("BroadcastChannel" in window) ? new BroadcastChannel("toeic_sync_v1") : null;
+  function broadcast(type){ if(bc) bc.postMessage({ type, ts: Date.now() }); }
 
   // ---------------- elements ----------------
   const statusEl = el("status");
@@ -516,8 +598,11 @@
 
   const resetStatsBtn = el("resetStatsBtn");
 
-  // quiz
-  const quiz = el("quiz");
+  // ✅ fullscreen quiz overlay elements
+  const quizOverlay = el("quizOverlay");
+  const quizMeta = el("quizMeta");
+
+  // quiz elements (inside modal)
   const question = el("question");
   const choicesEl = el("choices");
   const feedback = el("feedback");
@@ -576,6 +661,30 @@
     catch(e){ return []; }
   };
   const saveSessions = (arr) => safeSetItem(SESSION_KEY, JSON.stringify(arr));
+
+  // ---------------- live sync refresh ----------------
+  function refreshIfSheetOpen(){
+    if(!overlay.classList.contains("hidden")){
+      renderWrongList();
+      renderHistory();
+      renderWordsList();
+    }
+  }
+
+  window.addEventListener("storage", (e) => {
+    if(e.key === STATS_KEY || e.key === SESSION_KEY){
+      refreshIfSheetOpen();
+    }
+  });
+
+  if(bc){
+    bc.onmessage = (ev) => {
+      const t = ev.data?.type;
+      if(t === "stats_updated" || t === "sessions_updated" || t === "reset_updated"){
+        refreshIfSheetOpen();
+      }
+    };
+  }
 
   function fmtDate(d){
     const y=d.getFullYear();
@@ -986,7 +1095,7 @@
   let timerId = null;
 
   let quizStartedAt = 0;
-  let quizSource = "day";
+  let quizSource = "day"; // "day" | "wrongnote"
 
   function clearTimer(){
     if(timerId){
@@ -1111,9 +1220,35 @@
     else stats[k].wrong += 1;
     stats[k].last = Date.now();
     saveStats(stats);
+    broadcast("stats_updated"); // ✅ sync
 
     scheduleNext();
   }
+
+  function showQuizOverlay(){
+    if(!overlay.classList.contains("hidden")) closeSheet();
+    document.body.style.overflow = "hidden";
+    quizOverlay.classList.remove("hidden");
+    quizOverlay.setAttribute("aria-hidden", "false");
+  }
+
+  function hideQuizOverlay(){
+    quizOverlay.classList.add("hidden");
+    quizOverlay.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+  }
+
+  quizOverlay.addEventListener("click", (e)=>{
+    if(e.target === quizOverlay){
+      // noop
+    }
+  });
+
+  document.addEventListener("keydown", (e)=>{
+    if(e.key === "Escape" && !quizOverlay.classList.contains("hidden")){
+      stopBtn.click();
+    }
+  });
 
   function render(){
     clearTimer();
@@ -1133,6 +1268,9 @@
     choicesEl.innerHTML = "";
     feedback.textContent = "";
 
+    const srcLabel = (quizSource === "wrongnote") ? "오답노트" : "DAY";
+    quizMeta.textContent = `· ${srcLabel} ${quizSource==="day" ? daySelect.value : (pool[0]?.day || daySelect.value)} · ${mode==="mc"?"4지선다":"주관식"} · ${dir==="en2ko"?"영→뜻":"뜻→영"}`;
+
     if(mode === "sa"){
       choicesEl.classList.add("hidden");
       shortAnswer.classList.remove("hidden");
@@ -1140,7 +1278,7 @@
       answerInput.disabled = false;
       submitAnswerBtn.disabled = false;
       showAnswerBtn.disabled = false;
-      answerInput.focus();
+      setTimeout(()=>answerInput.focus(), 0);
     } else {
       choicesEl.classList.remove("hidden");
       shortAnswer.classList.add("hidden");
@@ -1209,6 +1347,7 @@
       durationSec
     });
     saveSessions(sessions.slice(0, 400));
+    broadcast("sessions_updated"); // ✅ sync
 
     feedback.innerHTML = `끝! 점수 <b>${score}</b> / ${total} (오답 ${wrongCnt}) · 정확도 ${acc}% · ${durationSec}s`;
     lastWrong = wrong;
@@ -1248,7 +1387,7 @@
     pool = shuffle([...src]).slice(0, n);
 
     redoWrongBtn.classList.add("hidden");
-    quiz.classList.remove("hidden");
+    showQuizOverlay();
     render();
   }
 
@@ -1272,7 +1411,7 @@
     pool = weightedSampleNoReplace(src, n, getWrongWeight);
 
     redoWrongBtn.classList.add("hidden");
-    quiz.classList.remove("hidden");
+    showQuizOverlay();
     render();
   }
 
@@ -1284,7 +1423,7 @@
 
   stopBtn.onclick = ()=>{
     clearTimer();
-    quiz.classList.add("hidden");
+    hideQuizOverlay();
     stopBtn.textContent = "끝내기";
   };
 
@@ -1317,6 +1456,7 @@
     if(confirm("이 기기에서 저장된 오답률/오답노트/기록을 전부 초기화할까요?")){
       safeRemoveItem(STATS_KEY);
       safeRemoveItem(SESSION_KEY);
+      broadcast("reset_updated"); // ✅ sync
       alert("초기화 완료!");
       if(!overlay.classList.contains("hidden")){
         renderWrongList();

@@ -29,7 +29,7 @@
     .sub{color:var(--muted);font-size:13px;margin-bottom:14px}
     code{background:#f3f4f6;padding:2px 6px;border-radius:8px}
 
-    /* 메인 탭 디자인 */
+    /* 메인 탭 */
     .main-tabs {
       display: flex;
       flex-wrap: nowrap;
@@ -162,20 +162,20 @@
       border:none; background:transparent; cursor:pointer; font-size:14px; line-height:1; padding:0 2px; color:#6b7280;
     }
 
+    /* 범위(커버리지) */
+    .scope-meter{margin-top:10px;}
+    .scope-meta{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--muted);margin-bottom:6px;}
+    .progress-container { width: 100%; height: 8px; background-color: #f3f4f6; border-radius: 4px; margin: 15px 0; overflow: hidden; }
+    .progress-bar { height: 100%; background-color: var(--blue); width: 0%; transition: width 0.3s ease; }
+
     /* 퀴즈 UI */
     .q{font-size:22px;font-weight:900;margin:15px 0 15px; text-align: center;}
     .q.clickable{cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:4px;}
-    .scope-meter{margin-top:10px;}
-    .scope-meta{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--muted);margin-bottom:6px;}
     .ox-mark{font-size:34px;font-weight:900;text-align:center;min-height:42px;margin-top:8px;}
     .choices{display:grid;gap:10px}
     .choices button{text-align:left;border:1px solid var(--bd);border-radius:18px;background:#fff}
     .ok{color:#0a7; font-weight: bold;}
     .bad{color:#c23; font-weight: bold;}
-
-    /* 진행 바 */
-    .progress-container { width: 100%; height: 8px; background-color: #f3f4f6; border-radius: 4px; margin: 15px 0; overflow: hidden; }
-    .progress-bar { height: 100%; background-color: var(--blue); width: 0%; transition: width 0.3s ease; }
 
     /* 정답 가리기 상자 */
     .answer-box {
@@ -197,17 +197,6 @@
     .actions{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px; }
     .actions button{ border-radius:18px; font-weight:900; min-height:48px; }
 
-    .primary-actions{display:grid; grid-template-columns:1fr; gap:10px; margin-top:12px;}
-    .primary-actions button{min-height:56px; border-radius:18px; font-weight:900;}
-    #openSheetBtn{
-      border-color:#bfdbfe;
-      background:#eff6ff;
-      color:#1d4ed8;
-      font-size:16px;
-    }
-    .danger-row{display:grid; grid-template-columns:1fr; margin-top:8px;}
-    #resetStatsBtn{min-height:42px; font-size:13px; opacity:.9;}
-
     /* Bottom Sheet */
     .overlay{ position:fixed; inset:0; background:rgba(17,24,39,.48); display:flex; align-items:flex-end; justify-content:center; padding:14px; padding-bottom: calc(14px + env(safe-area-inset-bottom)); z-index:50; }
     .sheet{ width:min(980px, 100%); max-height:84dvh; background:#fff; border:1px solid var(--bd); border-radius:24px; box-shadow:var(--shadow); overflow:hidden; display:flex; flex-direction:column; }
@@ -227,16 +216,6 @@
     .miniBtns{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;}
     .miniBtns button{min-height:40px; padding:10px 12px; border-radius:14px; font-weight:900;}
 
-    @media (min-width: 760px){
-      body{margin:16px}
-      .grid{grid-template-columns: repeat(12, 1fr);}
-      .field{grid-column: span 3;}
-      .chips{grid-template-columns: repeat(4, minmax(0, 1fr));}
-    }
-    @media (max-width: 420px){
-      .main-tabs{gap:6px;padding:4px;}
-      .main-tab{padding:12px 8px;font-size:13px;}
-    }
     .hidden{display:none !important;}
 
     /* FULLSCREEN QUIZ OVERLAY */
@@ -250,18 +229,10 @@
     #quizScopeLine{font-size:12px; color:var(--muted);}
 
     /* CONFETTI CANVAS */
-    #confettiCanvas{
-      position:fixed; inset:0; pointer-events:none; z-index:120;
-    }
+    #confettiCanvas{ position:fixed; inset:0; pointer-events:none; z-index:120; }
 
     /* Calendar */
-    .calWrap{display:grid; gap:10px;}
-    .calHead{display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;}
-    .calGrid{
-      display:grid;
-      grid-template-columns: repeat(7, minmax(0, 1fr));
-      gap:8px;
-    }
+    .calGrid{ display:grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap:8px; }
     .calDow{font-size:12px; color:var(--muted); text-align:center; font-weight:900;}
     .calDay{
       border:1px solid var(--bd);
@@ -283,9 +254,9 @@
       bottom:6px;
       left:50%;
       transform:translateX(-50%);
-      width:8px;
-      height:8px;
-      border-radius:3px;
+      width:14px;
+      height:4px;
+      border-radius:2px;
       background:#2563eb;
       opacity:.95;
     }
@@ -299,16 +270,30 @@
     .calGoal{ outline:2px solid #60a5fa; outline-offset:-2px; }
     .calToday{ box-shadow: inset 0 0 0 2px #111827; }
     .calDay.calGoal.calToday{ outline-color:#3b82f6; }
+
+    .summaryStats{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px;}
+    .summaryStat{border:1px solid var(--bd); border-radius:14px; padding:10px; background:#fff;}
+    .summaryStat .k{font-size:12px; color:var(--muted);}
+    .summaryStat .v{font-size:18px; font-weight:900; margin-top:2px;}
+
+    /* 섹션2 버튼 살짝 작게 */
+    #bottomToolsCard .actions button{min-height:44px; border-radius:16px; font-size:13px;}
+    #bottomToolsCard summary{user-select:none;}
+
+    @media (min-width: 760px){
+      body{margin:16px}
+      .grid{grid-template-columns: repeat(12, 1fr);}
+      .field{grid-column: span 3;}
+      .chips{grid-template-columns: repeat(4, minmax(0, 1fr));}
+    }
     @media (max-width: 420px){
+      .main-tabs{gap:6px;padding:4px;}
+      .main-tab{padding:12px 8px;font-size:13px;}
       .calGrid{gap:6px;}
       .calDay{min-height:62px;border-radius:10px;padding:8px 8px 0 8px;}
       .calNum{font-size:15px;}
       .calDot{bottom:5px;}
     }
-    .summaryStats{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px;}
-    .summaryStat{border:1px solid var(--bd); border-radius:14px; padding:10px; background:#fff;}
-    .summaryStat .k{font-size:12px; color:var(--muted);}
-    .summaryStat .v{font-size:18px; font-weight:900; margin-top:2px;}
   </style>
 </head>
 
@@ -323,15 +308,43 @@
 
   <div class="sub">내장 로드: <code>/toeic_words_day1_30.csv</code> <span class="muted" id="dataStatus"></span></div>
 
+  <!-- 섹션 1: 설정 & 시작 -->
   <div class="card" id="learnSettingsCard">
-    <h2>1) 학습 설정</h2>
+    <h2>1) 설정 & 시작</h2>
 
-    <div class="grid" style="margin-top:8px; margin-bottom:12px;">
+    <!-- 시작/이어하기 -->
+    <div class="grid" style="margin-top:8px; margin-bottom:10px;">
       <div class="field" style="grid-column: span 2;">
         <button id="startBtn" class="btn" type="button" disabled>로딩 중...</button>
       </div>
+      <div class="field" style="grid-column: span 2;">
+        <button id="resumeBtn" class="btn btn-soft hidden" type="button">이어하기</button>
+      </div>
     </div>
 
+    <!-- 범위: 시작버튼 바로 아래에 붙임 -->
+    <div class="card" id="scopeCard" style="margin:0 0 12px;">
+      <div style="font-weight:900; font-size:14px; margin:0 0 8px;">범위 선택</div>
+
+      <div class="chips">
+        <label class="chip"><input id="cb_core" type="checkbox" checked /> 핵심빈출 (1~40)</label>
+        <label class="chip"><input id="cb_basic" type="checkbox" checked /> 토익기초 (41~68)</label>
+        <label class="chip"><input id="cb_800" type="checkbox" checked /> 800점 (69~136)</label>
+        <label class="chip"><input id="cb_900" type="checkbox" checked /> 900점 (137~)</label>
+      </div>
+
+      <div class="scope-meter" style="margin-top:10px;">
+        <div class="scope-meta">
+          <span id="scopeCoverageText">현재 학습 범위 0%</span>
+          <span id="scopeCoverageCount">0 / 0 단어</span>
+        </div>
+        <div class="progress-container" style="margin:0 0 10px">
+          <div id="scopeCoverageBar" class="progress-bar"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 선택/옵션 -->
     <div class="grid">
       <div class="field">
         <label>기준 DAY</label>
@@ -376,6 +389,19 @@
       </div>
 
       <div class="field">
+        <label>방향</label>
+        <select id="dirSelect">
+          <option value="en2ko" selected>영단어 → 뜻</option>
+          <option value="ko2en">뜻 → 영단어</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>문제수</label>
+        <select id="countSelect"></select>
+      </div>
+
+      <div class="field">
         <label>발음 선택</label>
         <select id="voiceSelect">
           <option value="en-US">미국식 🇺🇸</option>
@@ -386,28 +412,17 @@
       </div>
 
       <div class="field">
-        <label>문제수</label>
-        <select id="countSelect"></select>
-      </div>
-
-      <div class="field">
         <label style="display:flex;align-items:center;gap:6px;min-height:46px;">
           <input id="wrongFirstToggle" type="checkbox" style="min-height:auto;" /> 오답 우선 출제(가중 랜덤)
         </label>
       </div>
 
       <div class="field">
-        <label style="display:flex;align-items:center;gap:6px;min-height:46px;">
-          <input id="flashOffToggle" type="checkbox" style="min-height:auto;" /> 플래시 숨김(정답 즉시 표시) <span id="flashOffHint" class="muted">(Flash에서만)</span>
+        <label style="display:flex;align-items:center;gap:6px;min-height:46px;flex-wrap:wrap;">
+          <input id="flashOffToggle" type="checkbox" style="min-height:auto;" />
+          플래시 숨김(정답 즉시 표시)
+          <span id="flashOffHint" class="muted">(Flash에서만)</span>
         </label>
-      </div>
-
-      <div class="field">
-        <label>방향</label>
-        <select id="dirSelect">
-          <option value="en2ko" selected>영단어 → 뜻</option>
-          <option value="ko2en">뜻 → 영단어</option>
-        </select>
       </div>
     </div>
 
@@ -416,45 +431,34 @@
       <span class="pill">오늘 학습: <b id="todayCountPill">0</b></span>
       <span class="pill">연속: <b id="streakPill">0</b>일</span>
     </div>
+  </div>
+
+  <!-- 섹션 2: 아래로 다 뺌 -->
+  <div class="card" id="bottomToolsCard">
+    <h2>2) 기록 & 관리</h2>
+
+    <div class="actions">
+      <button id="openSheetBtn" class="btn btn-ghost" type="button">오답·기록 보기</button>
+      <button id="resetStatsBtn" class="btn btn-danger" type="button">전체 초기화</button>
+    </div>
 
     <details id="learnProgressDetails" class="card" style="margin-top:12px;">
-      <summary style="font-weight:900; cursor:pointer;">📚 단어암기 리스트/진행도 (펼치기)</summary>
+      <summary style="font-weight:900; cursor:pointer;">📚 단어암기 리스트/진행도 (퍼센트)</summary>
       <div id="learnDayProgress" class="list" style="margin-top:10px;"></div>
     </details>
 
-    <div class="primary-actions" style="margin-top:14px;">
-      <button id="resumeBtn" class="btn btn-soft hidden" type="button">이어하기</button>
-      <button id="openSheetBtn" class="btn btn-soft" type="button">오답·기록 보기</button>
-    </div>
-    <div class="danger-row">
-      <button id="resetStatsBtn" class="btn btn-danger" type="button">전체 초기화</button>
+    <div class="muted" style="margin-top:10px;">
+      팁: “오답·기록 보기”에서 오답노트/즐겨찾기/기록을 확인하고, “진행도”는 DAY별 기록%로 봅니다.
     </div>
   </div>
 
-  <div class="card" id="scopeCard">
-    <h2>2) 범위 선택</h2>
-    <div class="chips">
-      <label class="chip"><input id="cb_core" type="checkbox" checked /> 핵심빈출 (1~40)</label>
-      <label class="chip"><input id="cb_basic" type="checkbox" checked /> 토익기초 (41~68)</label>
-      <label class="chip"><input id="cb_800" type="checkbox" checked /> 800점 (69~136)</label>
-      <label class="chip"><input id="cb_900" type="checkbox" checked /> 900점 (137~)</label>
-    </div>
-
-    <div class="scope-meter">
-      <div class="scope-meta">
-        <span id="scopeCoverageText">현재 학습 범위 0%</span>
-        <span id="scopeCoverageCount">0 / 0 단어</span>
-      </div>
-      <div class="progress-container" style="margin:0 0 10px"><div id="scopeCoverageBar" class="progress-bar"></div></div>
-    </div>
-
-  </div>
-
+  <!-- 학습현황 탭 -->
   <div class="card hidden" id="statsCard">
     <h2>📊 학습현황</h2>
 
     <div class="item" style="margin-bottom:10px;">
       <div class="itemWord">학습 달력</div>
+
       <div class="summaryStats" style="margin:8px 0 10px;">
         <div class="summaryStat">
           <div class="k">오늘 학습 문제수</div>
@@ -469,13 +473,16 @@
           <div class="v" id="mainCalMonthDays">0일</div>
         </div>
       </div>
+
       <div class="muted" id="mainCalMonthLabel" style="margin-bottom:8px"></div>
+
       <div class="miniBtns" style="margin-bottom:8px;">
         <button class="btn btn-ghost" type="button" id="mainCalPrevBtn">◀ 이전달</button>
         <button class="btn btn-soft" type="button" id="mainCalTodayBtn">이번달</button>
         <button class="btn btn-ghost" type="button" id="mainCalNextBtn">다음달 ▶</button>
       </div>
-      <div class="muted" style="margin-bottom:10px">표시: 학습한 날(초록) · 목표 달성(파랑)</div>
+
+      <div class="muted" style="margin-bottom:10px">표시: 학습한 날(파랑 톤) · 목표 달성(테두리)</div>
       <div class="calGrid" id="mainCalGrid"></div>
     </div>
 
@@ -520,6 +527,7 @@
   <!-- CONFETTI -->
   <canvas id="confettiCanvas" class="hidden"></canvas>
 
+  <!-- 퀴즈 오버레이 -->
   <div id="quizOverlay" class="hidden">
     <div id="quizModal">
       <div id="quizModalHead">
@@ -576,6 +584,7 @@
     </div>
   </div>
 
+  <!-- Bottom Sheet -->
   <div id="overlay" class="overlay hidden">
     <div class="sheet">
       <div class="sheetHead">
@@ -619,7 +628,6 @@
 
   // Flash 재삽입 상한
   const REINSERT_LIMIT = 2;
-
   // 자동 진행 타이머 중복 방지
   let autoNextTimer = null;
 
@@ -639,7 +647,6 @@
       return def;
     }
   }
-
   function clearAutoNext(){
     if(autoNextTimer){
       clearTimeout(autoNextTimer);
@@ -786,11 +793,12 @@
     }
   }
 
-  // goal 클릭으로 변경
+  // (목표 변경 UI는 Stats 탭의 숫자 눌러서 바꾸는 방식 유지)
   function bindGoalSetter(){
-    const goalWrap = el("goalPill")?.parentElement;
-    if(!goalWrap) return;
-    goalWrap.onclick = () => {
+    const pill = el("statsGoalPill");
+    if(!pill) return;
+    pill.style.cursor = "pointer";
+    pill.onclick = () => {
       const cur = getGoal();
       const v = prompt("오늘 목표(문제 수)를 입력하세요", String(cur));
       if(v === null) return;
@@ -803,7 +811,7 @@
     };
   }
 
-  // ---------------- 즐겨찾기 ----------------
+  // ---------------- 즐겨찾기/통계 스키마 ----------------
   function keyOf(item){ return `${item.day}||${item.n}||${item.w}`; }
 
   function parseKeyToItemParts(key){
@@ -856,9 +864,7 @@
     save(STATS_KEY, next);
   }
 
-  function statsMap(){
-    return load(STATS_KEY, {});
-  }
+  function statsMap(){ return load(STATS_KEY, {}); }
 
   function favMap(){ return load(FAVORITES_KEY, {}); }
   function isFav(item){ const m = favMap(); return !!m[keyOf(item)]; }
@@ -873,13 +879,13 @@
     return Object.values(favMap()).sort((a,b)=> (b.ts||0)-(a.ts||0));
   }
 
-  // ---------------- 네이버 사전/예문 ----------------
+  // ---------------- 네이버 사전 ----------------
   function openNaverDict(word){
     const url = `https://en.dict.naver.com/#/search?query=${encodeURIComponent(word)}`;
     window.open(url, "_blank");
   }
 
-  // ---------------- 발음(TTS) 기능 ----------------
+  // ---------------- 발음(TTS) ----------------
   function getVoiceByLangPrefix(prefix) {
     const voices = window.speechSynthesis?.getVoices?.() || [];
     const v = voices.find(x => (x.lang || "").startsWith(prefix));
@@ -907,7 +913,7 @@
     window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
   }
 
-  // ---------------- 탭 전환 로직 ----------------
+  // ---------------- 탭 전환 ----------------
   const mainTabLearn = el("mainTabLearn");
   const mainTabTest = el("mainTabTest");
   const mainTabStats = el("mainTabStats");
@@ -915,6 +921,7 @@
   const startBtn = el("startBtn");
   const learnSettingsCard = el("learnSettingsCard");
   const scopeCard = el("scopeCard");
+  const bottomToolsCard = el("bottomToolsCard");
   const statsCard = el("statsCard");
   let statsViewY = new Date().getFullYear();
   let statsViewM = new Date().getMonth();
@@ -927,8 +934,9 @@
     mainTabLearn.classList.toggle("active", panel === "learn");
     mainTabTest.classList.toggle("active", panel === "test");
     mainTabStats.classList.toggle("active", isStats);
+
     learnSettingsCard.classList.toggle("hidden", isStats);
-    scopeCard.classList.toggle("hidden", isStats);
+    bottomToolsCard.classList.toggle("hidden", isStats);
     statsCard.classList.toggle("hidden", !isStats);
 
     if(panel === "learn"){
@@ -944,6 +952,7 @@
     if(panel === "stats"){
       renderMainCalendarSummary(statsViewY, statsViewM);
     }
+
     updateFlashOffToggleState();
     updateScopeBar();
   }
@@ -998,7 +1007,7 @@
     calClickBound = true;
   }
 
-  // ---------------- CSV 파싱(따옴표/콤마 대응) ----------------
+  // ---------------- CSV 파싱 ----------------
   function parseCSVSafe(text) {
     const rows = [];
     let i = 0, field = "", row = [], inQuotes = false;
@@ -1074,7 +1083,6 @@
           "2) Vite/Vercel이면 CSV는 public/ 폴더에 있어야 합니다\n\n" +
           "에러: " + (e?.message || e)
         );
-        // 그래도 UI는 켜 두되, 시작 시 가드가 막아줌
       }
     }
 
@@ -1085,16 +1093,18 @@
     updateDailyUI();
     updateScopeBar();
     checkGoalAndCelebrate();
-    bindGoalSetter();
     bindStatsCalNav();
     bindMainCalendarClick();
     updateResumeButton();
+    bindGoalSetter();
 
     const dayCount = Object.keys(data).length;
     el("dataStatus").textContent = dayCount ? `· ✅ ${dayCount}개 DAY 로드됨` : "· ⚠️ 데이터 없음";
 
     if(dayCount > 0) setStartButtonState(false);
     else { startBtn.disabled = true; startBtn.textContent = "데이터 없음"; }
+
+    updateFlashOffToggleState();
   }
 
   function getAllDays(data=null) {
@@ -1267,17 +1277,19 @@
 
   function updateFlashOffToggleState(){
     const mode = isLearnTab() ? "flash" : el("modeSelect").value;
-    const enabled = mode === "flash";
+    const enabled = (mode === "flash");
     el("flashOffToggle").disabled = !enabled;
-    const hint = el("flashOffHint");
-    if(hint) hint.classList.toggle("muted", true);
+    el("flashOffHint").classList.toggle("hidden", enabled);
   }
+  el("modeSelect").addEventListener("change", () => {
+    updateFlashOffToggleState();
+    updateScopeBar();
+  });
 
   el("flashOffToggle").checked = !!load(FLASH_OFF_KEY, false);
   el("flashOffToggle").onchange = (e) => {
     save(FLASH_OFF_KEY, !!e.target.checked);
   };
-  el("modeSelect").addEventListener("change", updateFlashOffToggleState);
 
   // ---------------- 통계/기록 ----------------
   function bumpDaily(countAdd=1){
@@ -1399,6 +1411,7 @@
   function renderLearnDayProgress(){
     const wrap = el("learnDayProgress");
     if(!wrap) return;
+
     const data = load(WORDS_KEY, {});
     const stats = statsMap();
     const allDays = getAllDays(data);
@@ -1409,20 +1422,29 @@
       return;
     }
 
+    const pct = (a,b) => b ? Math.round((a/b)*100) : 0;
+
     allDays.forEach(day => {
       const words = data[day] || [];
+      const total = words.length;
+
       const keys = words.map(keyOf);
       const logged = keys.reduce((acc, k) => {
         const st = stats[k];
         return acc + (((st?.correctCount || 0) + (st?.wrongCount || 0) > 0) ? 1 : 0);
       }, 0);
+
       const wrongN = keys.reduce((acc, k) => acc + ((stats[k]?.wrongCount || 0) > 0 ? 1 : 0), 0);
+
+      const loggedPct = pct(logged, total);
+      const wrongPct = pct(wrongN, total);
+
       const row = document.createElement("div");
       row.className = "item";
       row.innerHTML = `
         <div class="itemTop" style="margin-bottom:0; align-items:center;">
           <div class="itemWord">${esc(dayLabel(day))}</div>
-          <span class="badge">총 ${words.length}개 / 기록 ${logged}개 / 오답 ${wrongN}개</span>
+          <span class="badge">${total}개 · 기록 ${logged}개(${loggedPct}%) · 오답 ${wrongN}개(${wrongPct}%)</span>
         </div>
       `;
       wrap.appendChild(row);
@@ -1434,7 +1456,10 @@
     el("todayCountPill").textContent = daily[todayKey()] || 0;
     el("streakPill").textContent = calcStreak();
     renderMainCalendarSummary(statsViewY, statsViewM);
-    if(learnProgressDetails?.open) renderLearnDayProgress();
+
+    const details = el("learnProgressDetails");
+    if(details && details.open) renderLearnDayProgress();
+
     checkGoalAndCelebrate();
   }
 
@@ -1461,21 +1486,33 @@
     return parts.length ? parts.join(", ") : "선택없음";
   }
 
-  // ---------------- 상단 범위 표시줄 ----------------
+  // ---------------- 범위/카운트 ----------------
   function selectedDaysForPool(){
     const multi = load(MULTI_DAY_KEY, []);
     const base = el("daySelect").value;
     return (multi.length > 0 ? multi : [base]).filter(Boolean);
   }
 
-  function currentModeLabel(){
-    if(mainTabStats.classList.contains("active")) return "학습현황";
-    const tab = isLearnTab() ? "단어 암기" : "단어 시험";
-    const mode = isLearnTab()
-      ? "암기(Flash)"
-      : (el("modeSelect").value === "mc" ? "4지선다" : "주관식");
-    const dir = (el("dirSelect").value === "en2ko") ? "영→뜻" : "뜻→영";
-    return `${tab} · ${mode} · ${dir}`;
+  function selectedRanges(){
+    const arr = [];
+    if(el("cb_core").checked) arr.push([1,40]);
+    if(el("cb_basic").checked) arr.push([41,68]);
+    if(el("cb_800").checked) arr.push([69,136]);
+    if(el("cb_900").checked) arr.push([137, 999999]);
+    return arr;
+  }
+  function inRanges(n, ranges){ return ranges.some(([s,e]) => n >= s && n <= e); }
+
+  function buildPoolFromSelection() {
+    const data = load(WORDS_KEY, {});
+    const targetDays = selectedDaysForPool();
+
+    let combined = [];
+    targetDays.forEach(d => { combined = combined.concat(data[d] || []); });
+
+    const intervals = selectedRanges();
+    const filtered = combined.filter(item => inRanges(item.n, intervals));
+    return { targetDays, intervals, filtered };
   }
 
   function getCurrentPoolSize(){
@@ -1533,20 +1570,19 @@
     refreshCountSelectOptions();
   }
 
-  ["modeSelect","dirSelect","countSelect","voiceSelect"].forEach(id=>{
+  ["dirSelect","countSelect","voiceSelect"].forEach(id=>{
     el(id).addEventListener("change", updateScopeBar);
   });
   ["cb_core","cb_basic","cb_800","cb_900"].forEach(id=>{
     el(id).addEventListener("change", updateScopeBar);
   });
 
-  // ---------------- Bottom Sheet(오답/기록/즐겨찾기) ----------------
+  // ---------------- Bottom Sheet ----------------
   const overlay = el("overlay");
   const paneWords = el("paneWords");
   const paneWrong = el("paneWrong");
   const paneFav = el("paneFav");
   const paneHistory = el("paneHistory");
-  const learnProgressDetails = el("learnProgressDetails");
 
   function openSheet(tab="words"){
     overlay.classList.remove("hidden");
@@ -1588,6 +1624,7 @@
   el("tabFav").onclick = () => { switchTab("fav"); renderFavList(); };
   el("tabHistory").onclick = () => { switchTab("history"); renderHistoryList(); };
 
+  const learnProgressDetails = el("learnProgressDetails");
   if(learnProgressDetails){
     learnProgressDetails.addEventListener("toggle", () => {
       if(learnProgressDetails.open) renderLearnDayProgress();
@@ -1615,17 +1652,7 @@
     alert("초기화 완료!");
   };
 
-  // ---------------- 단어 리스트 + 검색 + 사전 + 즐겨찾기 ----------------
-  function selectedRanges(){
-    const arr = [];
-    if(el("cb_core").checked) arr.push([1,40]);
-    if(el("cb_basic").checked) arr.push([41,68]);
-    if(el("cb_800").checked) arr.push([69,136]);
-    if(el("cb_900").checked) arr.push([137, 999999]);
-    return arr;
-  }
-  function inRanges(n, ranges){ return ranges.some(([s,e]) => n >= s && n <= e); }
-
+  // ---------------- 단어 리스트 ----------------
   function renderWordsList(){
     const data = load(WORDS_KEY, {});
     const days = selectedDaysForPool();
@@ -1823,7 +1850,7 @@
     });
   }
 
-  // ---------------- 즐겨찾기 탭 ----------------
+  // ---------------- 즐겨찾기 ----------------
   function renderFavList(){
     const list = favList();
     paneFav.innerHTML = "";
@@ -1896,7 +1923,7 @@
     });
   }
 
-  // ---------------- 기록 탭 ----------------
+  // ---------------- 기록 ----------------
   function renderHistoryList(){
     const sessions = load(SESSION_KEY, []);
     paneHistory.innerHTML = "";
@@ -1965,6 +1992,7 @@
   function saveResumeState(){
     if(el("quizOverlay").classList.contains("hidden")) return;
     if(!quizState || !Array.isArray(pool) || pool.length===0) return;
+
     const payload = {
       poolKeys: pool.map(keyOf),
       idx,
@@ -1974,6 +2002,7 @@
       reinsertCount,
       timestamp: Date.now()
     };
+
     try {
       localStorage.setItem(RESUME_KEY, JSON.stringify(payload));
       updateResumeButton();
@@ -2023,21 +2052,9 @@
     checkGoalAndCelebrate();
   }
 
-  function buildPoolFromSelection() {
-    const data = load(WORDS_KEY, {});
-    const targetDays = selectedDaysForPool();
-
-    let combined = [];
-    targetDays.forEach(d => { combined = combined.concat(data[d] || []); });
-
-    const intervals = selectedRanges();
-    const filtered = combined.filter(item => inRanges(item.n, intervals));
-    return { targetDays, intervals, filtered };
-  }
-
   function wrongWeightForItem(item){
     const stats = statsMap();
-    const k = (typeof keyOf === "function" && item) ? keyOf(item) : "";
+    const k = keyOf(item);
     const wrongCount = Number(stats[k]?.wrongCount || 0);
     return 1 + Math.min(5, Math.max(0, wrongCount));
   }
@@ -2106,6 +2123,7 @@
     startQuiz();
   };
   el("resumeBtn").onclick = resumeQuiz;
+
   el("question").onclick = () => {
     const word = pool[idx]?.w;
     if(word) openNaverDict(word);
@@ -2124,13 +2142,13 @@
     return item.w || "";
   }
 
-  function getWrongBadgeText(item){
-    if(!item) return "";
+  function isWrongMarked(item){
+    if(!item) return false;
     const k = keyOf(item);
-    if((wrong || []).some(w => keyOf(w) === k)) return "🟥 이번오답 ";
+    if((wrong || []).some(w => keyOf(w) === k)) return true;
     const stats = statsMap();
-    if((stats[k]?.wrongCount || 0) > 0) return "🟥 누적오답 ";
-    return "";
+    const wc = Number(stats[k]?.wrongCount ?? 0);
+    return Number.isFinite(wc) && wc > 0;
   }
 
   el("quizSpeakBtn").onclick = () => {
@@ -2174,7 +2192,7 @@
     el("nextBtn").classList.add("hidden");
 
     const qText = (dir === "en2ko") ? item.w : item.m;
-    const wrongPrefix = getWrongBadgeText(item);
+    const wrongPrefix = isWrongMarked(item) ? "🟥 오답 " : "";
     el("question").textContent = `${wrongPrefix}${qText}`;
 
     if (dir === "en2ko") speak(item.w);
@@ -2205,7 +2223,6 @@
     saveResumeState();
   }
 
-  // ✅ MC 보기 생성: while 제거(안전)
   function renderMC(item, dir){
     const data = load(WORDS_KEY, {});
     const all = Object.values(data).flat();
@@ -2305,6 +2322,7 @@
       days: quizState.days || [],
       ranges: quizState.ranges || "-"
     });
+
     clearResumeState();
   }
 
@@ -2324,7 +2342,7 @@
     if (locked) goNext();
   };
 
-  // Flashcard 전용
+  // Flash 전용
   el("flashAnswerBox").onclick = () => {
     el("flashAnswerText").classList.remove("hidden");
     el("flashTapHint").classList.add("hidden");
@@ -2436,21 +2454,13 @@
     if(!el("quizOverlay").classList.contains("hidden")) { clearAutoNext(); saveResumeState(); el("quizOverlay").classList.add("hidden"); updateResumeButton(); }
     if(!overlay.classList.contains("hidden")) closeSheet();
   });
-  // ---------------- 수동 테스트 체크리스트 ----------------
-  // - 앱 로드시 STATS_KEY가 단일 스키마({correctCount, wrongCount, lastTs})로 마이그레이션되는지
-  // - 단어암기 진행도: logged=(correct+wrong>0), wrongN=(wrong>0) 기준으로 정확히 계산되는지
-  // - 문제 머리표시 우선순위가 "🟥 이번오답 > 🟥 누적오답 > 없음" 순으로 동작하는지
-  // - 이어하기 저장 payload가 poolKeys/wrongKeys 기반으로 저장되고, 복원 시 누락 문제를 건너뛰며 idx 보정되는지
-  // - Flash 숨김 토글이 Flash 모드에서만 활성이고, Test에서 flash가 아닐 땐 비활성 처리되는지
-  // - 달력 숫자가 좌상단 정렬이며, calL3/calL4 배경에서 dot(칩)이 묻히지 않는지
-  // - learnDayProgress는 details가 열렸을 때만 렌더되고, 닫힌 상태 updateDailyUI에서 불필요 렌더가 없는지
 
   // ---------------- 초기 로드 ----------------
   // 초기 상태 Learn 고정
   modeField.classList.add("hidden");
   el("modeSelect").value = "flash";
-  updateScopeBar();
   showMainPanel("learn");
+  updateScopeBar();
   ensureLoaded();
 </script>
 </body>

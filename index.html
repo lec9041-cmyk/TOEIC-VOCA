@@ -113,7 +113,6 @@
     .q{font-size:20px;font-weight:1000;margin:10px 0 10px}
     .choices{display:grid;gap:10px}
     .choices button{text-align:left;border:1px solid var(--bd);border-radius:18px;background:#fff}
-    .hidden{display:none}
     .ok{color:#0a7}
     .bad{color:#c23}
 
@@ -221,6 +220,9 @@
       .chips{grid-template-columns: repeat(4, minmax(0, 1fr));}
       .actions{grid-template-columns: 2fr 1fr;}
     }
+
+    /* ✅ 중요: overlay/quiz를 확실히 숨기기 (CSS 우선순위 문제 해결) */
+    .hidden{display:none !important;}
   </style>
 </head>
 <body>
@@ -320,7 +322,7 @@
       </div>
       <div class="field" style="grid-column: span 2;">
         <label>시작</label>
-        <button id="startBtn" class="btn">시험 시작</button>
+        <button id="startBtn" class="btn" type="button">시험 시작</button>
       </div>
     </div>
 
@@ -718,7 +720,7 @@
     const curDay = daySelect.value;
 
     let arr = Object.values(stats)
-      .filter(x => x && x.w && x.m)                // 방어
+      .filter(x => x && x.w && x.m)
       .filter(x => (x.wrong || 0) > 0)
       .filter(x => scope === "all" ? true : (x.day === curDay))
       .map(x => ({
@@ -731,7 +733,6 @@
         last: x.last || 0
       }));
 
-    // search
     const q = (wrongSearch.value || "").trim().toLowerCase();
     if(q){
       arr = arr.filter(x =>
@@ -741,7 +742,6 @@
       );
     }
 
-    // sort
     const sortMode = wrongSort.value || "wrongDesc";
     arr.sort((a,b)=>{
       const at=(a.right+a.wrong)||0, bt=(b.right+b.wrong)||0;
@@ -756,7 +756,7 @@
 
   // ---------------- weighted random (moderate) ----------------
   function getWrongWeight(item){
-    return Math.sqrt((item.wrong || 0) + 1); // 적당히
+    return Math.sqrt((item.wrong || 0) + 1);
   }
   function weightedSampleNoReplace(items, k, weightFn){
     const src = items.map(it => ({ it, w: Math.max(0, Number(weightFn(it)) || 0) })).filter(x=>x.w>0);
@@ -818,7 +818,7 @@
     overlay.classList.remove("hidden");
     overlay.setAttribute("aria-hidden", "false");
     const body = overlay.querySelector(".sheetBody");
-    if(body) body.scrollTop = 0; // ✅ 스크롤 초기화
+    if(body) body.scrollTop = 0;
     renderWordsList();
     renderWrongList();
     renderHistory();
@@ -855,14 +855,12 @@
     const day = listDaySelect.value || daySelect.value;
     let list = getDayList(day);
 
-    // filter selected interval
     if(listFilter.value === "selected"){
       const intervals = selectedIntervals();
       if(intervals.length === 0) list = [];
       else list = list.filter(x => inIntervals(x.n||0, intervals));
     }
 
-    // search
     const q = (listSearch.value || "").trim().toLowerCase();
     if(q){
       list = list.filter(x =>
@@ -871,7 +869,6 @@
       );
     }
 
-    // sort
     if(listSort.value === "word"){
       list.sort((a,b)=> String(a.w||"").localeCompare(String(b.w||""), "en"));
     } else {
@@ -937,7 +934,7 @@
   // ---------------- Render: history ----------------
   function renderHistory(){
     const sessions = loadSessions();
-    const sliced = sessions.slice(0, 40); // 표시 40개
+    const sliced = sessions.slice(0, 40);
     historyCount.textContent = String(sliced.length);
     listHistory.innerHTML = "";
 
@@ -989,7 +986,7 @@
   let timerId = null;
 
   let quizStartedAt = 0;
-  let quizSource = "day"; // "day" | "wrongnote"
+  let quizSource = "day";
 
   function clearTimer(){
     if(timerId){
@@ -1006,7 +1003,6 @@
     return arr;
   }
 
-  // ✅ 보기 후보 풀: quizAll → 현재DAY 전체 → 전체DAY 합치기
   function getChoicePool(){
     if(Array.isArray(quizAll) && quizAll.length >= 8) return quizAll;
 
@@ -1028,7 +1024,6 @@
     const correctVal = dir==="en2ko" ? correct.m : correct.w;
     const seen = new Set([correctVal]);
 
-    // ✅ all이 작아도 최대한 3개 뽑기 (fallback은 getChoicePool에서 해결)
     while(pick.length < 3 && all.length >= 4){
       const cand = all[Math.floor(Math.random()*all.length)];
       const val = dir==="en2ko" ? cand.m : cand.w;
@@ -1106,7 +1101,6 @@
     scoreEl.textContent = String(score);
     wrongNEl.textContent = String(wrong.length);
 
-    // stats update
     const stats = loadStats();
     const k = makeWordKey(item);
 
@@ -1152,14 +1146,13 @@
       shortAnswer.classList.add("hidden");
     }
 
-    // ✅ 보기 후보 풀 안정화
     const all = getChoicePool();
 
     if(mode === "mc"){
       const { opts, correctVal } = pickChoices(item, all, dir);
       opts.forEach(opt=>{
         const b = document.createElement("button");
-        b.textContent = opt; // 버튼은 textContent로 안전
+        b.textContent = opt;
         b.onclick = ()=>judge(opt === correctVal, item, dir);
         choicesEl.appendChild(b);
       });
@@ -1180,7 +1173,6 @@
       feedback.innerHTML = `정답: <b>${esc(correct)}</b>`;
     };
 
-    // onkeydown은 프로퍼티 방식이라 누적 없음
     answerInput.onkeydown = (e)=>{
       if(e.key === "Enter"){
         e.preventDefault();
@@ -1202,7 +1194,6 @@
     const wrongCnt = wrong.length;
     const acc = total ? Math.round((score/total)*100) : 0;
 
-    // save session log
     const sessions = loadSessions();
     sessions.unshift({
       ts: Date.now(),
@@ -1217,16 +1208,14 @@
       accuracy: acc,
       durationSec
     });
-    saveSessions(sessions.slice(0, 400)); // 저장 400개 유지
+    saveSessions(sessions.slice(0, 400));
 
     feedback.innerHTML = `끝! 점수 <b>${score}</b> / ${total} (오답 ${wrongCnt}) · 정확도 ${acc}% · ${durationSec}s`;
     lastWrong = wrong;
     if(wrong.length > 0) redoWrongBtn.classList.remove("hidden");
 
-    // ✅ finish 후 stop 버튼 UX
     stopBtn.textContent = "닫기";
 
-    // refresh sheet lists if open
     if(!overlay.classList.contains("hidden")){
       renderWrongList();
       renderHistory();
@@ -1247,7 +1236,6 @@
       return;
     }
 
-    // ✅ n 계산을 src 기준으로 (명확)
     const n = Math.min(parseInt(countSelect.value,10), src.length);
 
     idx = 0; score = 0; wrong = []; locked=false;
@@ -1256,7 +1244,6 @@
     quizSource = "day";
     stopBtn.textContent = "끝내기";
 
-    // 보기 풀은 "현재 DAY 활성 목록"을 기준으로 고정
     quizAll = list;
     pool = shuffle([...src]).slice(0, n);
 
@@ -1281,7 +1268,6 @@
     quizSource = "wrongnote";
     stopBtn.textContent = "끝내기";
 
-    // 보기 풀은 오답노트로 좁히지 않음(보기 부족 방지) -> getChoicePool이 fallback 처리
     quizAll = src.map(x=>({...x}));
     pool = weightedSampleNoReplace(src, n, getWrongWeight);
 

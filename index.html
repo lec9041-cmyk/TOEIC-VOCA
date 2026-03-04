@@ -156,6 +156,10 @@
 
     /* 퀴즈 UI */
     .q{font-size:22px;font-weight:900;margin:15px 0 15px; text-align: center;}
+    .q.clickable{cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:4px;}
+    .scope-meter{margin-top:10px;}
+    .scope-meta{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--muted);margin-bottom:6px;}
+    .ox-mark{font-size:34px;font-weight:900;text-align:center;min-height:42px;margin-top:8px;}
     .choices{display:grid;gap:10px}
     .choices button{text-align:left;border:1px solid var(--bd);border-radius:18px;background:#fff}
     .ok{color:#0a7; font-weight: bold;}
@@ -350,6 +354,14 @@
       <label class="chip"><input id="cb_900" type="checkbox" checked /> 900점 (137~)</label>
     </div>
 
+    <div class="scope-meter">
+      <div class="scope-meta">
+        <span id="scopeCoverageText">현재 학습 범위 0%</span>
+        <span id="scopeCoverageCount">0 / 0 단어</span>
+      </div>
+      <div class="progress-container" style="margin:0 0 10px"><div id="scopeCoverageBar" class="progress-bar"></div></div>
+    </div>
+
     <div class="grid" style="margin-top:12px">
       <div class="field" style="grid-column: span 2;">
         <button id="startBtn" class="btn" type="button" disabled>로딩 중...</button>
@@ -382,7 +394,7 @@
 
         <div class="progress-container"><div id="progressBar" class="progress-bar"></div></div>
 
-        <div class="q" id="question"></div>
+        <div class="q clickable" id="question" title="클릭하면 네이버 사전으로 이동"></div>
 
         <div class="choices" id="choices"></div>
 
@@ -405,7 +417,8 @@
           </div>
         </div>
 
-        <div id="feedback" class="muted" style="margin-top:15px; text-align:center;"></div>
+        <div id="oxMark" class="ox-mark"></div>
+        <div id="feedback" class="muted" style="margin-top:6px; text-align:center;"></div>
         <button id="nextBtn" class="hidden btn btn-soft" type="button">다음 문제 ▶</button>
 
         <div id="retestBox" class="hidden" style="margin-top:10px">
@@ -699,18 +712,27 @@
 
   function isLearnTab() { return mainTabLearn.classList.contains("active"); }
 
+  function setStartButtonState(locked){
+    startBtn.disabled = !!locked;
+    if(locked){
+      startBtn.textContent = "로딩 중...";
+      return;
+    }
+    startBtn.textContent = isLearnTab() ? "암기 시작 🚀" : "시험 시작 ✍️";
+  }
+
   mainTabLearn.onclick = () => {
     mainTabLearn.classList.add("active"); mainTabTest.classList.remove("active");
     el("modeSelect").value = "flash";
     modeField.classList.add("hidden");
-    startBtn.textContent = startBtn.disabled ? "로딩 중..." : "암기 시작 🚀";
+    if(!startBtn.disabled) setStartButtonState(false);
     updateScopeBar();
   };
   mainTabTest.onclick = () => {
     mainTabTest.classList.add("active"); mainTabLearn.classList.remove("active");
     if (el("modeSelect").value === "flash") el("modeSelect").value = "mc";
     modeField.classList.remove("hidden");
-    startBtn.textContent = startBtn.disabled ? "로딩 중..." : "시험 시작 ✍️";
+    if(!startBtn.disabled) setStartButtonState(false);
     updateScopeBar();
   };
 
@@ -771,8 +793,7 @@
 
   async function ensureLoaded() {
     el("dataStatus").textContent = "· 데이터 로딩 중...";
-    startBtn.disabled = true;
-    startBtn.textContent = "로딩 중...";
+    setStartButtonState(true);
 
     let data = load(WORDS_KEY, {});
     if (Object.keys(data).length === 0) {
@@ -805,8 +826,8 @@
     const dayCount = Object.keys(data).length;
     el("dataStatus").textContent = dayCount ? `· ✅ ${dayCount}개 DAY 로드됨` : "· ⚠️ 데이터 없음";
 
-    startBtn.disabled = !(dayCount > 0);
-    startBtn.textContent = startBtn.disabled ? "데이터 없음" : (isLearnTab() ? "암기 시작 🚀" : "시험 시작 ✍️");
+    if(dayCount > 0) setStartButtonState(false);
+    else { startBtn.disabled = true; startBtn.textContent = "데이터 없음"; }
   }
 
   function renderDaySelect(data) {
@@ -933,6 +954,20 @@
     return `${tab} · ${mode} · ${dir}`;
   }
 
+  function updateScopeCoverage(){
+    const data = load(WORDS_KEY, {});
+    const days = selectedDaysForPool();
+    const ranges = selectedRanges();
+    let all = [];
+    days.forEach(d => { all = all.concat(data[d] || []); });
+    const picked = all.filter(x => inRanges(x.n, ranges)).length;
+    const total = all.length;
+    const percent = total ? Math.round((picked/total)*100) : 0;
+    el("scopeCoverageText").textContent = `현재 학습 범위 ${percent}%`;
+    el("scopeCoverageCount").textContent = `${picked} / ${total} 단어`;
+    el("scopeCoverageBar").style.width = `${percent}%`;
+  }
+
   function updateScopeBar(){
     el("scopeTabPill").textContent = `모드: ${currentModeLabel()}`;
     const days = selectedDaysForPool();
@@ -940,6 +975,7 @@
     el("scopeRangePill").textContent = `범위: ${rangeLabel()}`;
     el("scopeCountPill").textContent = el("countSelect").value;
     if(el("goalPill")) el("goalPill").textContent = getGoal();
+    updateScopeCoverage();
   }
 
   ["modeSelect","dirSelect","countSelect","voiceSelect"].forEach(id=>{
@@ -1076,7 +1112,7 @@
         it.innerHTML = `
           <div class="itemTop">
             <div>
-              <div class="itemWord">${esc(x.w)} <span class="muted">(${esc(dayLabel(x.day))} · #${esc(x.n)})</span></div>
+              <div class="itemWord"><a href="https://en.dict.naver.com/#/search?query=${encodeURIComponent(x.w)}" target="_blank" rel="noopener">${esc(x.w)}</a> <span class="muted">(${esc(dayLabel(x.day))} · #${esc(x.n)})</span></div>
               <div class="muted">${esc(x.m)}</div>
             </div>
             <span class="badge">WORD</span>
@@ -1183,7 +1219,7 @@
       it.innerHTML = `
         <div class="itemTop">
           <div>
-            <div class="itemWord">${esc(x.w)} <span class="muted">(${esc(dayLabel(x.day))} · #${esc(x.n)})</span></div>
+            <div class="itemWord"><a href="https://en.dict.naver.com/#/search?query=${encodeURIComponent(x.w)}" target="_blank" rel="noopener">${esc(x.w)}</a> <span class="muted">(${esc(dayLabel(x.day))} · #${esc(x.n)})</span></div>
             <div class="muted">${esc(x.m)}</div>
             <div class="muted">틀림: <b>${esc(x.wrong || 0)}</b> · 최근: <b>${esc(x.last ? fmtTime(x.last) : "-")}</b></div>
           </div>
@@ -1260,7 +1296,7 @@
       it.innerHTML = `
         <div class="itemTop">
           <div>
-            <div class="itemWord">${esc(x.w)} <span class="muted">(${esc(dayLabel(x.day))} · #${esc(x.n)})</span></div>
+            <div class="itemWord"><a href="https://en.dict.naver.com/#/search?query=${encodeURIComponent(x.w)}" target="_blank" rel="noopener">${esc(x.w)}</a> <span class="muted">(${esc(dayLabel(x.day))} · #${esc(x.n)})</span></div>
             <div class="muted">${esc(x.m)}</div>
           </div>
           <span class="badge">★</span>
@@ -1477,6 +1513,10 @@
   }
 
   startBtn.onclick = () => startQuiz();
+  el("question").onclick = () => {
+    const word = pool[idx]?.w;
+    if(word) openNaverDict(word);
+  };
 
   function setQuizHeaderScope(){
     const daysText = (quizState?.days || []).map(dayLabel).join(", ") || "-";
@@ -1518,6 +1558,7 @@
     el("score").textContent = score;
     el("wrongN").textContent = wrong.length;
     el("feedback").textContent = "";
+    el("oxMark").textContent = "";
     el("nextBtn").classList.add("hidden");
 
     const qText = (dir === "en2ko") ? item.w : item.m;
@@ -1596,6 +1637,7 @@
       score++;
       modal.classList.add("flash-ok");
       setTimeout(() => modal.classList.remove("flash-ok"), 400);
+      el("oxMark").innerHTML = "<span class='ok'>O</span>";
       el("feedback").innerHTML = "<span class='ok'>정답입니다!</span>";
     } else {
       wrong.push(item);
@@ -1605,6 +1647,7 @@
       setTimeout(() => modal.classList.remove("flash-bad"), 400);
 
       const ans = (quizState.dir === "en2ko" ? item.m : item.w);
+      el("oxMark").innerHTML = "<span class='bad'>X</span>";
       el("feedback").innerHTML = `<span class='bad'>오답!</span> 정답: <b>${esc(ans)}</b>`;
     }
 
@@ -1620,6 +1663,7 @@
     clearAutoNext();
 
     el("question").textContent = "학습 완료! 🎉";
+    el("oxMark").textContent = "";
     el("feedback").innerHTML = `최종 점수: <b>${score}</b> / ${pool.length}`;
     el("progressBar").style.width = "100%";
     el("choices").classList.add("hidden");

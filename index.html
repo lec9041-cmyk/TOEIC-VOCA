@@ -62,9 +62,24 @@
         <option value="sa">주관식(보기 없음)</option>
       </select>
 
+      <label><b>문제 이동</b></label>
+      <select id="nextMode">
+        <option value="auto" selected>자동</option>
+        <option value="manual">수동(다음 버튼)</option>
+      </select>
+
+      <label><b>자동 속도</b></label>
+      <select id="autoDelay">
+        <option value="600">0.6초</option>
+        <option value="900">0.9초</option>
+        <option value="1200" selected>1.2초</option>
+        <option value="1500">1.5초</option>
+      </select>
+
       <button id="startBtn">시험 시작</button>
       <button id="redoWrongBtn" class="hidden">오답만 다시</button>
     </div>
+
     <div class="muted" style="margin-top:10px">
       저장된 DAY: <span id="dayCount">0</span>개
     </div>
@@ -94,12 +109,14 @@
     </div>
 
     <div id="feedback" class="muted" style="margin-top:10px"></div>
+    <button id="nextBtn" class="hidden" style="margin-top:10px">다음 문제 ▶</button>
   </div>
 
 <script>
-  const KEY = "toeic_words_csv_v2_autoload"; // {DAY1:[{w,m}], ...}
+  const KEY = "toeic_words_csv_v3_autoload_nextmode";
 
   const el = (id)=>document.getElementById(id);
+
   const fileInput = el("file");
   const statusEl = el("status");
   const daySelect = el("daySelect");
@@ -108,6 +125,8 @@
   const countSelect = el("countSelect");
   const dirSelect = el("dirSelect");
   const modeSelect = el("modeSelect");
+  const nextMode = el("nextMode");
+  const autoDelay = el("autoDelay");
   const startBtn = el("startBtn");
   const redoWrongBtn = el("redoWrongBtn");
 
@@ -124,6 +143,7 @@
   const answerInput = el("answerInput");
   const submitAnswerBtn = el("submitAnswerBtn");
   const showAnswerBtn = el("showAnswerBtn");
+  const nextBtn = el("nextBtn");
 
   const loadAll = () => JSON.parse(localStorage.getItem(KEY) || "{}");
   const saveAll = (obj) => localStorage.setItem(KEY, JSON.stringify(obj));
@@ -238,23 +258,19 @@
       refreshDayList();
       return;
     }
-
     try{
       const res = await fetch("./toeic_words_day1_30.csv", { cache: "no-store" });
       if(!res.ok) throw new Error("CSV not found");
       const text = await res.text();
       await hydrateFromCSVText(text, "자동 로드 완료 (업로드 필요 없음)");
     } catch(e){
-      statusEl.textContent = "자동 로드 실패: 필요하면 CSV 업로드 해줘";
+      statusEl.textContent = "자동 로드 실패: CSV가 같은 폴더에 있는지 확인!";
       refreshDayList();
     }
   }
 
-  async function readFileAsText(file){
-    return await file.text();
-  }
+  async function readFileAsText(file){ return await file.text(); }
 
-  // Optional: user upload to override
   fileInput.addEventListener("change", async () => {
     const f = fileInput.files?.[0];
     if(!f) return;
@@ -311,6 +327,23 @@
     if(wrong.length > 0) redoWrongBtn.classList.remove("hidden");
   }
 
+  function goNext(){
+    nextBtn.classList.add("hidden");
+    idx++;
+    if(idx >= pool.length) finish();
+    else render();
+  }
+
+  function scheduleNext(){
+    if(nextMode.value === "manual"){
+      nextBtn.classList.remove("hidden");
+      nextBtn.onclick = goNext;
+      return;
+    }
+    const ms = parseInt(autoDelay.value,10) || 1200;
+    setTimeout(goNext, ms);
+  }
+
   function judge(ok, item, dir){
     const correctText = (dir==="en2ko") ? item.m : item.w;
 
@@ -325,14 +358,12 @@
     scoreEl.textContent = String(score);
     wrongNEl.textContent = String(wrong.length);
 
-    setTimeout(() => {
-      idx++;
-      if(idx >= pool.length) finish();
-      else render();
-    }, 450);
+    scheduleNext();
   }
 
   function render(){
+    nextBtn.classList.add("hidden");
+
     progressPill.textContent = `${idx+1}/${pool.length}`;
     scoreEl.textContent = String(score);
     wrongNEl.textContent = String(wrong.length);
@@ -371,16 +402,14 @@
       return;
     }
 
-    // Short answer mode
+    // Short answer
     submitAnswerBtn.onclick = () => {
       const user = (answerInput.value || "").trim();
       let ok = false;
 
-      if(dir === "en2ko"){
-        ok = isMeaningCorrect(user, item.m);         // 뜻은 포함 인정
-      } else {
-        ok = normalize(user) === normalize(item.w);  // 영단어는 정확히
-      }
+      if(dir === "en2ko") ok = isMeaningCorrect(user, item.m);
+      else ok = normalize(user) === normalize(item.w);
+
       judge(ok, item, dir);
     };
 
@@ -399,7 +428,7 @@
     const day = daySelect.value;
     const list = all[day] || [];
     if(list.length === 0){
-      alert("데이터가 없어요. (자동 로드가 실패했으면 CSV 파일이 같은 폴더에 있는지 확인!)");
+      alert("데이터가 없어요. (CSV가 같은 폴더에 있는지 확인!)");
       return;
     }
 

@@ -181,7 +181,31 @@
     }
     return data;
   }
+async function autoLoadFromRepo(){
+  const all = loadAll();
+  if(Object.keys(all).length > 0){
+    statusEl.textContent = "저장된 데이터 로드 완료";
+    refreshDayList();
+    return;
+  }
 
+  try{
+    const res = await fetch("./toeic_words_day1_30.csv");
+    const text = await res.text();
+    const parsed = parseCSV(text);
+
+    for(const day of Object.keys(parsed)){
+      all[day] = parsed[day];
+    }
+
+    saveAll(all);
+    statusEl.textContent = "CSV 자동 로드 완료";
+    refreshDayList();
+
+  }catch(e){
+    statusEl.textContent = "자동 로드 실패 (수동 업로드 가능)";
+  }
+}
   function refreshDayList(){
     const all = loadAll();
     const days = Object.keys(all).sort((a,b)=>{

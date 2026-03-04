@@ -1151,7 +1151,8 @@
     for(const d of days){
       const opt1 = document.createElement("option");
       opt1.value = d;
-      opt1.textContent = `${d} (${(all[d]||[]).length})`;
+      const topic = DAY_TOPIC[d] || "";
+opt1.textContent = `${d} · ${topic}`;
       daySelect.appendChild(opt1);
 
       const opt2 = document.createElement("option");
@@ -1792,6 +1793,39 @@
       }
     };
   }
+
+  const DAY_TOPIC = {
+DAY1:"채용",
+DAY2:"규칙·법률",
+DAY3:"일반사무",
+DAY4:"일반사무",
+DAY5:"일반사무",
+DAY6:"여가·공동체",
+DAY7:"마케팅",
+DAY8:"마케팅",
+DAY9:"경제",
+DAY10:"쇼핑",
+DAY11:"제품개발",
+DAY12:"생산",
+DAY13:"고객서비스",
+DAY14:"여행·공항",
+DAY15:"계약",
+DAY16:"상거래",
+DAY17:"무역·배송",
+DAY18:"숙박·식당",
+DAY19:"수익",
+DAY20:"회계",
+DAY21:"회사동향",
+DAY22:"미팅",
+DAY23:"사원복지",
+DAY24:"인사이동",
+DAY25:"교통",
+DAY26:"은행",
+DAY27:"투자",
+DAY28:"건물·주택",
+DAY29:"환경",
+DAY30:"건강"
+};
 
   // ---------------- init ----------------
   (async function init(){

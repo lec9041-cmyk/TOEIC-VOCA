@@ -5,13 +5,6 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>TOEIC 단어시험</title>
 
-  <!-- ✅ PWA (optional) -->
-  <link rel="manifest" href="/manifest.webmanifest">
-  <meta name="theme-color" content="#1d4ed8">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="apple-touch-icon" href="/icon-192.png">
-
   <style>
     :root{
       --bd:#e5e7eb;
@@ -117,6 +110,29 @@
     }
     .chip input{transform:scale(1.15)}
 
+    /* day chips (multi-day selected) */
+    .daychip{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      border:1px solid var(--bd);
+      border-radius:999px;
+      padding:8px 10px;
+      background:#fff;
+      font-size:12px;
+      font-weight:900;
+    }
+    .daychip button{
+      border:none;
+      background:transparent;
+      cursor:pointer;
+      font-size:14px;
+      line-height:1;
+      padding:0 2px;
+      color:#6b7280;
+    }
+    .daychip button:active{transform: translateY(1px)}
+
     /* quiz */
     .q{font-size:20px;font-weight:1000;margin:10px 0 10px}
     .choices{display:grid;gap:10px}
@@ -193,7 +209,7 @@
       color:#fff;
     }
 
-    /* card list items */
+    /* list items */
     .list{display:grid;gap:10px;margin-top:10px}
     .item{
       border:1px solid var(--bd);
@@ -282,9 +298,6 @@
       flex-wrap:wrap;
       align-items:center;
     }
-
-    /* details summary should look like pill */
-    details summary::-webkit-details-marker { display:none; }
   </style>
 </head>
 
@@ -302,27 +315,25 @@
         <select id="daySelect"></select>
       </div>
 
-      <!-- ✅ multi day (collapsed) -->
-      <div class="field">
-        <label>여러 DAY</label>
-        <details id="multiDayDetails">
-          <summary class="pill" style="cursor:pointer; user-select:none;">
-            여러 DAY 선택(선택 시 드롭다운 무시)
-            <span class="muted" id="multiDaySummary" style="margin-left:6px"></span>
-          </summary>
+      <!-- ✅ multi day: dropdown auto-add + removable chips -->
+      <div class="field" style="grid-column: span 2;">
+        <label>여러 DAY 추가 (자동)</label>
 
-          <div style="margin-top:10px">
-            <div class="row" style="margin-bottom:10px">
-              <button id="multiDaySelectAll" class="btn btn-soft" type="button">전체 선택</button>
-              <button id="multiDaySelectNone" class="btn btn-soft" type="button">전체 해제</button>
-              <span class="pill">선택: <b id="multiDayCount">0</b>개</span>
-            </div>
-            <div id="multiDayBox" class="chips"></div>
-            <div class="muted" style="margin-top:8px">
-              체크된 DAY가 2개 이상이면 멀티 모드로 시험이 진행돼요.
-            </div>
-          </div>
-        </details>
+        <div class="row" style="gap:10px">
+          <select id="multiDayAddSelect" style="flex:1; min-width: 160px;"></select>
+          <button id="multiDayClearBtn" class="btn btn-ghost" type="button">비우기</button>
+        </div>
+
+        <div class="row" style="margin-top:10px">
+          <span class="pill">선택: <b id="multiDayCount">0</b>개</span>
+          <span class="pill muted" id="multiDaySummary">· 드롭다운 DAY 사용중</span>
+        </div>
+
+        <div id="multiDayChips" class="row" style="margin-top:10px"></div>
+
+        <div class="muted" style="margin-top:8px">
+          “DAY 추가하기…”는 placeholder예요. DAY를 고르면 칩에 추가되고, X로 제거할 수 있어요. (2개 이상이면 멀티 모드)
+        </div>
       </div>
 
       <div class="field">
@@ -387,7 +398,6 @@
       <span id="status"></span>
     </div>
 
-    <!-- ✅ Selected days / streak pills -->
     <div class="row" style="margin-top:10px">
       <span class="pill" id="selectedDaysPill">선택 DAY: -</span>
       <span class="pill">오늘 푼 문제: <b id="todayCountPill">0</b></span>
@@ -473,7 +483,7 @@
         <div id="feedback" class="muted" style="margin-top:10px"></div>
         <button id="nextBtn" class="hidden btn btn-soft" type="button">다음 문제 ▶</button>
 
-        <!-- ✅ 즉시 재시험 박스 -->
+        <!-- 즉시 재시험 -->
         <div id="retestBox" class="hidden" style="margin-top:10px">
           <div class="row">
             <button id="retest10Btn" class="btn btn-soft" type="button">틀린 것 10문제 재시험</button>
@@ -586,19 +596,11 @@
   </div>
 
 <script>
-  // ---------------- PWA SW (optional) ----------------
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker.register("/sw.js").catch(()=>{});
-    });
-  }
-
   // ---------------- safe localStorage ----------------
   function safeSetItem(key, val){ try{ localStorage.setItem(key, val); } catch(e){ console.warn("저장 실패:", e); } }
   function safeGetItem(key){ try{ return localStorage.getItem(key); } catch(e){ return null; } }
   function safeRemoveItem(key){ try{ localStorage.removeItem(key); } catch(e){ /* noop */ } }
 
-  // ✅ XSS 방지 escape
   function esc(s){
     return String(s ?? "")
       .replace(/&/g,"&amp;")
@@ -607,16 +609,16 @@
       .replace(/"/g,"&quot;")
       .replace(/'/g,"&#39;");
   }
-
   const el = (id)=>document.getElementById(id);
 
   // ---------------- keys ----------------
-  const WORDS_KEY   = "toeic_words_v1_device";
-  const STATS_KEY   = "toeic_stats_v2_device";
-  const SESSION_KEY = "toeic_sessions_v1_device";
-  const DAILY_KEY   = "toeic_daily_v1_device"; // ✅ streak / today
+  const WORDS_KEY     = "toeic_words_v1_device";
+  const STATS_KEY     = "toeic_stats_v2_device";
+  const SESSION_KEY   = "toeic_sessions_v1_device";
+  const DAILY_KEY     = "toeic_daily_v1_device";
+  const MULTI_DAY_KEY = "toeic_multi_days_v1_device";
 
-  // ---------------- sync (tabs/windows) ----------------
+  // ---------------- sync across tabs/windows ----------------
   const bc = ("BroadcastChannel" in window) ? new BroadcastChannel("toeic_sync_v1") : null;
   function broadcast(type){ if(bc) bc.postMessage({ type, ts: Date.now() }); }
 
@@ -645,24 +647,21 @@
 
   const resetStatsBtn = el("resetStatsBtn");
 
-  // multi-day UI
-  const multiDayDetails = el("multiDayDetails");
-  const multiDayBox = el("multiDayBox");
-  const multiDaySelectAll = el("multiDaySelectAll");
-  const multiDaySelectNone = el("multiDaySelectNone");
+  // ✅ multi-day dropdown add + chips
+  const multiDayAddSelect = el("multiDayAddSelect");
+  const multiDayClearBtn = el("multiDayClearBtn");
   const multiDayCountEl = el("multiDayCount");
   const multiDaySummary = el("multiDaySummary");
-  const selectedDaysPill = el("selectedDaysPill");
+  const multiDayChips = el("multiDayChips");
 
-  // streak / today pills
+  const selectedDaysPill = el("selectedDaysPill");
   const todayCountPill = el("todayCountPill");
   const streakPill = el("streakPill");
 
-  // fullscreen quiz overlay
+  // quiz overlay
   const quizOverlay = el("quizOverlay");
   const quizMeta = el("quizMeta");
 
-  // quiz elements
   const question = el("question");
   const choicesEl = el("choices");
   const feedback = el("feedback");
@@ -676,7 +675,7 @@
   const showAnswerBtn = el("showAnswerBtn");
   const nextBtn = el("nextBtn");
 
-  // retest buttons
+  // retest
   const retestBox = el("retestBox");
   const retest10Btn = el("retest10Btn");
   const retestAllBtn = el("retestAllBtn");
@@ -733,9 +732,18 @@
     try{ return JSON.parse(safeGetItem(DAILY_KEY) || "{}"); }
     catch(e){ return {}; }
   }
-  function saveDaily(obj){
-    safeSetItem(DAILY_KEY, JSON.stringify(obj));
+  function saveDaily(obj){ safeSetItem(DAILY_KEY, JSON.stringify(obj)); }
+
+  function loadMultiDays(){
+    try{
+      const arr = JSON.parse(safeGetItem(MULTI_DAY_KEY) || "[]");
+      return Array.isArray(arr) ? arr : [];
+    } catch(e){
+      return [];
+    }
   }
+  function saveMultiDays(arr){ safeSetItem(MULTI_DAY_KEY, JSON.stringify(arr)); }
+  function uniq(arr){ return [...new Set(arr)]; }
 
   function ymd(d=new Date()){
     const y=d.getFullYear();
@@ -770,7 +778,7 @@
     let streak = daily.__streak || 0;
 
     if(last === today){
-      // same day: keep streak
+      // same day
     } else if(last && addDays(last, 1) === today){
       streak += 1;
     } else {
@@ -791,6 +799,7 @@
     return `${y}-${m}-${dd}`;
   }
 
+  // ---------------- CSV parsing ----------------
   function parseCSVLine(line){
     const out = [];
     let cur = "";
@@ -864,6 +873,7 @@
       const parsed = parseCSV(text);
       saveWordsAll(parsed);
       statusEl.textContent = " · 내장 데이터 로드 완료";
+      broadcast("words_loaded");
     } catch(e){
       statusEl.textContent = " · 로드 실패(같은 폴더에 CSV 있는지 확인)";
     }
@@ -885,6 +895,7 @@
     return false;
   }
 
+  // ---------------- day helpers ----------------
   function dayNum(dayStr){
     return parseInt(String(dayStr||"").replace(/\D/g,""), 10) || 0;
   }
@@ -892,47 +903,107 @@
     const all = loadWordsAll();
     return Object.keys(all).sort((a,b)=> dayNum(a)-dayNum(b));
   }
-  function getCheckedDays(){
-    return [...document.querySelectorAll('#multiDayBox input[type="checkbox"]:checked')]
-      .map(cb => cb.value);
-  }
+
+  // ---------------- multi-day selection ----------------
+  const MULTI_PLACEHOLDER = "__add__";
+
   function getSelectedDays(){
-    const checked = getCheckedDays();
-    if(checked.length >= 2) return checked;
+    const multi = loadMultiDays();
+    if(multi.length >= 2) return multi;
     return [daySelect.value];
   }
 
   function updateSelectedDaysPill(){
-    const days = getSelectedDays();
+    const multi = loadMultiDays();
     if(!selectedDaysPill) return;
 
-    const checked = getCheckedDays();
-    if(checked.length >= 2){
-      const shown = checked.slice(0,5).join(", ");
-      const more = checked.length > 5 ? ` 외 ${checked.length-5}개` : "";
+    if(multi.length >= 2){
+      const shown = multi.slice(0,5).join(", ");
+      const more = multi.length > 5 ? ` 외 ${multi.length-5}개` : "";
       selectedDaysPill.textContent = `선택 DAY: ${shown}${more}`;
     } else {
       selectedDaysPill.textContent = `선택 DAY: ${daySelect.value || "-"}`;
     }
   }
 
-  function updateMultiDayUI(){
-    const checked = getCheckedDays();
-    if(multiDayCountEl) multiDayCountEl.textContent = String(checked.length);
+  function renderMultiDayUI(){
+    const daysAll = getAllDaysSorted();
 
-    if(!multiDaySummary) return;
-    if(checked.length === 0){
-      multiDaySummary.textContent = "· 선택 없음(드롭다운 사용)";
-    } else if(checked.length === 1){
-      multiDaySummary.textContent = `· ${checked[0]} (1개면 드롭다운과 동일)`;
-    } else {
-      const shown = checked.slice(0,4).join(", ");
-      const more = checked.length > 4 ? ` 외 ${checked.length-4}개` : "";
-      multiDaySummary.textContent = `· ${shown}${more}`;
+    // add dropdown with placeholder
+    multiDayAddSelect.innerHTML = "";
+
+    const ph = document.createElement("option");
+    ph.value = MULTI_PLACEHOLDER;
+    ph.textContent = "DAY 추가하기…";
+    ph.selected = true;
+    multiDayAddSelect.appendChild(ph);
+
+    for(const d of daysAll){
+      const opt = document.createElement("option");
+      opt.value = d;
+      opt.textContent = d;
+      multiDayAddSelect.appendChild(opt);
+    }
+
+    // chips
+    const selected = loadMultiDays().slice().sort((a,b)=>dayNum(a)-dayNum(b));
+    multiDayChips.innerHTML = "";
+
+    for(const d of selected){
+      const chip = document.createElement("span");
+      chip.className = "daychip";
+      chip.innerHTML = `${esc(d)} <button type="button" aria-label="remove ${esc(d)}">✕</button>`;
+      chip.querySelector("button").onclick = ()=>{
+        const next = loadMultiDays().filter(x => x !== d);
+        saveMultiDays(next);
+        renderMultiDayUI();
+        updateActiveCount();
+        if(!overlay.classList.contains("hidden")){
+          renderWordsList(); renderWrongList();
+        }
+      };
+      multiDayChips.appendChild(chip);
+    }
+
+    if(multiDayCountEl) multiDayCountEl.textContent = String(selected.length);
+    if(multiDaySummary){
+      multiDaySummary.textContent = (selected.length >= 2) ? "· 멀티 DAY 모드" : "· 드롭다운 DAY 사용중";
     }
     updateSelectedDaysPill();
   }
 
+  function addMultiDay(d){
+    if(!d || d === MULTI_PLACEHOLDER) return;
+
+    const next = uniq([...loadMultiDays(), d]).sort((a,b)=>dayNum(a)-dayNum(b));
+    saveMultiDays(next);
+
+    renderMultiDayUI();
+    updateActiveCount();
+
+    if(!overlay.classList.contains("hidden")){
+      renderWordsList();
+      renderWrongList();
+    }
+  }
+
+  // ✅ 자동추가 (placeholder면 무시) + 추가 후 다시 placeholder로 복귀
+  multiDayAddSelect.onchange = ()=>{
+    const v = multiDayAddSelect.value;
+    addMultiDay(v);
+    multiDayAddSelect.value = MULTI_PLACEHOLDER;
+  };
+
+  multiDayClearBtn.onclick = ()=>{
+    saveMultiDays([]);
+    renderMultiDayUI();
+    updateActiveCount();
+    if(!overlay.classList.contains("hidden")){
+      renderWordsList(); renderWrongList();
+    }
+  };
+
+  // ---------------- day list / active list ----------------
   function getDayList(day){
     const all = loadWordsAll();
     return (all[day] || []).map(x => ({...x, day}));
@@ -1021,21 +1092,16 @@
     const right = (item.right || 0);
     const total = wrong + right;
 
-    // 많이 틀릴수록 (완만하게)
     let w = Math.pow(wrong + 1, 0.65);
-
-    // 오답률이 높을수록
     const rate = total ? (wrong / total) : 0;
-    w *= (1 + rate); // 최대 2배
+    w *= (1 + rate);
 
-    // 최근성: 3일 안이면 강하게, 오래되면 약하게
     const last = item.last || 0;
     if(last){
       const ageDays = (Date.now() - last) / (1000*60*60*24);
-      const recencyBoost = 1 + 0.9 * Math.exp(-ageDays / 3); // 1.9 ~ 1.0
+      const recencyBoost = 1 + 0.9 * Math.exp(-ageDays / 3);
       w *= recencyBoost;
     }
-
     return w;
   }
 
@@ -1066,28 +1132,26 @@
     return out;
   }
 
-  // ---------------- UI: day dropdown + multi list ----------------
+  // ---------------- UI: day dropdown ----------------
   function refreshDayList(){
     const all = loadWordsAll();
     const days = Object.keys(all).sort((a,b)=> dayNum(a)-dayNum(b));
 
-    // single day select
     daySelect.innerHTML = "";
-    for(const d of days){
-      const opt = document.createElement("option");
-      opt.value = d;
-      opt.textContent = `${d} (${(all[d]||[]).length})`;
-      daySelect.appendChild(opt);
-    }
-
-    // list day select (words pane)
     listDaySelect.innerHTML = "";
+
+    // words pane: selected view
     const optSel = document.createElement("option");
     optSel.value = "__selected__";
     optSel.textContent = "선택 DAY 전체 보기";
     listDaySelect.appendChild(optSel);
 
     for(const d of days){
+      const opt1 = document.createElement("option");
+      opt1.value = d;
+      opt1.textContent = `${d} (${(all[d]||[]).length})`;
+      daySelect.appendChild(opt1);
+
       const opt2 = document.createElement("option");
       opt2.value = d;
       opt2.textContent = `${d} (${(all[d]||[]).length})`;
@@ -1095,18 +1159,9 @@
     }
 
     dayCountEl.textContent = String(days.length);
-
-    // multi-day checkbox build
-    multiDayBox.innerHTML = "";
-    for(const d of days){
-      const lb = document.createElement("label");
-      lb.className = "chip";
-      lb.innerHTML = `<input type="checkbox" value="${esc(d)}" /> ${esc(d)}`;
-      multiDayBox.appendChild(lb);
-    }
-    updateMultiDayUI();
-    updateSelectedDaysPill();
+    renderMultiDayUI();
     updateActiveCount();
+    updateSelectedDaysPill();
   }
 
   // ---------------- Bottom sheet & tabs ----------------
@@ -1263,7 +1318,7 @@
     }
   }
 
-  // ---------------- events (sheet filters) ----------------
+  // sheet filters
   listDaySelect.addEventListener("change", renderWordsList);
   listSearch.addEventListener("input", renderWordsList);
   listFilter.addEventListener("change", renderWordsList);
@@ -1272,27 +1327,6 @@
   wrongScope.addEventListener("change", renderWrongList);
   wrongSort.addEventListener("change", renderWrongList);
   wrongSearch.addEventListener("input", renderWrongList);
-
-  // ---------------- multi-day events ----------------
-  multiDayBox.addEventListener("change", ()=>{
-    updateMultiDayUI();
-    updateActiveCount();
-    if(!overlay.classList.contains("hidden")){
-      renderWordsList();
-      renderWrongList();
-    }
-  });
-
-  multiDaySelectAll.onclick = ()=>{
-    multiDayBox.querySelectorAll('input[type="checkbox"]').forEach(cb=>cb.checked=true);
-    updateMultiDayUI();
-    updateActiveCount();
-  };
-  multiDaySelectNone.onclick = ()=>{
-    multiDayBox.querySelectorAll('input[type="checkbox"]').forEach(cb=>cb.checked=false);
-    updateMultiDayUI();
-    updateActiveCount();
-  };
 
   // ---------------- quiz logic ----------------
   let pool = [];
@@ -1306,8 +1340,8 @@
   let timerId = null;
 
   let quizStartedAt = 0;
-  let quizSource = "day"; // "day" | "wrongnote"
-  let retestPrevMode = null; // to restore mode after retest
+  let quizSource = "day";
+  let retestPrevMode = null;
 
   function clearTimer(){
     if(timerId){
@@ -1327,11 +1361,9 @@
   function getChoicePool(){
     if(Array.isArray(quizAll) && quizAll.length >= 8) return quizAll;
 
-    // use active pool first
     const active = getActiveList();
     if(active.length >= 8) return active;
 
-    // fallback all merged
     const all = loadWordsAll();
     const merged = [];
     for(const d of Object.keys(all)){
@@ -1425,7 +1457,7 @@
     wrongNEl.textContent = String(wrong.length);
 
     const stats = loadStats();
-    const k = makeWordKey(item);
+    const k = `${String(item.day||"").toUpperCase()}||${Number(item.n||0)}||${String(item.w||"").toLowerCase().trim()}`;
 
     if(!stats[k]){
       stats[k] = { day:item.day, n:item.n||0, w:item.w, m:item.m, right:0, wrong:0, last:0 };
@@ -1452,12 +1484,6 @@
     document.body.style.overflow = "";
   }
 
-  quizOverlay.addEventListener("click", (e)=>{
-    if(e.target === quizOverlay){
-      // noop
-    }
-  });
-
   document.addEventListener("keydown", (e)=>{
     if(e.key === "Escape" && !quizOverlay.classList.contains("hidden")){
       stopBtn.click();
@@ -1483,18 +1509,14 @@
     choicesEl.innerHTML = "";
     feedback.textContent = "";
 
-    // meta
     const srcLabel = (quizSource === "wrongnote") ? "오답노트" : "DAY";
-    const dayLabel = (quizSource === "wrongnote") ? "선택 DAY" : (getCheckedDays().length >= 2 ? "선택 DAY" : daySelect.value);
+    const dayLabel = (loadMultiDays().length >= 2) ? "선택 DAY" : daySelect.value;
     quizMeta.textContent = `· ${srcLabel} ${dayLabel} · ${mode==="mc"?"4지선다":"주관식"} · ${dir==="en2ko"?"영→뜻":"뜻→영"}`;
 
     if(mode === "sa"){
       choicesEl.classList.add("hidden");
       shortAnswer.classList.remove("hidden");
       answerInput.value = "";
-      answerInput.disabled = false;
-      submitAnswerBtn.disabled = false;
-      showAnswerBtn.disabled = false;
       setTimeout(()=>answerInput.focus(), 0);
     } else {
       choicesEl.classList.remove("hidden");
@@ -1554,7 +1576,7 @@
       ts: Date.now(),
       date: fmtDate(new Date()),
       source: quizSource,
-      day: (getCheckedDays().length >= 2) ? "선택" : daySelect.value,
+      day: (loadMultiDays().length >= 2) ? "선택" : daySelect.value,
       count: total,
       dir: dirSelect.value,
       mode: modeSelect.value,
@@ -1566,7 +1588,6 @@
     saveSessions(sessions.slice(0, 400));
     broadcast("sessions_updated");
 
-    // ✅ streak/today 기록
     recordStudy(total);
 
     feedback.innerHTML = `끝! 점수 <b>${score}</b> / ${total} (오답 ${wrongCnt}) · 정확도 ${acc}% · ${durationSec}s`;
@@ -1575,7 +1596,6 @@
     if(wrong.length > 0) redoWrongBtn.classList.remove("hidden");
     stopBtn.textContent = "닫기";
 
-    // ✅ 즉시 재시험 UI
     if(retestBox){
       if(wrong.length > 0) retestBox.classList.remove("hidden");
       else retestBox.classList.add("hidden");
@@ -1613,8 +1633,6 @@
     pool = shuffle([...src]).slice(0, n);
 
     redoWrongBtn.classList.add("hidden");
-
-    // retest mode restore if pending
     if(retestPrevMode !== null){
       modeSelect.value = retestPrevMode;
       retestPrevMode = null;
@@ -1644,8 +1662,6 @@
     pool = weightedSampleNoReplace(src, n, getWrongWeight);
 
     redoWrongBtn.classList.add("hidden");
-
-    // retest mode restore if pending
     if(retestPrevMode !== null){
       modeSelect.value = retestPrevMode;
       retestPrevMode = null;
@@ -1655,7 +1671,6 @@
     render();
   }
 
-  // ✅ 즉시 재시험(객관식/주관식)
   function startRetest(limit, forceMode){
     const src = lastWrong || [];
     if(src.length === 0){
@@ -1663,7 +1678,6 @@
       return;
     }
 
-    // forceMode: "mc" | "sa" | null
     if(forceMode){
       if(retestPrevMode === null) retestPrevMode = modeSelect.value;
       modeSelect.value = forceMode;
@@ -1680,7 +1694,7 @@
     quizSource = "day";
     stopBtn.textContent = "끝내기";
 
-    quizAll = getActiveList(); // 선택 DAY + 구간 풀로 보기 풀 유지
+    quizAll = getActiveList();
     pool = shuffle([...src]).slice(0, Math.min(limit, src.length));
 
     if(retestBox) retestBox.classList.add("hidden");
@@ -1688,7 +1702,7 @@
     render();
   }
 
-  // ---------------- button wiring ----------------
+  // ---------------- wiring ----------------
   startBtn.onclick = ()=>start(false);
   redoWrongBtn.onclick = ()=>start(true);
   startWrongBtn.onclick = startWrongNoteQuiz;
@@ -1704,7 +1718,6 @@
     hideQuizOverlay();
     stopBtn.textContent = "끝내기";
 
-    // retest forced mode restore
     if(retestPrevMode !== null){
       modeSelect.value = retestPrevMode;
       retestPrevMode = null;
@@ -1741,9 +1754,12 @@
       safeRemoveItem(STATS_KEY);
       safeRemoveItem(SESSION_KEY);
       safeRemoveItem(DAILY_KEY);
+      safeRemoveItem(MULTI_DAY_KEY);
       broadcast("reset_updated");
       alert("초기화 완료!");
       updateStreakUI();
+      renderMultiDayUI();
+      updateActiveCount();
       if(!overlay.classList.contains("hidden")){
         renderWrongList();
         renderHistory();
@@ -1752,14 +1768,36 @@
     }
   };
 
+  // BroadcastChannel receive (sync)
+  if(bc){
+    bc.onmessage = (ev)=>{
+      const t = ev?.data?.type || "";
+      if(t === "stats_updated"){
+        if(!overlay.classList.contains("hidden")){
+          renderWrongList(); renderWordsList();
+        }
+      }
+      if(t === "sessions_updated"){
+        if(!overlay.classList.contains("hidden")){
+          renderHistory();
+        }
+      }
+      if(t === "reset_updated"){
+        updateStreakUI();
+        if(!overlay.classList.contains("hidden")){
+          renderWrongList(); renderHistory(); renderWordsList();
+        }
+      }
+    };
+  }
+
   // ---------------- init ----------------
   (async function init(){
     await ensureLoaded();
     refreshDayList();
     updateActiveCount();
-    updateMultiDayUI();
-    updateSelectedDaysPill();
     updateStreakUI();
+    updateSelectedDaysPill();
   })();
 </script>
 </body>

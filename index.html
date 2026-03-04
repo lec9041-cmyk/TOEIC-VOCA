@@ -197,6 +197,17 @@
     .actions{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px; }
     .actions button{ border-radius:18px; font-weight:900; min-height:48px; }
 
+    .primary-actions{display:grid; grid-template-columns:1fr; gap:10px; margin-top:12px;}
+    .primary-actions button{min-height:56px; border-radius:18px; font-weight:900;}
+    #openSheetBtn{
+      border-color:#bfdbfe;
+      background:#eff6ff;
+      color:#1d4ed8;
+      font-size:16px;
+    }
+    .danger-row{display:grid; grid-template-columns:1fr; margin-top:8px;}
+    #resetStatsBtn{min-height:42px; font-size:13px; opacity:.9;}
+
     /* Bottom Sheet */
     .overlay{ position:fixed; inset:0; background:rgba(17,24,39,.48); display:flex; align-items:flex-end; justify-content:center; padding:14px; padding-bottom: calc(14px + env(safe-area-inset-bottom)); z-index:50; }
     .sheet{ width:min(980px, 100%); max-height:84dvh; background:#fff; border:1px solid var(--bd); border-radius:24px; box-shadow:var(--shadow); overflow:hidden; display:flex; flex-direction:column; }
@@ -258,11 +269,13 @@
       min-height:66px;
       background:#fff;
       display:flex;
-      align-items:center;
-      justify-content:center;
+      align-items:flex-start;
+      justify-content:flex-start;
       position:relative;
       cursor:pointer;
       user-select:none;
+      padding:8px 8px 0 8px;
+      box-sizing:border-box;
     }
     .calNum{font-weight:900; font-size:16px; line-height:1;}
     .calDot{
@@ -277,15 +290,18 @@
       opacity:.95;
     }
     .calL0{ background:#ffffff; }
-    .calL1{ background:#ecfdf5; }
-    .calL2{ background:#bbf7d0; }
-    .calL3{ background:#86efac; }
-    .calL4{ background:#4ade80; }
+    .calL1{ background:#eff6ff; }
+    .calL2{ background:#dbeafe; }
+    .calL3{ background:#60a5fa; }
+    .calL4{ background:#3730a3; }
+    .calL3 .calNum, .calL4 .calNum{ color:#fff; }
+    .calL3 .calDot, .calL4 .calDot{ background:rgba(255,255,255,.92); }
     .calGoal{ outline:2px solid #60a5fa; outline-offset:-2px; }
     .calToday{ box-shadow: inset 0 0 0 2px #111827; }
+    .calDay.calGoal.calToday{ outline-color:#3b82f6; }
     @media (max-width: 420px){
       .calGrid{gap:6px;}
-      .calDay{min-height:62px;border-radius:10px;}
+      .calDay{min-height:62px;border-radius:10px;padding:8px 8px 0 8px;}
       .calNum{font-size:15px;}
       .calDot{bottom:5px;}
     }
@@ -309,6 +325,12 @@
 
   <div class="card" id="learnSettingsCard">
     <h2>1) 학습 설정</h2>
+
+    <div class="grid" style="margin-top:8px; margin-bottom:12px;">
+      <div class="field" style="grid-column: span 2;">
+        <button id="startBtn" class="btn" type="button" disabled>로딩 중...</button>
+      </div>
+    </div>
 
     <div class="grid">
       <div class="field">
@@ -376,7 +398,7 @@
 
       <div class="field">
         <label style="display:flex;align-items:center;gap:6px;min-height:46px;">
-          <input id="flashOffToggle" type="checkbox" style="min-height:auto;" /> 플래시 숨김(정답 즉시 표시)
+          <input id="flashOffToggle" type="checkbox" style="min-height:auto;" /> 플래시 숨김(정답 즉시 표시) <span id="flashOffHint" class="muted">(Flash에서만)</span>
         </label>
       </div>
 
@@ -389,22 +411,24 @@
       </div>
     </div>
 
-    <div class="actions">
-      <button id="openSheetBtn" class="btn btn-ghost" type="button">오답·기록 보기</button>
-      <button id="resumeBtn" class="btn btn-soft hidden" type="button">이어하기</button>
-      <button id="resetStatsBtn" class="btn btn-danger" type="button">전체 초기화</button>
-    </div>
-
     <div class="row" style="margin-top:10px">
       <span class="pill" id="selectedDaysPill">선택 DAY: -</span>
       <span class="pill">오늘 학습: <b id="todayCountPill">0</b></span>
       <span class="pill">연속: <b id="streakPill">0</b>일</span>
     </div>
 
-    <details class="card" style="margin-top:12px;">
+    <details id="learnProgressDetails" class="card" style="margin-top:12px;">
       <summary style="font-weight:900; cursor:pointer;">📚 단어암기 리스트/진행도 (펼치기)</summary>
       <div id="learnDayProgress" class="list" style="margin-top:10px;"></div>
     </details>
+
+    <div class="primary-actions" style="margin-top:14px;">
+      <button id="resumeBtn" class="btn btn-soft hidden" type="button">이어하기</button>
+      <button id="openSheetBtn" class="btn btn-soft" type="button">오답·기록 보기</button>
+    </div>
+    <div class="danger-row">
+      <button id="resetStatsBtn" class="btn btn-danger" type="button">전체 초기화</button>
+    </div>
   </div>
 
   <div class="card" id="scopeCard">
@@ -424,11 +448,6 @@
       <div class="progress-container" style="margin:0 0 10px"><div id="scopeCoverageBar" class="progress-bar"></div></div>
     </div>
 
-    <div class="grid" style="margin-top:12px">
-      <div class="field" style="grid-column: span 2;">
-        <button id="startBtn" class="btn" type="button" disabled>로딩 중...</button>
-      </div>
-    </div>
   </div>
 
   <div class="card hidden" id="statsCard">
@@ -786,6 +805,61 @@
 
   // ---------------- 즐겨찾기 ----------------
   function keyOf(item){ return `${item.day}||${item.n}||${item.w}`; }
+
+  function parseKeyToItemParts(key){
+    const [dayRaw="", nRaw="", wRaw=""] = String(key || "").split("||");
+    const n = parseInt(nRaw, 10);
+    return { day: dayRaw || "", n: Number.isFinite(n) ? n : 0, w: wRaw || "" };
+  }
+
+  function numFromAny(...vals){
+    for(const v of vals){
+      const n = Number(v);
+      if(Number.isFinite(n)) return Math.max(0, n);
+    }
+    return 0;
+  }
+
+  function normalizeStatsEntry(rawKey, rawEntry){
+    const fromKey = parseKeyToItemParts(rawKey);
+    const src = rawEntry && typeof rawEntry === "object" ? rawEntry : {};
+    const day = String(src.day || fromKey.day || "");
+    const n = Number.isFinite(Number(src.n)) ? Number(src.n) : fromKey.n;
+    const w = String(src.w || fromKey.w || "");
+    const m = String(src.m || src.meaning || src.def || "");
+
+    const correctCount = numFromAny(src.correctCount, src.correct, src.okCount, src.rightCount, src.hit);
+    const wrongCount = numFromAny(src.wrongCount, src.wrong, src.errors, src.errorCount, src.fail, src.miss, src.missed);
+    const lastTs = numFromAny(src.lastTs, src.last, src.ts, src.updatedAt, src.time, Date.now());
+
+    return { day, n, w, m, correctCount, wrongCount, lastTs };
+  }
+
+  function migrateStatsSchema(){
+    const stats = load(STATS_KEY, {});
+    if(!stats || typeof stats !== "object") return;
+    const next = {};
+    for(const [k, v] of Object.entries(stats)){
+      const norm = normalizeStatsEntry(k, v);
+      if(!norm.day || !norm.w) continue;
+      const nk = keyOf(norm);
+      const prev = next[nk];
+      if(prev){
+        prev.correctCount += norm.correctCount;
+        prev.wrongCount += norm.wrongCount;
+        prev.lastTs = Math.max(prev.lastTs || 0, norm.lastTs || 0);
+        if(!prev.m && norm.m) prev.m = norm.m;
+      } else {
+        next[nk] = norm;
+      }
+    }
+    save(STATS_KEY, next);
+  }
+
+  function statsMap(){
+    return load(STATS_KEY, {});
+  }
+
   function favMap(){ return load(FAVORITES_KEY, {}); }
   function isFav(item){ const m = favMap(); return !!m[keyOf(item)]; }
   function toggleFav(item){
@@ -870,6 +944,7 @@
     if(panel === "stats"){
       renderMainCalendarSummary(statsViewY, statsViewM);
     }
+    updateFlashOffToggleState();
     updateScopeBar();
   }
 
@@ -1003,6 +1078,7 @@
       }
     }
 
+    migrateStatsSchema();
     renderDaySelect(data);
     initRandomDayControls(data);
     updateActiveCount();
@@ -1189,10 +1265,19 @@
     save(WRONG_FIRST_KEY, !!e.target.checked);
   };
 
+  function updateFlashOffToggleState(){
+    const mode = isLearnTab() ? "flash" : el("modeSelect").value;
+    const enabled = mode === "flash";
+    el("flashOffToggle").disabled = !enabled;
+    const hint = el("flashOffHint");
+    if(hint) hint.classList.toggle("muted", true);
+  }
+
   el("flashOffToggle").checked = !!load(FLASH_OFF_KEY, false);
   el("flashOffToggle").onchange = (e) => {
     save(FLASH_OFF_KEY, !!e.target.checked);
   };
+  el("modeSelect").addEventListener("change", updateFlashOffToggleState);
 
   // ---------------- 통계/기록 ----------------
   function bumpDaily(countAdd=1){
@@ -1315,7 +1400,7 @@
     const wrap = el("learnDayProgress");
     if(!wrap) return;
     const data = load(WORDS_KEY, {});
-    const stats = load(STATS_KEY, {});
+    const stats = statsMap();
     const allDays = getAllDays(data);
     wrap.innerHTML = "";
 
@@ -1327,7 +1412,10 @@
     allDays.forEach(day => {
       const words = data[day] || [];
       const keys = words.map(keyOf);
-      const logged = keys.filter(k => !!stats[k]).length;
+      const logged = keys.reduce((acc, k) => {
+        const st = stats[k];
+        return acc + (((st?.correctCount || 0) + (st?.wrongCount || 0) > 0) ? 1 : 0);
+      }, 0);
       const wrongN = keys.reduce((acc, k) => acc + ((stats[k]?.wrongCount || 0) > 0 ? 1 : 0), 0);
       const row = document.createElement("div");
       row.className = "item";
@@ -1346,7 +1434,7 @@
     el("todayCountPill").textContent = daily[todayKey()] || 0;
     el("streakPill").textContent = calcStreak();
     renderMainCalendarSummary(statsViewY, statsViewM);
-    renderLearnDayProgress();
+    if(learnProgressDetails?.open) renderLearnDayProgress();
     checkGoalAndCelebrate();
   }
 
@@ -1458,6 +1546,7 @@
   const paneWrong = el("paneWrong");
   const paneFav = el("paneFav");
   const paneHistory = el("paneHistory");
+  const learnProgressDetails = el("learnProgressDetails");
 
   function openSheet(tab="words"){
     overlay.classList.remove("hidden");
@@ -1498,6 +1587,12 @@
   el("tabWrong").onclick = () => { switchTab("wrong"); renderWrongList(); };
   el("tabFav").onclick = () => { switchTab("fav"); renderFavList(); };
   el("tabHistory").onclick = () => { switchTab("history"); renderHistoryList(); };
+
+  if(learnProgressDetails){
+    learnProgressDetails.addEventListener("toggle", () => {
+      if(learnProgressDetails.open) renderLearnDayProgress();
+    });
+  }
 
   // 전체 초기화
   el("resetStatsBtn").onclick = () => {
@@ -1632,19 +1727,33 @@
   }
 
   // ---------------- 오답노트 ----------------
+  function ensureStatsEntry(item){
+    const k = keyOf(item);
+    const stats = statsMap();
+    const base = normalizeStatsEntry(k, stats[k] || item || {});
+    stats[k] = base;
+    return { stats, k };
+  }
+
   function saveWrongStat(item){
-    let stats = load(STATS_KEY, {});
-    let k = keyOf(item);
-    if(!stats[k]) stats[k] = {...item, wrong:0};
-    stats[k].wrong = (stats[k].wrong || 0) + 1;
-    stats[k].last = Date.now();
+    const { stats, k } = ensureStatsEntry(item);
+    stats[k].wrongCount = (stats[k].wrongCount || 0) + 1;
+    stats[k].lastTs = Date.now();
+    save(STATS_KEY, stats);
+  }
+
+  function saveCorrectStat(item){
+    const { stats, k } = ensureStatsEntry(item);
+    stats[k].correctCount = (stats[k].correctCount || 0) + 1;
+    stats[k].lastTs = Date.now();
     save(STATS_KEY, stats);
   }
 
   function renderWrongList(){
-    const stats = load(STATS_KEY, {});
+    const stats = statsMap();
     const entries = Object.values(stats)
-      .sort((a,b) => (b.wrong - a.wrong) || ((b.last||0) - (a.last||0)));
+      .filter(x => (x?.wrongCount || 0) > 0)
+      .sort((a,b) => (b.wrongCount - a.wrongCount) || ((b.lastTs||0) - (a.lastTs||0)));
 
     paneWrong.innerHTML = "";
     const head = document.createElement("div");
@@ -1688,9 +1797,9 @@
           <div>
             <div class="itemWord"><a href="https://en.dict.naver.com/#/search?query=${encodeURIComponent(x.w)}" target="_blank" rel="noopener">${esc(x.w)}</a> <span class="muted">(${esc(dayLabel(x.day))} · #${esc(x.n)})</span></div>
             <div class="muted">${esc(x.m)}</div>
-            <div class="muted">틀림: <b>${esc(x.wrong || 0)}</b> · 최근: <b>${esc(x.last ? fmtTime(x.last) : "-")}</b></div>
+            <div class="muted">틀림: <b>${esc(x.wrongCount || 0)}</b> · 맞힘: <b>${esc(x.correctCount || 0)}</b> · 최근: <b>${esc(x.lastTs ? fmtTime(x.lastTs) : "-")}</b></div>
           </div>
-          <span class="badge">×${esc(x.wrong || 0)}</span>
+          <span class="badge">×${esc(x.wrongCount || 0)}</span>
         </div>
         <div class="miniBtns">
           <button class="btn btn-soft" type="button">발음</button>
@@ -1856,9 +1965,21 @@
   function saveResumeState(){
     if(el("quizOverlay").classList.contains("hidden")) return;
     if(!quizState || !Array.isArray(pool) || pool.length===0) return;
-    const payload = { pool, idx, score, wrong, quizState, reinsertCount, timestamp: Date.now() };
-    save(RESUME_KEY, payload);
-    updateResumeButton();
+    const payload = {
+      poolKeys: pool.map(keyOf),
+      idx,
+      score,
+      wrongKeys: wrong.map(keyOf),
+      quizState,
+      reinsertCount,
+      timestamp: Date.now()
+    };
+    try {
+      localStorage.setItem(RESUME_KEY, JSON.stringify(payload));
+      updateResumeButton();
+    } catch (e) {
+      console.warn("resume save 실패", e);
+    }
   }
 
   function clearResumeState(){
@@ -1868,15 +1989,29 @@
 
   function resumeQuiz(){
     const r = load(RESUME_KEY, null);
-    if(!r || !Array.isArray(r.pool) || !r.quizState) return alert("이어할 퀴즈가 없어요.");
-    pool = r.pool;
+    if(!r || !Array.isArray(r.poolKeys) || !r.quizState) return alert("이어할 퀴즈가 없어요.");
+
+    const allWords = Object.values(load(WORDS_KEY, {})).flat();
+    const wordMap = new Map(allWords.map(it => [keyOf(it), it]));
+
+    pool = r.poolKeys.map(k => wordMap.get(k)).filter(Boolean);
+    if(pool.length === 0){
+      clearResumeState();
+      return alert("이어할 문제를 복원하지 못했어요. (데이터가 바뀌었을 수 있어요)");
+    }
+
+    const wrongKeys = Array.isArray(r.wrongKeys) ? r.wrongKeys : [];
+    wrong = wrongKeys.map(k => wordMap.get(k)).filter(Boolean);
+
     idx = Number.isFinite(r.idx) ? r.idx : 0;
     score = Number.isFinite(r.score) ? r.score : 0;
-    wrong = Array.isArray(r.wrong) ? r.wrong : [];
     quizState = r.quizState;
     reinsertCount = r.reinsertCount && typeof r.reinsertCount === "object" ? r.reinsertCount : {};
     locked = false;
+
     if(idx >= pool.length) idx = Math.max(0, pool.length - 1);
+    if(idx < 0) idx = 0;
+
     el("retestBox").classList.add("hidden");
     el("quizOverlay").classList.remove("hidden");
     renderQuiz();
@@ -1901,12 +2036,10 @@
   }
 
   function wrongWeightForItem(item){
-    const stats = load(STATS_KEY, {});
-    const k = (typeof keyOf === "function" && item) ? keyOf(item) : (item?.w || "");
-    const entry = (k && stats[k]) ? stats[k] : (item?.w ? Object.values(stats).find(x => x?.w === item.w) : null) || {};
-    const raw = Number(entry.wrongCount ?? entry.wrong ?? entry.errors ?? entry.fail ?? 0);
-    const wrongCount = Number.isFinite(raw) ? Math.max(0, raw) : 0;
-    return 1 + Math.min(5, wrongCount);
+    const stats = statsMap();
+    const k = (typeof keyOf === "function" && item) ? keyOf(item) : "";
+    const wrongCount = Number(stats[k]?.wrongCount || 0);
+    return 1 + Math.min(5, Math.max(0, wrongCount));
   }
 
   function weightedSampleWithoutReplacement(items, takeN, weightFn){
@@ -1991,14 +2124,13 @@
     return item.w || "";
   }
 
-  function isWrongMarked(item){
-    if(!item) return false;
+  function getWrongBadgeText(item){
+    if(!item) return "";
     const k = keyOf(item);
-    if((wrong || []).some(w => keyOf(w) === k)) return true;
-    const stats = load(STATS_KEY, {});
-    const sc = stats[k];
-    const wc = Number(sc?.wrongCount ?? 0);
-    return Number.isFinite(wc) && wc > 0;
+    if((wrong || []).some(w => keyOf(w) === k)) return "🟥 이번오답 ";
+    const stats = statsMap();
+    if((stats[k]?.wrongCount || 0) > 0) return "🟥 누적오답 ";
+    return "";
   }
 
   el("quizSpeakBtn").onclick = () => {
@@ -2042,7 +2174,7 @@
     el("nextBtn").classList.add("hidden");
 
     const qText = (dir === "en2ko") ? item.w : item.m;
-    const wrongPrefix = isWrongMarked(item) ? "🟥 오답 " : "";
+    const wrongPrefix = getWrongBadgeText(item);
     el("question").textContent = `${wrongPrefix}${qText}`;
 
     if (dir === "en2ko") speak(item.w);
@@ -2122,6 +2254,7 @@
 
     if (isCorrect) {
       score++;
+      saveCorrectStat(item);
       modal.classList.add("flash-ok");
       setTimeout(() => modal.classList.remove("flash-ok"), 400);
       el("oxMark").innerHTML = "<span class='ok'>O</span>";
@@ -2200,7 +2333,9 @@
 
   el("knowBtn").onclick = () => {
     markAttempt();
+    const item = pool[idx];
     score++;
+    if(item) saveCorrectStat(item);
     saveResumeState();
     goNext();
   };
@@ -2267,8 +2402,8 @@
 
   // 오답만 퀴즈(시트에서)
   function startWrongOnlyQuiz(){
-    const stats = load(STATS_KEY, {});
-    const list = Object.values(stats);
+    const stats = statsMap();
+    const list = Object.values(stats).filter(x => (x?.wrongCount || 0) > 0);
     if(list.length === 0) return alert("오답노트가 비어있어요!");
     closeSheet();
     startQuiz(list, quizState?.mode || (isLearnTab() ? "flash" : el("modeSelect").value));
@@ -2301,14 +2436,15 @@
     if(!el("quizOverlay").classList.contains("hidden")) { clearAutoNext(); saveResumeState(); el("quizOverlay").classList.add("hidden"); updateResumeButton(); }
     if(!overlay.classList.contains("hidden")) closeSheet();
   });
+
   // ---------------- 수동 테스트 체크리스트 ----------------
-  // - 퀴즈 진행 중 [끝내기] 시 이어하기 버튼이 노출되고, 눌렀을 때 같은 문제/점수/오답 상태로 복원되는지
-  // - 퀴즈 완주(finishQuiz) 또는 전체 초기화 시 이어하기 버튼이 숨겨지는지
-  // - Flash 모드에서 "플래시 숨김" ON이면 정답이 처음부터 보이고, 탭 힌트가 숨겨지는지
-  // - 같은 세션에서 틀린 단어가 다시 나오면 문제 앞에 "🟥 오답" 표시가 붙는지
-  // - 단어 암기 > 접이식 리스트에서 DAY별 총 단어/기록/오답 개수가 표시되는지
-  // - 퀴즈 상단의 예문 버튼이 사라지고(사전/즐겨찾기/발음은 유지) 기존 퀴즈 동작이 유지되는지
-  // - 랜덤 ON 시 daySelect 및 멀티DAY 조작 막히는지, 랜덤 자동 재뽑기가 기존처럼 동작하는지
+  // - 앱 로드시 STATS_KEY가 단일 스키마({correctCount, wrongCount, lastTs})로 마이그레이션되는지
+  // - 단어암기 진행도: logged=(correct+wrong>0), wrongN=(wrong>0) 기준으로 정확히 계산되는지
+  // - 문제 머리표시 우선순위가 "🟥 이번오답 > 🟥 누적오답 > 없음" 순으로 동작하는지
+  // - 이어하기 저장 payload가 poolKeys/wrongKeys 기반으로 저장되고, 복원 시 누락 문제를 건너뛰며 idx 보정되는지
+  // - Flash 숨김 토글이 Flash 모드에서만 활성이고, Test에서 flash가 아닐 땐 비활성 처리되는지
+  // - 달력 숫자가 좌상단 정렬이며, calL3/calL4 배경에서 dot(칩)이 묻히지 않는지
+  // - learnDayProgress는 details가 열렸을 때만 렌더되고, 닫힌 상태 updateDailyUI에서 불필요 렌더가 없는지
 
   // ---------------- 초기 로드 ----------------
   // 초기 상태 Learn 고정

@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TOEIC 단어시험 (CSV 업로드)</title>
+  <style>
+    body{font-family:system-ui,Segoe UI,Apple SD Gothic Neo,Malgun Gothic,sans-serif;margin:18px;line-height:1.35}
+    .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+    select,input,button{padding:10px 12px;font-size:14px}
+    button{cursor:pointer}
+    .card{border:1px solid #ddd;border-radius:12px;padding:14px;margin:12px 0}
+    .muted{color:#666;font-size:13px}
+    .q{font-size:20px;font-weight:700;margin:6px 0 10px}
+    .choices{display:grid;gap:10px}
+    .choices button{text-align:left;border:1px solid #ddd;border-radius:12px;background:#fff}
+    .pill{display:inline-block;border:1px solid #ddd;border-radius:999px;padding:4px 10px;font-size:12px;color:#444}
+    .hidden{display:none}
+    .ok{color:#0a7}
+    .bad{color:#c23}
+    code{background:#f6f6f6;padding:2px 6px;border-radius:6px}
+  </style>
+</head>
+<body>
+  <h1>TOEIC 단어시험 📚 (CSV)</h1>
+  <div class="muted">
+    CSV 형식: <code>day,no,word,meaning</code> (예: DAY1,1,resume,이력서)
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <label><b>CSV 선택</b></label>
+      <input id="file" type="file" accept=".csv,text/csv" />
+      <button id="loadSampleBtn">샘플 로드(옵션)</button>
+      <button id="clearBtn">저장 초기화</button>
+      <span id="status" class="muted"></span>
+    </div>
+    <div class="muted" style="margin-top:10px">
+      ✅ 업로드하면 브라우저에 저장됩니다(LocalStorage). 다음엔 업로드 없이도 바로 사용 가능.
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <label><b>시험 DAY</b></label>
+      <select id="daySelect"></select>
+
+      <label><b>문제수</b></label>
+      <select id="countSelect">
+        <option>10</option><option>20</option><option selected>30</option><option>50</option><option>100</option>
+      </select>
+
+      <label><b>방향</b></label>
+      <select id="dirSelect">
+        <option value="en2ko" selected>영단어 → 뜻</option>
+        <option value="ko2en">뜻 → 영단어</option>
+      </select>
+
+      <button id="startBtn">시험 시작</button>
+      <button id="redoWrongBtn" class="hidden">오답만 다시</button>
+    </div>
+    <div class="muted" style="margin-top:10px">
+      저장된 DAY: <span id="dayCount">0</span>개
+    </div>
+  </div>
+
+  <div id="quiz" class="card hidden">
+    <div class="row">
+      <span class="pill" id="progressPill">0/0</span>
+      <span class="pill">점수: <b id="score">0</b></span>
+      <span class="pill">오답: <b id="wrongN">0</b></span>
+      <button id="stopBtn">끝내기</button>
+    </div>
+    <div class="q" id="question"></div>
+    <div class="choices" id="choices"></div>
+    <div id="feedback" class="muted" style="margin-top:10px"></div>
+  </div>
+
+<script>
+  const KEY = "toeic_words_csv_v1"; // {DAY1:[{w,m}], ...}
+
+  const el = (id)=>document.getElementById(id);
+  const fileInput = el("file");
+  const statusEl = el("status");
+  const daySelect = el("daySelect");
+  const dayCountEl = el("dayCount");
+
+  const loadAll = () => JSON.parse(localStorage.getItem(KEY) || "{}");
+  const saveAll = (obj) => localStorage.setItem(KEY, JSON.stringify(obj));
+
+  function parseCSVLine(line){
+    // Simple CSV parser handling quotes
+    const out = [];
+    let cur = "";
+    let inQuotes = false;
+    for(let i=0;i<line.length;i++){
+      const ch = line[i];
+      if(ch === '"'){
+        if(inQuotes && line[i+1] === '"'){ cur += '"'; i++; }
+        else inQuotes = !inQuotes;
+      } else if(ch === ',' && !inQuotes){
+        out.push(cur);
+        cur = "";
+      } else {
+        cur += ch;
+      }
+    }
+    out.push(cur);
+    return out.map(s => s.trim());
+  }
+
+  function parseCSV(text){
+    const lines = text.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+    if(lines.length === 0) return {};
+
+    // Header expected: day,no,word,meaning
+    const header = parseCSVLine(lines[0]).map(x=>x.toLowerCase());
+    const idxDay = header.indexOf("day");
+    const idxWord = header.indexOf("word");
+    const idxMeaning = header.indexOf("meaning");
+
+    if(idxDay < 0 || idxWord < 0 || idxMeaning < 0){
+      throw new Error("CSV 헤더가 day,word,meaning 포함해야 해요. (day,no,word,meaning 추천)");
+    }
+
+    const data = {};
+    for(let i=1;i<lines.length;i++){
+      const cols = parseCSVLine(lines[i]);
+      const day = (cols[idxDay] || "").toUpperCase().replace(/\s+/g,"");
+      const w = (cols[idxWord] || "").trim();
+      const m = (cols[idxMeaning] || "").trim();
+      if(!day || !w || !m) continue;
+      if(!data[day]) data[day] = [];
+      data[day].push({ w, m });
+    }
+
+    // De-dup per day
+    for(const d of Object.keys(data)){
+      const seen = new Set();
+      data[d] = data[d].filter(p=>{
+        const k = (p.w+"||"+p.m).toLowerCase();
+        if(seen.has(k)) return false;
+        seen.add(k);
+        return true;
+      });
+    }
+    return data;
+  }
+
+  function refreshDayList(){
+    const all = loadAll();
+    const days = Object.keys(all).sort((a,b)=>{
+      const na = parseInt(a.replace(/\D/g,"")) || 0;
+      const nb = parseInt(b.replace(/\D/g,"")) || 0;
+      return na-nb;
+    });
+
+    daySelect.innerHTML = "";
+    for(const d of days){
+      const opt = document.createElement("option");
+      opt.value = d;
+      opt.textContent = `${d} (${all[d].length})`;
+      daySelect.appendChild(opt);
+    }
+    dayCountEl.textContent = String(days.length);
+  }
+
+  async function readFileAsText(file){
+    // Try utf-8; if you saved with UTF-8-SIG it's fine
+    return await file.text();
+  }
+
+  fileInput.addEventListener("change", async () => {
+    const f = fileInput.files?.[0];
+    if(!f) return;
+
+    try{
+      const text = await readFileAsText(f);
+      const parsed = parseCSV(text);
+
+      const all = loadAll();
+      // merge
+      for(const day of Object.keys(parsed)){
+        all[day] = parsed[day];
+      }
+      saveAll(all);
+      statusEl.textContent = `로드 완료! (${Object.keys(parsed).length} DAY 저장)`;
+      refreshDayList();
+    } catch(err){
+      statusEl.textContent = `에러: ${err.message || err}`;
+    }
+  });
+
+  el("clearBtn").onclick = () => {
+    if(confirm("저장된 단어 데이터를 모두 삭제할까요?")){
+      localStorage.removeItem(KEY);
+      statusEl.textContent = "초기화 완료";
+      refreshDayList();
+    }
+  };
+
+  // Optional sample loader
+  el("loadSampleBtn").onclick = () => {
+    const sample = `day,no,word,meaning
+DAY1,1,resume,이력서
+DAY1,2,opening,"공석, 결원"
+DAY2,1,confirm,확인하다`;
+    try{
+      const parsed = parseCSV(sample);
+      const all = loadAll();
+      for(const day of Object.keys(parsed)) all[day]=parsed[day];
+      saveAll(all);
+      statusEl.textContent = "샘플 저장 완료";
+      refreshDayList();
+    } catch(e){
+      statusEl.textContent = "샘플 로드 실패";
+    }
+  };
+
+  refreshDayList();
+
+  // ---------- Quiz ----------
+  const countSelect = el("countSelect");
+  const dirSelect = el("dirSelect");
+  const startBtn = el("startBtn");
+  const redoWrongBtn = el("redoWrongBtn");
+
+  const quiz = el("quiz");
+  const question = el("question");
+  const choicesEl = el("choices");
+  const feedback = el("feedback");
+  const progressPill = el("progressPill");
+  const scoreEl = el("score");
+  const wrongNEl = el("wrongN");
+  const stopBtn = el("stopBtn");
+
+  let pool = [];
+  let idx = 0;
+  let score = 0;
+  let wrong = [];
+
+  function shuffle(arr){
+    for(let i=arr.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [arr[i],arr[j]]=[arr[j],arr[i]];
+    }
+    return arr;
+  }
+
+  function pickChoices(correct, all, dir){
+    const pick = [];
+    const correctVal = dir==="en2ko" ? correct.m : correct.w;
+    const seen = new Set([correctVal]);
+
+    while(pick.length < 3 && all.length > 3){
+      const cand = all[Math.floor(Math.random()*all.length)];
+      const val = dir==="en2ko" ? cand.m : cand.w;
+      if(!val || seen.has(val)) continue;
+      seen.add(val);
+      pick.push(val);
+    }
+    const opts = shuffle([correctVal, ...pick]).slice(0,4);
+    return { opts, correctVal };
+  }
+
+  function render(){
+    progressPill.textContent = `${idx+1}/${pool.length}`;
+    scoreEl.textContent = String(score);
+    wrongNEl.textContent = String(wrong.length);
+
+    const dir = dirSelect.value;
+    const item = pool[idx];
+    question.textContent = (dir==="en2ko") ? item.w : item.m;
+
+    const all = loadAll()[daySelect.value] || [];
+    const { opts, correctVal } = pickChoices(item, all, dir);
+
+    choicesEl.innerHTML = "";
+    feedback.textContent = "";
+
+    opts.forEach((opt) => {
+      const b = document.createElement("button");
+      b.textContent = opt;
+      b.onclick = () => {
+        if(opt === correctVal){
+          score++;
+          feedback.innerHTML = `<span class="ok">정답!</span>`;
+        } else {
+          wrong.push(item);
+          const show = (dir==="en2ko") ? item.m : item.w;
+          feedback.innerHTML = `<span class="bad">오답!</span> 정답: <b>${show}</b>`;
+        }
+
+        setTimeout(() => {
+          idx++;
+          if(idx >= pool.length){
+            finish();
+          } else {
+            render();
+          }
+        }, 450);
+      };
+      choicesEl.appendChild(b);
+    });
+  }
+
+  function start(withWrong=false){
+    const all = loadAll();
+    const day = daySelect.value;
+    const list = all[day] || [];
+    if(list.length === 0){
+      alert("먼저 CSV를 업로드해서 DAY 데이터를 저장해줘!");
+      return;
+    }
+
+    const n = Math.min(parseInt(countSelect.value,10), list.length);
+    idx = 0;
+    score = 0;
+    wrong = [];
+
+    const src = withWrong ? (window.__lastWrong || []) : list;
+    pool = shuffle([...src]).slice(0, Math.min(n, src.length));
+
+    redoWrongBtn.classList.add("hidden");
+    quiz.classList.remove("hidden");
+    render();
+  }
+
+  function finish(){
+    const total = pool.length;
+    feedback.innerHTML = `끝! 점수 <b>${score}</b> / ${total} (오답 ${wrong.length})`;
+    window.__lastWrong = wrong;
+    if(wrong.length > 0) redoWrongBtn.classList.remove("hidden");
+  }
+
+  startBtn.onclick = () => start(false);
+  redoWrongBtn.onclick = () => start(true);
+  stopBtn.onclick = () => { quiz.classList.add("hidden"); };
+</script>
+</body>
+</html>

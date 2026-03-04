@@ -19,12 +19,26 @@
     .ok{color:#0a7}
     .bad{color:#c23}
     code{background:#f6f6f6;padding:2px 6px;border-radius:6px}
+
+    /* ✅ Start 버튼 눈에 띄게 */
+    #startBtn{
+      background:#1d4ed8; /* blue */
+      color:#fff;
+      border:1px solid #1d4ed8;
+      border-radius:14px;
+      padding:12px 16px;
+      font-weight:800;
+      font-size:15px;
+      transform: translateY(0);
+    }
+    #startBtn:hover{filter:brightness(0.95)}
+    #startBtn:active{transform: translateY(1px)}
   </style>
 </head>
 <body>
   <h1>TOEIC 단어시험 📚</h1>
   <div class="muted">
-    자동 로드: <code>./toeic_words_day1_30.csv</code> (index.html과 같은 폴더에 있어야 함)
+    자동 로드: <code>./toeic_words_day1_30.csv</code> (index.html과 같은 폴더)
   </div>
 
   <div class="card">
@@ -44,6 +58,14 @@
     <div class="row">
       <label><b>시험 DAY</b></label>
       <select id="daySelect"></select>
+
+      <label><b>범위</b></label>
+      <select id="rangeSelect">
+        <option value="core" selected>1~40 핵심빈출</option>
+        <option value="core_basic">1~68 핵심+기초</option>
+        <option value="up800">1~136 핵심+기초+800</option>
+        <option value="all">전체(900 포함)</option>
+      </select>
 
       <label><b>문제수</b></label>
       <select id="countSelect">
@@ -81,7 +103,7 @@
     </div>
 
     <div class="muted" style="margin-top:10px">
-      저장된 DAY: <span id="dayCount">0</span>개
+      저장된 DAY: <span id="dayCount">0</span>개 · 현재 범위 단어: <span id="activeCount">0</span>개
     </div>
   </div>
 
@@ -113,7 +135,7 @@
   </div>
 
 <script>
-  const KEY = "toeic_words_csv_v3_autoload_nextmode";
+  const KEY = "toeic_words_csv_v4_ranges";
 
   const el = (id)=>document.getElementById(id);
 
@@ -121,7 +143,9 @@
   const statusEl = el("status");
   const daySelect = el("daySelect");
   const dayCountEl = el("dayCount");
+  const activeCountEl = el("activeCount");
 
+  const rangeSelect = el("rangeSelect");
   const countSelect = el("countSelect");
   const dirSelect = el("dirSelect");
   const modeSelect = el("modeSelect");
@@ -171,8 +195,10 @@
 
     const header = parseCSVLine(lines[0]).map(x=>x.toLowerCase());
     const idxDay = header.indexOf("day");
+    const idxNo = header.indexOf("no");         // ✅ 범위 필터에 필요
     const idxWord = header.indexOf("word");
     const idxMeaning = header.indexOf("meaning");
+
     if(idxDay < 0 || idxWord < 0 || idxMeaning < 0){
       throw new Error("CSV 헤더에 day,word,meaning이 있어야 해요 (day,no,word,meaning 추천)");
     }
@@ -183,11 +209,18 @@
       const day = (cols[idxDay] || "").toUpperCase().replace(/\s+/g,"");
       const w = (cols[idxWord] || "").trim();
       const m = (cols[idxMeaning] || "").trim();
+
+      // no가 없으면 범위가 동작 못하니 0으로 넣어두고, range=all 권장
+      const nRaw = idxNo >= 0 ? (cols[idxNo] || "") : "";
+      const n = parseInt(String(nRaw).trim(), 10);
+      const no = Number.isFinite(n) ? n : 0;
+
       if(!day || !w || !m) continue;
       if(!data[day]) data[day] = [];
-      data[day].push({ w, m });
+      data[day].push({ n: no, w, m });
     }
 
+    // De-dup per day (word+meaning)
     for(const d of Object.keys(data)){
       const seen = new Set();
       data[d] = data[d].filter(p=>{
@@ -196,6 +229,8 @@
         seen.add(k);
         return true;
       });
+      // no 기준 정렬
+      data[d].sort((a,b)=> (a.n||0) - (b.n||0));
     }
     return data;
   }
@@ -216,6 +251,8 @@
       daySelect.appendChild(opt);
     }
     dayCountEl.textContent = String(days.length);
+
+    updateActiveCount();
   }
 
   function normalize(s){
@@ -242,6 +279,35 @@
     return parts.some(p => p.includes(u) || u.includes(p));
   }
 
+  function filterByRange(list){
+    const r = rangeSelect.value;
+
+    // no가 0이면(없으면) 전체만 안정적
+    if(!list || list.length === 0) return [];
+    const hasNo = list.some(x => (x.n || 0) > 0);
+    if(!hasNo){
+      // no 정보 없으면 그냥 전체
+      return list;
+    }
+
+    if(r === "core") return list.filter(x => x.n >= 1 && x.n <= 40);
+    if(r === "core_basic") return list.filter(x => x.n >= 1 && x.n <= 68);
+    if(r === "up800") return list.filter(x => x.n >= 1 && x.n <= 136);
+    return list; // all
+  }
+
+  function getActiveList(){
+    const all = loadAll();
+    const day = daySelect.value;
+    const list = all[day] || [];
+    return filterByRange(list);
+  }
+
+  function updateActiveCount(){
+    const active = getActiveList();
+    activeCountEl.textContent = String(active.length);
+  }
+
   async function hydrateFromCSVText(text, label){
     const parsed = parseCSV(text);
     const all = loadAll();
@@ -264,7 +330,7 @@
       const text = await res.text();
       await hydrateFromCSVText(text, "자동 로드 완료 (업로드 필요 없음)");
     } catch(e){
-      statusEl.textContent = "자동 로드 실패: CSV가 같은 폴더에 있는지 확인!";
+      statusEl.textContent = "자동 로드 실패: CSV가 같은 폴더(루트)에 있는지 확인!";
       refreshDayList();
     }
   }
@@ -289,6 +355,10 @@
       refreshDayList();
     }
   };
+
+  // 범위/Day 바뀌면 카운트 갱신
+  daySelect.addEventListener("change", updateActiveCount);
+  rangeSelect.addEventListener("change", updateActiveCount);
 
   // --------- Quiz ----------
   let pool = [];
@@ -377,7 +447,6 @@
     choicesEl.innerHTML = "";
     feedback.textContent = "";
 
-    // UI toggle
     if(mode === "sa"){
       choicesEl.classList.add("hidden");
       shortAnswer.classList.remove("hidden");
@@ -388,7 +457,8 @@
       shortAnswer.classList.add("hidden");
     }
 
-    const all = loadAll()[daySelect.value] || [];
+    // ✅ 보기(오답 선택지)도 "선택한 범위" 안에서만 뽑기
+    const all = getActiveList();
 
     if(mode === "mc"){
       const { opts, correctVal } = pickChoices(item, all, dir);
@@ -402,7 +472,6 @@
       return;
     }
 
-    // Short answer
     submitAnswerBtn.onclick = () => {
       const user = (answerInput.value || "").trim();
       let ok = false;
@@ -424,11 +493,9 @@
   }
 
   function start(withWrong=false){
-    const all = loadAll();
-    const day = daySelect.value;
-    const list = all[day] || [];
+    const list = getActiveList();
     if(list.length === 0){
-      alert("데이터가 없어요. (CSV가 같은 폴더에 있는지 확인!)");
+      alert("선택한 범위에 단어가 없어요. (CSV의 no 컬럼 또는 범위 설정 확인!)");
       return;
     }
 

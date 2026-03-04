@@ -265,19 +265,6 @@
     <div id="mainTabTest" class="main-tab">✍️ 단어 시험</div>
   </div>
 
-  <!-- 상단 범위 표시줄 -->
-  <div class="card" style="margin-top:10px">
-    <div class="row" style="justify-content:space-between; gap:10px">
-      <div class="row" style="gap:8px; flex-wrap:wrap">
-        <span class="pill" id="scopeTabPill">모드: -</span>
-        <span class="pill" id="scopeDaysPill">DAY: -</span>
-        <span class="pill" id="scopeRangePill">범위: -</span>
-        <span class="pill">문제수: <b id="scopeCountPill">-</b></span>
-      </div>
-      <span class="pill" title="클릭해서 목표 변경" style="cursor:pointer">목표: <b id="goalPill">30</b></span>
-    </div>
-  </div>
-
   <div class="sub">내장 로드: <code>/toeic_words_day1_30.csv</code> <span class="muted" id="dataStatus"></span></div>
 
   <div class="card">
@@ -626,7 +613,6 @@
     const daily = load(DAILY_KEY, {});
     const todayCount = daily[today] || 0;
     const goal = getGoal();
-    if(el("goalPill")) el("goalPill").textContent = goal;
 
     if(todayCount >= goal && !isGoalDone(today)){
       setGoalDone(today);
@@ -969,12 +955,6 @@
   }
 
   function updateScopeBar(){
-    el("scopeTabPill").textContent = `모드: ${currentModeLabel()}`;
-    const days = selectedDaysForPool();
-    el("scopeDaysPill").textContent = `DAY: ${days.length ? days.map(dayLabel).join(", ") : "-"}`;
-    el("scopeRangePill").textContent = `범위: ${rangeLabel()}`;
-    el("scopeCountPill").textContent = el("countSelect").value;
-    if(el("goalPill")) el("goalPill").textContent = getGoal();
     updateScopeCoverage();
   }
 

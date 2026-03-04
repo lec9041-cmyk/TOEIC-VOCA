@@ -1157,7 +1157,8 @@ opt1.textContent = `${d} · ${topic}`;
 
       const opt2 = document.createElement("option");
       opt2.value = d;
-      opt2.textContent = `${d} (${(all[d]||[]).length})`;
+      const topic = DAY_TOPIC[d] || "";
+opt2.textContent = `${d} · ${topic}`;
       listDaySelect.appendChild(opt2);
     }
 

@@ -283,9 +283,9 @@
       bottom:6px;
       left:50%;
       transform:translateX(-50%);
-      width:14px;
-      height:4px;
-      border-radius:2px;
+      width:8px;
+      height:8px;
+      border-radius:3px;
       background:#2563eb;
       opacity:.95;
     }
@@ -2436,7 +2436,6 @@
     if(!el("quizOverlay").classList.contains("hidden")) { clearAutoNext(); saveResumeState(); el("quizOverlay").classList.add("hidden"); updateResumeButton(); }
     if(!overlay.classList.contains("hidden")) closeSheet();
   });
-
   // ---------------- 수동 테스트 체크리스트 ----------------
   // - 앱 로드시 STATS_KEY가 단일 스키마({correctCount, wrongCount, lastTs})로 마이그레이션되는지
   // - 단어암기 진행도: logged=(correct+wrong>0), wrongN=(wrong>0) 기준으로 정확히 계산되는지

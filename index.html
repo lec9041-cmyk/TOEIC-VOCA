@@ -254,6 +254,10 @@
     .calMeta{font-size:12px; color:var(--muted);}
     .calHit{border-color:#bbf7d0; background:#f0fdf4;}
     .calGoal{border-color:#bfdbfe; background:#eff6ff;}
+    .summaryStats{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px;}
+    .summaryStat{border:1px solid var(--bd); border-radius:14px; padding:10px; background:#fff;}
+    .summaryStat .k{font-size:12px; color:var(--muted);}
+    .summaryStat .v{font-size:18px; font-weight:900; margin-top:2px;}
   </style>
 </head>
 
@@ -263,11 +267,12 @@
   <div class="main-tabs">
     <div id="mainTabLearn" class="main-tab active">📚 단어 암기</div>
     <div id="mainTabTest" class="main-tab">✍️ 단어 시험</div>
+    <div id="mainTabStats" class="main-tab">📊 학습현황</div>
   </div>
 
   <div class="sub">내장 로드: <code>/toeic_words_day1_30.csv</code> <span class="muted" id="dataStatus"></span></div>
 
-  <div class="card">
+  <div class="card" id="learnSettingsCard">
     <h2>1) 학습 설정</h2>
 
     <div class="grid">
@@ -332,7 +337,7 @@
     </div>
   </div>
 
-  <div class="card">
+  <div class="card" id="scopeCard">
     <h2>2) 범위 선택</h2>
     <div class="chips">
       <label class="chip"><input id="cb_core" type="checkbox" checked /> 핵심빈출 (1~40)</label>
@@ -352,6 +357,73 @@
     <div class="grid" style="margin-top:12px">
       <div class="field" style="grid-column: span 2;">
         <button id="startBtn" class="btn" type="button" disabled>로딩 중...</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card hidden" id="statsCard">
+    <h2>📊 학습현황</h2>
+
+    <div class="item" style="margin-bottom:10px;">
+      <div class="itemWord">학습 달력</div>
+      <div class="summaryStats" style="margin:8px 0 10px;">
+        <div class="summaryStat">
+          <div class="k">오늘 학습 문제수</div>
+          <div class="v" id="mainCalTodayCount">0</div>
+        </div>
+        <div class="summaryStat">
+          <div class="k">연속 학습일</div>
+          <div class="v" id="mainCalStreak">0일</div>
+        </div>
+        <div class="summaryStat">
+          <div class="k">이번달 학습일수</div>
+          <div class="v" id="mainCalMonthDays">0일</div>
+        </div>
+      </div>
+      <div class="muted" id="mainCalMonthLabel" style="margin-bottom:8px"></div>
+      <div class="miniBtns" style="margin-bottom:8px;">
+        <button class="btn btn-ghost" type="button" id="mainCalPrevBtn">◀ 이전달</button>
+        <button class="btn btn-soft" type="button" id="mainCalTodayBtn">이번달</button>
+        <button class="btn btn-ghost" type="button" id="mainCalNextBtn">다음달 ▶</button>
+      </div>
+      <div class="muted" style="margin-bottom:10px">표시: 학습한 날(초록) · 목표 달성(파랑)</div>
+      <div class="calGrid" id="mainCalGrid"></div>
+    </div>
+
+    <div class="item" style="margin-bottom:10px;">
+      <div class="itemTop">
+        <div>
+          <div class="itemWord">오늘 학습 정보</div>
+          <div class="muted">오늘 학습: <b id="statsTodayLine">0문제</b> · 연속 학습: <b id="statsStreakLine">0일</b></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="item" style="margin-bottom:10px;">
+      <div class="itemTop">
+        <div>
+          <div class="itemWord">학습 목표 진행률</div>
+          <div class="muted">오늘 목표 <b id="statsGoalPill">30</b> · 진행 <b id="statsGoalProgress">0 / 30</b></div>
+        </div>
+      </div>
+      <div class="progress-container" style="margin:10px 0 0;"><div id="statsGoalBar" class="progress-bar"></div></div>
+    </div>
+
+    <div class="item">
+      <div class="itemWord" style="margin-bottom:8px;">전체 학습 통계</div>
+      <div class="summaryStats">
+        <div class="summaryStat">
+          <div class="k">총 학습 문제수</div>
+          <div class="v" id="statsTotalSolved">0</div>
+        </div>
+        <div class="summaryStat">
+          <div class="k">총 틀린 문제수</div>
+          <div class="v" id="statsTotalWrong">0</div>
+        </div>
+        <div class="summaryStat">
+          <div class="k">즐겨찾기 단어 수</div>
+          <div class="v" id="statsFavCount">0</div>
+        </div>
       </div>
     </div>
   </div>
@@ -426,14 +498,12 @@
           <button id="tabWords" class="tab active" type="button">단어리스트</button>
           <button id="tabWrong" class="tab" type="button">오답노트</button>
           <button id="tabFav" class="tab" type="button">즐겨찾기</button>
-          <button id="tabCalendar" class="tab" type="button">달력</button>
           <button id="tabHistory" class="tab" type="button">기록</button>
         </div>
 
         <div id="paneWords" class="list"></div>
         <div id="paneWrong" class="list hidden"></div>
         <div id="paneFav" class="list hidden"></div>
-        <div id="paneCalendar" class="list hidden"></div>
         <div id="paneHistory" class="list hidden"></div>
       </div>
     </div>
@@ -658,7 +728,7 @@
     window.open(url, "_blank");
   }
   function openNaverExample(word){
-    const url = `https://sentence.dict.naver.com/search.nhn?query=${encodeURIComponent(word)}`;
+    const url = `https://context.reverso.net/translation/english-korean/${encodeURIComponent(word)}`;
     window.open(url, "_blank");
   }
 
@@ -693,10 +763,41 @@
   // ---------------- 탭 전환 로직 ----------------
   const mainTabLearn = el("mainTabLearn");
   const mainTabTest = el("mainTabTest");
+  const mainTabStats = el("mainTabStats");
   const modeField = el("modeField");
   const startBtn = el("startBtn");
+  const learnSettingsCard = el("learnSettingsCard");
+  const scopeCard = el("scopeCard");
+  const statsCard = el("statsCard");
+  let statsViewY = new Date().getFullYear();
+  let statsViewM = new Date().getMonth();
 
   function isLearnTab() { return mainTabLearn.classList.contains("active"); }
+
+  function showMainPanel(panel){
+    const isStats = panel === "stats";
+    mainTabLearn.classList.toggle("active", panel === "learn");
+    mainTabTest.classList.toggle("active", panel === "test");
+    mainTabStats.classList.toggle("active", isStats);
+    learnSettingsCard.classList.toggle("hidden", isStats);
+    scopeCard.classList.toggle("hidden", isStats);
+    statsCard.classList.toggle("hidden", !isStats);
+
+    if(panel === "learn"){
+      el("modeSelect").value = "flash";
+      modeField.classList.add("hidden");
+      if(!startBtn.disabled) setStartButtonState(false);
+    }
+    if(panel === "test"){
+      modeField.classList.remove("hidden");
+      if (el("modeSelect").value === "flash") el("modeSelect").value = "mc";
+      if(!startBtn.disabled) setStartButtonState(false);
+    }
+    if(panel === "stats"){
+      renderMainCalendarSummary(statsViewY, statsViewM);
+    }
+    updateScopeBar();
+  }
 
   function setStartButtonState(locked){
     startBtn.disabled = !!locked;
@@ -707,20 +808,33 @@
     startBtn.textContent = isLearnTab() ? "암기 시작 🚀" : "시험 시작 ✍️";
   }
 
-  mainTabLearn.onclick = () => {
-    mainTabLearn.classList.add("active"); mainTabTest.classList.remove("active");
-    el("modeSelect").value = "flash";
-    modeField.classList.add("hidden");
-    if(!startBtn.disabled) setStartButtonState(false);
-    updateScopeBar();
-  };
-  mainTabTest.onclick = () => {
-    mainTabTest.classList.add("active"); mainTabLearn.classList.remove("active");
-    if (el("modeSelect").value === "flash") el("modeSelect").value = "mc";
-    modeField.classList.remove("hidden");
-    if(!startBtn.disabled) setStartButtonState(false);
-    updateScopeBar();
-  };
+  mainTabLearn.onclick = () => showMainPanel("learn");
+  mainTabTest.onclick = () => showMainPanel("test");
+  mainTabStats.onclick = () => showMainPanel("stats");
+
+  function bindStatsCalNav(){
+    const prevBtn = el("mainCalPrevBtn");
+    const nextBtn = el("mainCalNextBtn");
+    const todayBtn = el("mainCalTodayBtn");
+    if(!prevBtn || !nextBtn || !todayBtn) return;
+
+    prevBtn.onclick = () => {
+      statsViewM--;
+      if(statsViewM < 0){ statsViewM = 11; statsViewY--; }
+      renderMainCalendarSummary(statsViewY, statsViewM);
+    };
+    nextBtn.onclick = () => {
+      statsViewM++;
+      if(statsViewM > 11){ statsViewM = 0; statsViewY++; }
+      renderMainCalendarSummary(statsViewY, statsViewM);
+    };
+    todayBtn.onclick = () => {
+      const now = new Date();
+      statsViewY = now.getFullYear();
+      statsViewM = now.getMonth();
+      renderMainCalendarSummary(statsViewY, statsViewM);
+    };
+  }
 
   // ---------------- CSV 파싱(따옴표/콤마 대응) ----------------
   function parseCSVSafe(text) {
@@ -808,6 +922,7 @@
     updateScopeBar();
     checkGoalAndCelebrate();
     bindGoalSetter();
+    bindStatsCalNav();
 
     const dayCount = Object.keys(data).length;
     el("dataStatus").textContent = dayCount ? `· ✅ ${dayCount}개 DAY 로드됨` : "· ⚠️ 데이터 없음";
@@ -894,10 +1009,94 @@
     return streak;
   }
 
+  function countMonthStudyDays(daily, year, month0){
+    const prefix = `${year}-${String(month0+1).padStart(2,"0")}-`;
+    return Object.entries(daily).reduce((acc, [k, v]) => {
+      if(k.startsWith(prefix) && (v || 0) > 0) return acc + 1;
+      return acc;
+    }, 0);
+  }
+
+  function drawCalendarGrid(gridEl, {year, month0, daily, goal}){
+    gridEl.innerHTML = "";
+    const dows = ["일","월","화","수","목","금","토"];
+    dows.forEach(x=>{
+      const t = document.createElement("div");
+      t.className = "calDow";
+      t.textContent = x;
+      gridEl.appendChild(t);
+    });
+
+    const first = new Date(year, month0, 1);
+    const startDow = first.getDay();
+    const lastDate = new Date(year, month0+1, 0).getDate();
+
+    for(let i=0;i<startDow;i++){
+      const b = document.createElement("div");
+      b.style.opacity = "0";
+      b.className = "calDay";
+      gridEl.appendChild(b);
+    }
+
+    for(let day=1; day<=lastDate; day++){
+      const key = `${year}-${String(month0+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+      const cnt = daily[key] || 0;
+      const isHit = cnt > 0;
+      const isGoal = cnt >= goal;
+
+      const cell = document.createElement("div");
+      cell.className = "calDay" + (isHit ? " calHit" : "") + (isGoal ? " calGoal" : "");
+      cell.innerHTML = `
+        <div class="calNum">${day}</div>
+        <div class="calMeta">${isHit ? `학습 ${cnt}` : "—"}</div>
+        <div class="calMeta">${isGoal ? "목표 달성 🎉" : ""}</div>
+      `;
+      gridEl.appendChild(cell);
+    }
+  }
+
+  function renderMainCalendarSummary(viewY = statsViewY, viewM = statsViewM){
+    if (!el("mainCalGrid")) return;
+    statsViewY = viewY;
+    statsViewM = viewM;
+
+    const daily = load(DAILY_KEY, {});
+    const todayCount = daily[todayKey()] || 0;
+    const streak = calcStreak();
+    const goal = getGoal();
+    const sessions = load(SESSION_KEY, []);
+    const totalSolved = sessions.reduce((acc, x) => acc + (x.total || 0), 0);
+    const totalWrong = sessions.reduce((acc, x) => acc + (x.wrongCount || 0), 0);
+    const favCount = Object.keys(load(FAVORITES_KEY, {})).length;
+    const goalPct = Math.max(0, Math.min(100, Math.round((todayCount / goal) * 100)));
+
+    el("mainCalTodayCount").textContent = todayCount;
+    el("mainCalStreak").textContent = `${streak}일`;
+    el("mainCalMonthDays").textContent = `${countMonthStudyDays(daily, statsViewY, statsViewM)}일`;
+    el("mainCalMonthLabel").textContent = `${statsViewY}년 ${statsViewM+1}월`;
+
+    el("statsTodayLine").textContent = `${todayCount}문제`;
+    el("statsStreakLine").textContent = `${streak}일`;
+    el("statsGoalPill").textContent = goal;
+    el("statsGoalProgress").textContent = `${todayCount} / ${goal}`;
+    el("statsGoalBar").style.width = `${goalPct}%`;
+    el("statsTotalSolved").textContent = totalSolved;
+    el("statsTotalWrong").textContent = totalWrong;
+    el("statsFavCount").textContent = favCount;
+
+    drawCalendarGrid(el("mainCalGrid"), {
+      year: statsViewY,
+      month0: statsViewM,
+      daily,
+      goal
+    });
+  }
+
   function updateDailyUI(){
     const daily = load(DAILY_KEY, {});
     el("todayCountPill").textContent = daily[todayKey()] || 0;
     el("streakPill").textContent = calcStreak();
+    renderMainCalendarSummary(statsViewY, statsViewM);
     checkGoalAndCelebrate();
   }
 
@@ -932,6 +1131,7 @@
   }
 
   function currentModeLabel(){
+    if(mainTabStats.classList.contains("active")) return "학습현황";
     const tab = isLearnTab() ? "단어 암기" : "단어 시험";
     const mode = isLearnTab()
       ? "암기(Flash)"
@@ -965,12 +1165,11 @@
     el(id).addEventListener("change", updateScopeBar);
   });
 
-  // ---------------- Bottom Sheet(오답/기록/즐겨찾기/달력) ----------------
+  // ---------------- Bottom Sheet(오답/기록/즐겨찾기) ----------------
   const overlay = el("overlay");
   const paneWords = el("paneWords");
   const paneWrong = el("paneWrong");
   const paneFav = el("paneFav");
-  const paneCalendar = el("paneCalendar");
   const paneHistory = el("paneHistory");
 
   function openSheet(tab="words"){
@@ -981,7 +1180,7 @@
   function closeSheet(){ overlay.classList.add("hidden"); }
 
   function setTabActive(activeId){
-    ["tabWords","tabWrong","tabFav","tabCalendar","tabHistory"].forEach(id => el(id).classList.remove("active"));
+    ["tabWords","tabWrong","tabFav","tabHistory"].forEach(id => el(id).classList.remove("active"));
     el(activeId).classList.add("active");
   }
 
@@ -989,13 +1188,11 @@
     paneWords.classList.add("hidden");
     paneWrong.classList.add("hidden");
     paneFav.classList.add("hidden");
-    paneCalendar.classList.add("hidden");
     paneHistory.classList.add("hidden");
 
     if(tab==="words"){ paneWords.classList.remove("hidden"); setTabActive("tabWords"); }
     if(tab==="wrong"){ paneWrong.classList.remove("hidden"); setTabActive("tabWrong"); }
     if(tab==="fav"){ paneFav.classList.remove("hidden"); setTabActive("tabFav"); }
-    if(tab==="cal"){ paneCalendar.classList.remove("hidden"); setTabActive("tabCalendar"); }
     if(tab==="history"){ paneHistory.classList.remove("hidden"); setTabActive("tabHistory"); }
   }
 
@@ -1003,7 +1200,6 @@
     if(tab==="words") renderWordsList();
     if(tab==="wrong") renderWrongList();
     if(tab==="fav") renderFavList();
-    if(tab==="cal") renderCalendar();
     if(tab==="history") renderHistoryList();
   }
 
@@ -1014,7 +1210,6 @@
   el("tabWords").onclick = () => { switchTab("words"); renderWordsList(); };
   el("tabWrong").onclick = () => { switchTab("wrong"); renderWrongList(); };
   el("tabFav").onclick = () => { switchTab("fav"); renderFavList(); };
-  el("tabCalendar").onclick = () => { switchTab("cal"); renderCalendar(); };
   el("tabHistory").onclick = () => { switchTab("history"); renderHistoryList(); };
 
   // 전체 초기화
@@ -1300,84 +1495,6 @@
       };
       paneFav.appendChild(it);
     });
-  }
-
-  // ---------------- 달력(학습 기록) ----------------
-  function renderCalendar(){
-    paneCalendar.innerHTML = "";
-
-    const daily = load(DAILY_KEY, {});
-    const goal = getGoal();
-
-    const now = new Date();
-    let viewY = now.getFullYear();
-    let viewM = now.getMonth(); // 0-based
-
-    const wrap = document.createElement("div");
-    wrap.className = "item";
-    wrap.innerHTML = `
-      <div class="calWrap">
-        <div class="calHead">
-          <div class="itemWord" id="calTitle">${viewY}년 ${viewM+1}월</div>
-          <div class="miniBtns">
-            <button class="btn btn-ghost" type="button" id="calPrevBtn">◀ 이전달</button>
-            <button class="btn btn-soft" type="button" id="calTodayBtn">이번달</button>
-            <button class="btn btn-ghost" type="button" id="calNextBtn">다음달 ▶</button>
-          </div>
-        </div>
-        <div class="muted">표시: 학습한 날(초록) · 목표 달성(파랑) · 목표 ${goal}문제</div>
-        <div class="calGrid" id="calGrid"></div>
-      </div>
-    `;
-    paneCalendar.appendChild(wrap);
-
-    const draw = () => {
-      el("calTitle").textContent = `${viewY}년 ${viewM+1}월`;
-      const grid = el("calGrid");
-      grid.innerHTML = "";
-
-      const dows = ["일","월","화","수","목","금","토"];
-      dows.forEach(x=>{
-        const t = document.createElement("div");
-        t.className = "calDow";
-        t.textContent = x;
-        grid.appendChild(t);
-      });
-
-      const first = new Date(viewY, viewM, 1);
-      const startDow = first.getDay();
-      const lastDate = new Date(viewY, viewM+1, 0).getDate();
-
-      // blanks
-      for(let i=0;i<startDow;i++){
-        const b = document.createElement("div");
-        b.style.opacity = "0";
-        b.className = "calDay";
-        grid.appendChild(b);
-      }
-
-      for(let day=1; day<=lastDate; day++){
-        const key = `${viewY}-${String(viewM+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
-        const cnt = daily[key] || 0;
-        const isHit = cnt > 0;
-        const isGoal = cnt >= goal;
-
-        const cell = document.createElement("div");
-        cell.className = "calDay" + (isHit ? " calHit" : "") + (isGoal ? " calGoal" : "");
-        cell.innerHTML = `
-          <div class="calNum">${day}</div>
-          <div class="calMeta">${isHit ? `학습 ${cnt}` : "—"}</div>
-          <div class="calMeta">${isGoal ? "목표 달성 🎉" : ""}</div>
-        `;
-        grid.appendChild(cell);
-      }
-    };
-
-    el("calPrevBtn").onclick = () => { viewM--; if(viewM<0){viewM=11; viewY--;} draw(); };
-    el("calNextBtn").onclick = () => { viewM++; if(viewM>11){viewM=0; viewY++;} draw(); };
-    el("calTodayBtn").onclick = () => { viewY = now.getFullYear(); viewM = now.getMonth(); draw(); };
-
-    draw();
   }
 
   // ---------------- 기록 탭 ----------------
@@ -1780,6 +1897,7 @@
   modeField.classList.add("hidden");
   el("modeSelect").value = "flash";
   updateScopeBar();
+  showMainPanel("learn");
   ensureLoaded();
 </script>
 </body>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>TOEIC 단어시험 (CSV 업로드)</title>
+  <title>TOEIC 단어시험</title>
   <style>
     body{font-family:system-ui,Segoe UI,Apple SD Gothic Neo,Malgun Gothic,sans-serif;margin:18px;line-height:1.35}
     .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
@@ -22,21 +22,21 @@
   </style>
 </head>
 <body>
-  <h1>TOEIC 단어시험 📚 (CSV)</h1>
+  <h1>TOEIC 단어시험 📚</h1>
   <div class="muted">
-    CSV 형식: <code>day,no,word,meaning</code> (예: DAY1,1,resume,이력서)
+    자동 로드: <code>./toeic_words_day1_30.csv</code> (index.html과 같은 폴더에 있어야 함)
   </div>
 
   <div class="card">
     <div class="row">
-      <label><b>CSV 선택</b></label>
+      <label><b>CSV(선택)</b></label>
       <input id="file" type="file" accept=".csv,text/csv" />
-      <button id="loadSampleBtn">샘플 로드(옵션)</button>
       <button id="clearBtn">저장 초기화</button>
       <span id="status" class="muted"></span>
     </div>
     <div class="muted" style="margin-top:10px">
-      ✅ 업로드하면 브라우저에 저장됩니다(LocalStorage). 다음엔 업로드 없이도 바로 사용 가능.
+      ✅ 기본은 자동 로드. (원하면 파일 업로드로 덮어쓰기 가능) <br/>
+      ✅ 데이터는 브라우저에 저장됩니다(LocalStorage).
     </div>
   </div>
 
@@ -88,14 +88,16 @@
         <button id="submitAnswerBtn">제출</button>
         <button id="showAnswerBtn" type="button">정답 보기</button>
       </div>
-      <div class="muted" style="margin-top:8px">뜻(한글)은 일부만 입력해도 정답 처리(포함 인정)</div>
+      <div class="muted" style="margin-top:8px">
+        뜻(한글)은 일부만 입력해도 정답 처리(포함 인정)
+      </div>
     </div>
 
     <div id="feedback" class="muted" style="margin-top:10px"></div>
   </div>
 
 <script>
-  const KEY = "toeic_words_csv_v1"; // {DAY1:[{w,m}], ...}
+  const KEY = "toeic_words_csv_v2_autoload"; // {DAY1:[{w,m}], ...}
 
   const el = (id)=>document.getElementById(id);
   const fileInput = el("file");
@@ -136,11 +138,8 @@
         if(inQuotes && line[i+1] === '"'){ cur += '"'; i++; }
         else inQuotes = !inQuotes;
       } else if(ch === ',' && !inQuotes){
-        out.push(cur);
-        cur = "";
-      } else {
-        cur += ch;
-      }
+        out.push(cur); cur = "";
+      } else cur += ch;
     }
     out.push(cur);
     return out.map(s => s.trim());
@@ -154,9 +153,8 @@
     const idxDay = header.indexOf("day");
     const idxWord = header.indexOf("word");
     const idxMeaning = header.indexOf("meaning");
-
     if(idxDay < 0 || idxWord < 0 || idxMeaning < 0){
-      throw new Error("CSV 헤더가 day,word,meaning 포함해야 해요. (day,no,word,meaning 추천)");
+      throw new Error("CSV 헤더에 day,word,meaning이 있어야 해요 (day,no,word,meaning 추천)");
     }
 
     const data = {};
@@ -181,31 +179,7 @@
     }
     return data;
   }
-async function autoLoadFromRepo(){
-  const all = loadAll();
-  if(Object.keys(all).length > 0){
-    statusEl.textContent = "저장된 데이터 로드 완료";
-    refreshDayList();
-    return;
-  }
 
-  try{
-    const res = await fetch("./toeic_words_day1_30.csv");
-    const text = await res.text();
-    const parsed = parseCSV(text);
-
-    for(const day of Object.keys(parsed)){
-      all[day] = parsed[day];
-    }
-
-    saveAll(all);
-    statusEl.textContent = "CSV 자동 로드 완료";
-    refreshDayList();
-
-  }catch(e){
-    statusEl.textContent = "자동 로드 실패 (수동 업로드 가능)";
-  }
-}
   function refreshDayList(){
     const all = loadAll();
     const days = Object.keys(all).sort((a,b)=>{
@@ -224,27 +198,71 @@ async function autoLoadFromRepo(){
     dayCountEl.textContent = String(days.length);
   }
 
+  function normalize(s){
+    return String(s || "")
+      .toLowerCase()
+      .replace(/\s+/g,"")
+      .replace(/[()"'“”‘’]/g,"")
+      .trim();
+  }
+
+  function isMeaningCorrect(userInput, correctMeaning){
+    const u = normalize(userInput);
+    if(!u) return false;
+
+    const parts = String(correctMeaning)
+      .split(/[,;\/·]|(?:\s*-\s*)/g)
+      .map(p => normalize(p))
+      .filter(Boolean);
+
+    if(parts.length === 0){
+      const c = normalize(correctMeaning);
+      return c.includes(u) || u.includes(c);
+    }
+    return parts.some(p => p.includes(u) || u.includes(p));
+  }
+
+  async function hydrateFromCSVText(text, label){
+    const parsed = parseCSV(text);
+    const all = loadAll();
+    for(const day of Object.keys(parsed)) all[day] = parsed[day];
+    saveAll(all);
+    refreshDayList();
+    statusEl.textContent = label;
+  }
+
+  async function autoLoadFromRepoIfEmpty(){
+    const existing = loadAll();
+    if(Object.keys(existing).length > 0){
+      statusEl.textContent = "저장된 데이터 로드 완료";
+      refreshDayList();
+      return;
+    }
+
+    try{
+      const res = await fetch("./toeic_words_day1_30.csv", { cache: "no-store" });
+      if(!res.ok) throw new Error("CSV not found");
+      const text = await res.text();
+      await hydrateFromCSVText(text, "자동 로드 완료 (업로드 필요 없음)");
+    } catch(e){
+      statusEl.textContent = "자동 로드 실패: 필요하면 CSV 업로드 해줘";
+      refreshDayList();
+    }
+  }
+
   async function readFileAsText(file){
     return await file.text();
   }
 
+  // Optional: user upload to override
   fileInput.addEventListener("change", async () => {
     const f = fileInput.files?.[0];
     if(!f) return;
-
     try{
       const text = await readFileAsText(f);
-      const parsed = parseCSV(text);
-
-      const all = loadAll();
-      for(const day of Object.keys(parsed)){
-        all[day] = parsed[day];
-      }
-      saveAll(all);
-      statusEl.textContent = `로드 완료! (${Object.keys(parsed).length} DAY 저장)`;
-      refreshDayList();
+      await hydrateFromCSVText(text, `업로드 로드 완료: ${f.name}`);
     } catch(err){
-      statusEl.textContent = `에러: ${err.message || err}`;
+      statusEl.textContent = `업로드 에러: ${err.message || err}`;
     }
   });
 
@@ -256,24 +274,7 @@ async function autoLoadFromRepo(){
     }
   };
 
-  el("loadSampleBtn").onclick = () => {
-    const sample = `day,no,word,meaning
-DAY1,1,resume,이력서
-DAY1,2,opening,"공석, 결원"
-DAY2,1,confirm,확인하다`;
-    try{
-      const parsed = parseCSV(sample);
-      const all = loadAll();
-      for(const day of Object.keys(parsed)) all[day]=parsed[day];
-      saveAll(all);
-      statusEl.textContent = "샘플 저장 완료";
-      refreshDayList();
-    } catch(e){
-      statusEl.textContent = "샘플 로드 실패";
-    }
-  };
-
-  // --------- Quiz logic ----------
+  // --------- Quiz ----------
   let pool = [];
   let idx = 0;
   let score = 0;
@@ -301,30 +302,6 @@ DAY2,1,confirm,확인하다`;
     }
     const opts = shuffle([correctVal, ...pick]).slice(0,4);
     return { opts, correctVal };
-  }
-
-  function normalize(s){
-    return String(s || "")
-      .toLowerCase()
-      .replace(/\s+/g,"")
-      .replace(/[()"'“”‘’]/g,"")
-      .trim();
-  }
-
-  function isMeaningCorrect(userInput, correctMeaning){
-    const u = normalize(userInput);
-    if(!u) return false;
-
-    const parts = String(correctMeaning)
-      .split(/[,;\/·]|(?:\s*-\s*)/g)
-      .map(p => normalize(p))
-      .filter(Boolean);
-
-    if(parts.length === 0){
-      const c = normalize(correctMeaning);
-      return c.includes(u) || u.includes(c);
-    }
-    return parts.some(p => p.includes(u) || u.includes(p));
   }
 
   function finish(){
@@ -400,9 +377,9 @@ DAY2,1,confirm,확인하다`;
       let ok = false;
 
       if(dir === "en2ko"){
-        ok = isMeaningCorrect(user, item.m);      // 뜻은 포함 인정
+        ok = isMeaningCorrect(user, item.m);         // 뜻은 포함 인정
       } else {
-        ok = normalize(user) === normalize(item.w); // 영단어는 정확히
+        ok = normalize(user) === normalize(item.w);  // 영단어는 정확히
       }
       judge(ok, item, dir);
     };
@@ -422,7 +399,7 @@ DAY2,1,confirm,확인하다`;
     const day = daySelect.value;
     const list = all[day] || [];
     if(list.length === 0){
-      alert("먼저 CSV를 업로드해서 DAY 데이터를 저장해줘!");
+      alert("데이터가 없어요. (자동 로드가 실패했으면 CSV 파일이 같은 폴더에 있는지 확인!)");
       return;
     }
 
@@ -443,8 +420,9 @@ DAY2,1,confirm,확인하다`;
   redoWrongBtn.onclick = () => start(true);
   stopBtn.onclick = () => { quiz.classList.add("hidden"); };
 
-  // initial
+  // init
   refreshDayList();
+  autoLoadFromRepoIfEmpty();
 </script>
 </body>
 </html>

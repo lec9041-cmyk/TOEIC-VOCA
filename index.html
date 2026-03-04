@@ -16,8 +16,6 @@
       --bg:#ffffff;
       --chip:#f9fafb;
       --shadow: 0 14px 40px rgba(0,0,0,.12);
-      --green: #dcfce7;
-      --red: #fee2e2;
     }
     body{
       font-family:system-ui,-apple-system,Segoe UI,Apple SD Gothic Neo,Malgun Gothic,sans-serif;
@@ -35,7 +33,7 @@
     .main-tabs {
       display: flex;
       gap: 10px;
-      margin-bottom: 20px;
+      margin-bottom: 12px;
       padding: 5px;
       background: #f1f5f9;
       border-radius: 20px;
@@ -44,7 +42,7 @@
       flex: 1;
       padding: 15px;
       text-align: center;
-      font-weight: 900; /* 1000 -> 900 */
+      font-weight: 900;
       cursor: pointer;
       border-radius: 16px;
       transition: 0.2s;
@@ -98,6 +96,7 @@
     button{cursor:pointer}
     button:active{transform: translateY(1px)}
     input::placeholder{color:#9ca3af}
+    button:disabled{ opacity:.55; cursor:not-allowed; transform:none; }
 
     .btn{
       display:inline-flex;
@@ -135,7 +134,7 @@
       background:var(--chip);
       user-select:none;
       font-size:13px;
-      font-weight:900; /* 1000 -> 900 */
+      font-weight:900;
       white-space:nowrap;
     }
     .chip input{transform:scale(1.15)}
@@ -156,7 +155,7 @@
     }
 
     /* 퀴즈 UI */
-    .q{font-size:22px;font-weight:900;margin:15px 0 15px; text-align: center;} /* 1000 -> 900 */
+    .q{font-size:22px;font-weight:900;margin:15px 0 15px; text-align: center;}
     .choices{display:grid;gap:10px}
     .choices button{text-align:left;border:1px solid var(--bd);border-radius:18px;background:#fff}
     .ok{color:#0a7; font-weight: bold;}
@@ -182,27 +181,26 @@
     @keyframes flash-green { 0% { background: #dcfce7; } 100% { background: #fff; } }
     @keyframes flash-red { 0% { background: #fee2e2; } 100% { background: #fff; } }
 
-    #nextBtn{ margin-top:10px; width:100%; padding:14px 12px; border-radius:18px; font-weight:900; } /* 1000 -> 900 */
+    #nextBtn{ margin-top:10px; width:100%; padding:14px 12px; border-radius:18px; font-weight:900; }
     .actions{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px; }
-    .actions button{ border-radius:18px; font-weight:900; min-height:48px; } /* 1000 -> 900 */
+    .actions button{ border-radius:18px; font-weight:900; min-height:48px; }
 
     /* Bottom Sheet */
     .overlay{ position:fixed; inset:0; background:rgba(17,24,39,.48); display:flex; align-items:flex-end; justify-content:center; padding:14px; padding-bottom: calc(14px + env(safe-area-inset-bottom)); z-index:50; }
     .sheet{ width:min(980px, 100%); max-height:84dvh; background:#fff; border:1px solid var(--bd); border-radius:24px; box-shadow:var(--shadow); overflow:hidden; display:flex; flex-direction:column; }
     .sheetHead{ display:flex; align-items:center; justify-content:space-between; padding:12px; border-bottom:1px solid var(--bd); gap:10px; }
-    .sheetTitle{font-weight:900;font-size:15px} /* 1000 -> 900 */
+    .sheetTitle{font-weight:900;font-size:15px}
     .sheetBody{padding:12px;overflow:auto}
 
     .tabs{display:flex;gap:8px;flex-wrap:wrap}
-    .tab{ padding:10px 12px; border:1px solid var(--bd); border-radius:999px; background:#fff; font-weight:900; cursor:pointer; font-size:13px; } /* 1000 -> 900 */
+    .tab{ padding:10px 12px; border:1px solid var(--bd); border-radius:999px; background:#fff; font-weight:900; cursor:pointer; font-size:13px; }
     .tab.active{ background:#111827; border-color:#111827; color:#fff; }
 
     .list{display:grid;gap:10px;margin-top:10px}
     .item{ border:1px solid var(--bd); border-radius:20px; padding:12px; background:#fff; }
     .itemTop{ display:flex; align-items:flex-start; justify-content:space-between; gap:10px; margin-bottom:8px; }
-    .itemWord{font-weight:900;font-size:16px;} /* 1100 -> 900 */
+    .itemWord{font-weight:900;font-size:16px;}
     .badge{ border:1px solid var(--bd); border-radius:999px; padding:6px 10px; font-size:12px; background:#fff; }
-
     .miniBtns{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;}
     .miniBtns button{min-height:40px; padding:10px 12px; border-radius:14px; font-weight:900;}
 
@@ -217,9 +215,41 @@
     /* FULLSCREEN QUIZ OVERLAY */
     #quizOverlay{ position:fixed; inset:0; background:rgba(17,24,39,.55); z-index:80; display:flex; align-items:stretch; justify-content:center; padding:12px; padding-top: calc(12px + env(safe-area-inset-top)); padding-bottom: calc(12px + env(safe-area-inset-bottom)); overscroll-behavior: contain; }
     #quizModal{ width:min(980px, 100%); background:#fff; border:1px solid var(--bd); border-radius:24px; box-shadow:var(--shadow); overflow:hidden; display:flex; flex-direction:column; max-height: 100dvh; }
-    #quizModalHead{ display:flex; align-items:center; justify-content:space-between; padding:12px; border-bottom:1px solid var(--bd); }
+    #quizModalHead{ display:flex; align-items:center; justify-content:space-between; padding:12px; border-bottom:1px solid var(--bd); gap:10px; }
     #quizModalBody{ padding:12px; overflow:auto; -webkit-overflow-scrolling: touch; }
     .topPills{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    #quizTitleWrap{display:flex; flex-direction:column; gap:4px;}
+    #quizModalTitle{font-weight:900;}
+    #quizScopeLine{font-size:12px; color:var(--muted);}
+
+    /* CONFETTI CANVAS */
+    #confettiCanvas{
+      position:fixed; inset:0; pointer-events:none; z-index:120;
+    }
+
+    /* Calendar */
+    .calWrap{display:grid; gap:10px;}
+    .calHead{display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;}
+    .calGrid{
+      display:grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap:8px;
+    }
+    .calDow{font-size:12px; color:var(--muted); text-align:center; font-weight:900;}
+    .calDay{
+      border:1px solid var(--bd);
+      border-radius:16px;
+      padding:10px;
+      min-height:64px;
+      background:#fff;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+    .calNum{font-weight:900; font-size:14px;}
+    .calMeta{font-size:12px; color:var(--muted);}
+    .calHit{border-color:#bbf7d0; background:#f0fdf4;}
+    .calGoal{border-color:#bfdbfe; background:#eff6ff;}
   </style>
 </head>
 
@@ -231,7 +261,20 @@
     <div id="mainTabTest" class="main-tab">✍️ 단어 시험</div>
   </div>
 
-  <div class="sub">내장 로드: <code>./toeic_words_day1_30.csv</code></div>
+  <!-- 상단 범위 표시줄 -->
+  <div class="card" style="margin-top:10px">
+    <div class="row" style="justify-content:space-between; gap:10px">
+      <div class="row" style="gap:8px; flex-wrap:wrap">
+        <span class="pill" id="scopeTabPill">모드: -</span>
+        <span class="pill" id="scopeDaysPill">DAY: -</span>
+        <span class="pill" id="scopeRangePill">범위: -</span>
+        <span class="pill">문제수: <b id="scopeCountPill">-</b></span>
+      </div>
+      <span class="pill" title="클릭해서 목표 변경" style="cursor:pointer">목표: <b id="goalPill">30</b></span>
+    </div>
+  </div>
+
+  <div class="sub">내장 로드: <code>/toeic_words_day1_30.csv</code> <span class="muted" id="dataStatus"></span></div>
 
   <div class="card">
     <h2>1) 학습 설정</h2>
@@ -251,7 +294,7 @@
         <div id="multiDayChips" class="row" style="margin-top:10px"></div>
       </div>
 
-      <div class="field" id="modeField">
+      <div class="field hidden" id="modeField">
         <label>시험 모드</label>
         <select id="modeSelect">
           <option value="flash">속독 암기 (Flashcard)</option>
@@ -309,15 +352,21 @@
 
     <div class="grid" style="margin-top:12px">
       <div class="field" style="grid-column: span 2;">
-        <button id="startBtn" class="btn" type="button">학습 시작 🚀</button>
+        <button id="startBtn" class="btn" type="button" disabled>로딩 중...</button>
       </div>
     </div>
   </div>
 
+  <!-- CONFETTI -->
+  <canvas id="confettiCanvas" class="hidden"></canvas>
+
   <div id="quizOverlay" class="hidden">
     <div id="quizModal">
       <div id="quizModalHead">
-        <div id="quizModalTitle" style="font-weight:900;">진행 중... <span class="muted" id="quizMeta"></span></div>
+        <div id="quizTitleWrap">
+          <div id="quizModalTitle">진행 중... <span class="muted" id="quizMeta"></span></div>
+          <div id="quizScopeLine">-</div>
+        </div>
         <button id="stopBtn" class="btn btn-ghost" type="button">끝내기</button>
       </div>
 
@@ -326,6 +375,9 @@
           <span class="pill" id="progressPill">0/0</span>
           <span class="pill">점수: <b id="score">0</b></span>
           <span class="pill">오답: <b id="wrongN">0</b></span>
+          <button id="quizDictBtn" class="btn btn-ghost" type="button" style="min-height:38px;padding:8px 10px;border-radius:999px;">사전</button>
+          <button id="quizExBtn" class="btn btn-ghost" type="button" style="min-height:38px;padding:8px 10px;border-radius:999px;">예문</button>
+          <button id="quizFavBtn" class="btn btn-ghost" type="button" style="min-height:38px;padding:8px 10px;border-radius:999px;">☆</button>
         </div>
 
         <div class="progress-container"><div id="progressBar" class="progress-bar"></div></div>
@@ -373,10 +425,15 @@
         <div class="tabs">
           <button id="tabWords" class="tab active" type="button">단어리스트</button>
           <button id="tabWrong" class="tab" type="button">오답노트</button>
+          <button id="tabFav" class="tab" type="button">즐겨찾기</button>
+          <button id="tabCalendar" class="tab" type="button">달력</button>
           <button id="tabHistory" class="tab" type="button">기록</button>
         </div>
+
         <div id="paneWords" class="list"></div>
         <div id="paneWrong" class="list hidden"></div>
+        <div id="paneFav" class="list hidden"></div>
+        <div id="paneCalendar" class="list hidden"></div>
         <div id="paneHistory" class="list hidden"></div>
       </div>
     </div>
@@ -389,6 +446,10 @@
   const SESSION_KEY = "toeic_sessions_v1";
   const DAILY_KEY = "toeic_daily_v1";
   const MULTI_DAY_KEY = "toeic_multi_days_v1";
+  const FAVORITES_KEY = "toeic_favorites_v1";
+  const GOAL_KEY = "toeic_goal_v1";
+  const GOAL_DONE_KEY = "toeic_goal_done_v1";
+  const DEFAULT_GOAL = 30;
 
   // Flash 재삽입 상한
   const REINSERT_LIMIT = 2;
@@ -420,12 +481,49 @@
     }
   }
 
-  function markAttempt(){
-    bumpDaily(1);
-    updateDailyUI();
+  // ---------------- DAY 주제 라벨 ----------------
+  const DAY_TOPICS = {
+    1:"채용", 2:"규칙,법률",
+    3:"일반사무", 4:"일반사무", 5:"일반사무",
+    6:"여가,공동체",
+    7:"마케팅", 8:"마케팅",
+    9:"경제",
+    10:"쇼핑",
+    11:"제품개발",
+    12:"생산",
+    13:"고객서비스",
+    14:"여행,공항",
+    15:"계약",
+    16:"상거래",
+    17:"무역,배송",
+    18:"숙박,식당",
+    19:"수익",
+    20:"회계",
+    21:"회사동향",
+    22:"미팅",
+    23:"사원복지",
+    24:"인사이동",
+    25:"교통",
+    26:"은행",
+    27:"투자",
+    28:"건물,주택",
+    29:"환경",
+    30:"건강"
+  };
+  function dayNumFromKey(dayKey){
+    const m = String(dayKey || "").match(/\d+/);
+    return m ? parseInt(m[0], 10) : NaN;
+  }
+  function topicForDayKey(dayKey){
+    const n = dayNumFromKey(dayKey);
+    return DAY_TOPICS[n] || "";
+  }
+  function dayLabel(dayKey){
+    const t = topicForDayKey(dayKey);
+    return t ? `${dayKey} · ${t}` : dayKey;
   }
 
-  // 날짜 유틸
+  // ---------------- 날짜/시간 유틸 ----------------
   const todayKey = () => {
     const d = new Date();
     const y = d.getFullYear();
@@ -445,16 +543,135 @@
     } catch { return ""; }
   };
 
+  // ---------------- 목표/컨페티 ----------------
+  function getGoal(){
+    const g = parseInt(load(GOAL_KEY, DEFAULT_GOAL), 10);
+    return Number.isFinite(g) && g > 0 ? g : DEFAULT_GOAL;
+  }
+  function goalDoneMap(){ return load(GOAL_DONE_KEY, {}); }
+  function setGoalDone(today){
+    const m = goalDoneMap();
+    m[today] = true;
+    save(GOAL_DONE_KEY, m);
+  }
+  function isGoalDone(today){
+    const m = goalDoneMap();
+    return !!m[today];
+  }
+
+  function fireConfetti(){
+    const c = el("confettiCanvas");
+    if(!c) return;
+
+    c.classList.remove("hidden");
+    const ctx = c.getContext("2d");
+    const dpr = window.devicePixelRatio || 1;
+    const w = Math.floor(window.innerWidth * dpr);
+    const h = Math.floor(window.innerHeight * dpr);
+    c.width = w; c.height = h;
+    c.style.width = window.innerWidth + "px";
+    c.style.height = window.innerHeight + "px";
+
+    const N = 120;
+    const parts = Array.from({length:N}, () => ({
+      x: Math.random()*w,
+      y: -Math.random()*h*0.2,
+      vx: (Math.random()*2-1)*2.2*dpr,
+      vy: (Math.random()*3+2)*2.6*dpr,
+      r: (Math.random()*6+3)*dpr,
+      rot: Math.random()*Math.PI*2,
+      vr: (Math.random()*2-1)*0.18,
+      life: 60 + Math.floor(Math.random()*20),
+    }));
+
+    let t = 0;
+    function step(){
+      t++;
+      ctx.clearRect(0,0,w,h);
+      for(const p of parts){
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.08*dpr;
+        p.rot += p.vr;
+        p.life--;
+
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot);
+        ctx.fillStyle = `hsl(${(p.x/w)*360}, 85%, 55%)`;
+        ctx.fillRect(-p.r, -p.r, p.r*2, p.r*2);
+        ctx.restore();
+      }
+      if(t < 75 && parts.some(p => p.life > 0 && p.y < h+50*dpr)) requestAnimationFrame(step);
+      else c.classList.add("hidden");
+    }
+    requestAnimationFrame(step);
+  }
+
+  function checkGoalAndCelebrate(){
+    const today = todayKey();
+    const daily = load(DAILY_KEY, {});
+    const todayCount = daily[today] || 0;
+    const goal = getGoal();
+    if(el("goalPill")) el("goalPill").textContent = goal;
+
+    if(todayCount >= goal && !isGoalDone(today)){
+      setGoalDone(today);
+      fireConfetti();
+    }
+  }
+
+  // goal 클릭으로 변경
+  function bindGoalSetter(){
+    const goalWrap = el("goalPill")?.parentElement;
+    if(!goalWrap) return;
+    goalWrap.onclick = () => {
+      const cur = getGoal();
+      const v = prompt("오늘 목표(문제 수)를 입력하세요", String(cur));
+      if(v === null) return;
+      const n = parseInt(String(v).trim(), 10);
+      if(!Number.isFinite(n) || n <= 0) return alert("숫자를 올바르게 입력해줘!");
+      save(GOAL_KEY, n);
+      updateScopeBar();
+      checkGoalAndCelebrate();
+      alert(`목표를 ${n}문제로 설정했어요!`);
+    };
+  }
+
+  // ---------------- 즐겨찾기 ----------------
+  function keyOf(item){ return `${item.day}||${item.n}||${item.w}`; }
+  function favMap(){ return load(FAVORITES_KEY, {}); }
+  function isFav(item){ const m = favMap(); return !!m[keyOf(item)]; }
+  function toggleFav(item){
+    const m = favMap();
+    const k = keyOf(item);
+    if(m[k]) delete m[k];
+    else m[k] = {...item, ts: Date.now()};
+    save(FAVORITES_KEY, m);
+  }
+  function favList(){
+    return Object.values(favMap()).sort((a,b)=> (b.ts||0)-(a.ts||0));
+  }
+
+  // ---------------- 네이버 사전/예문 ----------------
+  function openNaverDict(word){
+    const url = `https://en.dict.naver.com/#/search?query=${encodeURIComponent(word)}`;
+    window.open(url, "_blank");
+  }
+  function openNaverExample(word){
+    const url = `https://sentence.dict.naver.com/search.nhn?query=${encodeURIComponent(word)}`;
+    window.open(url, "_blank");
+  }
+
   // ---------------- 발음(TTS) 기능 ----------------
   function getVoiceByLangPrefix(prefix) {
     const voices = window.speechSynthesis?.getVoices?.() || [];
     const v = voices.find(x => (x.lang || "").startsWith(prefix));
     return v || null;
   }
-
   function speak(text) {
     if (!text) return;
-    if (!("speechSynthesis" in window)) return; // 일부 환경 대응
+    if (!("speechSynthesis" in window)) return;
     window.speechSynthesis.cancel();
     const msg = new SpeechSynthesisUtterance(text);
     const selectedType = el("voiceSelect").value;
@@ -484,14 +701,17 @@
 
   mainTabLearn.onclick = () => {
     mainTabLearn.classList.add("active"); mainTabTest.classList.remove("active");
-    el("modeSelect").value = "flash"; modeField.classList.add("hidden");
-    startBtn.textContent = "암기 시작 🚀";
+    el("modeSelect").value = "flash";
+    modeField.classList.add("hidden");
+    startBtn.textContent = startBtn.disabled ? "로딩 중..." : "암기 시작 🚀";
+    updateScopeBar();
   };
   mainTabTest.onclick = () => {
     mainTabTest.classList.add("active"); mainTabLearn.classList.remove("active");
     if (el("modeSelect").value === "flash") el("modeSelect").value = "mc";
     modeField.classList.remove("hidden");
-    startBtn.textContent = "시험 시작 ✍️";
+    startBtn.textContent = startBtn.disabled ? "로딩 중..." : "시험 시작 ✍️";
+    updateScopeBar();
   };
 
   // ---------------- CSV 파싱(따옴표/콤마 대응) ----------------
@@ -513,36 +733,15 @@
         if (inQuotes && text[i+1] === '"') { field += '"'; i += 2; continue; }
         inQuotes = !inQuotes; i++; continue;
       }
-
       if (!inQuotes && ch === ",") { pushField(); i++; continue; }
-
       if (!inQuotes && (ch === "\n" || ch === "\r")) {
         if (ch === "\r" && text[i+1] === "\n") i++;
         pushField(); pushRow(); i++; continue;
       }
-
       field += ch; i++;
     }
     pushField(); pushRow();
     return rows;
-  }
-
-  async function ensureLoaded() {
-    let data = load(WORDS_KEY, {});
-    if (Object.keys(data).length === 0) {
-      try {
-        const res = await fetch("./toeic_words_day1_30.csv");
-        const text = await res.text();
-        data = parseCSVToData(text);
-        save(WORDS_KEY, data);
-      } catch (e) {
-        console.error("CSV 로드 실패", e);
-        alert("CSV 로드 실패: toeic_words_day1_30.csv 파일을 확인하세요.");
-      }
-    }
-    renderDaySelect(data);
-    updateActiveCount();
-    updateDailyUI();
   }
 
   function parseCSVToData(text) {
@@ -570,6 +769,46 @@
     return data;
   }
 
+  async function ensureLoaded() {
+    el("dataStatus").textContent = "· 데이터 로딩 중...";
+    startBtn.disabled = true;
+    startBtn.textContent = "로딩 중...";
+
+    let data = load(WORDS_KEY, {});
+    if (Object.keys(data).length === 0) {
+      try {
+        const res = await fetch("/toeic_words_day1_30.csv", { cache: "no-store" });
+        if(!res.ok) throw new Error(`HTTP ${res.status}`);
+        const text = await res.text();
+        data = parseCSVToData(text);
+        save(WORDS_KEY, data);
+      } catch (e) {
+        console.error("CSV 로드 실패", e);
+        el("dataStatus").textContent = "· ❌ 로드 실패";
+        alert(
+          "CSV 로드 실패!\n\n" +
+          "1) /toeic_words_day1_30.csv 가 실제로 열리는지 확인\n" +
+          "2) Vite/Vercel이면 CSV는 public/ 폴더에 있어야 합니다\n\n" +
+          "에러: " + (e?.message || e)
+        );
+        // 그래도 UI는 켜 두되, 시작 시 가드가 막아줌
+      }
+    }
+
+    renderDaySelect(data);
+    updateActiveCount();
+    updateDailyUI();
+    updateScopeBar();
+    checkGoalAndCelebrate();
+    bindGoalSetter();
+
+    const dayCount = Object.keys(data).length;
+    el("dataStatus").textContent = dayCount ? `· ✅ ${dayCount}개 DAY 로드됨` : "· ⚠️ 데이터 없음";
+
+    startBtn.disabled = !(dayCount > 0);
+    startBtn.textContent = startBtn.disabled ? "데이터 없음" : (isLearnTab() ? "암기 시작 🚀" : "시험 시작 ✍️");
+  }
+
   function renderDaySelect(data) {
     const days = Object.keys(data).sort((a,b) => a.localeCompare(b, undefined, {numeric: true}));
     const ds = el("daySelect");
@@ -578,12 +817,12 @@
     mds.innerHTML = '<option value="">DAY 추가하기...</option>';
 
     days.forEach(d => {
-      ds.add(new Option(d, d));
-      mds.add(new Option(d, d));
+      const label = dayLabel(d);
+      ds.add(new Option(label, d));
+      mds.add(new Option(label, d));
     });
 
     if (!ds.value && days.length) ds.value = days[0];
-    updateActiveCount();
   }
 
   // ---------------- 선택 DAY 관리 ----------------
@@ -591,16 +830,19 @@
     const multi = load(MULTI_DAY_KEY, []);
     const base = el("daySelect").value;
     const days = multi.length > 0 ? multi : (base ? [base] : []);
-    el("selectedDaysPill").textContent = `선택 DAY: ${days.length ? days.join(", ") : "-"}`;
+    el("selectedDaysPill").textContent = `선택 DAY: ${days.length ? days.map(dayLabel).join(", ") : "-"}`;
 
     const chips = el("multiDayChips");
     chips.innerHTML = "";
     multi.forEach(d => {
+      const safe = String(d).replace(/'/g,"\\'");
       const c = document.createElement("span");
       c.className = "daychip";
-      c.innerHTML = `${esc(d)} <button type="button" onclick="removeMultiDay('${String(d).replace(/'/g,"\\'")}')">✕</button>`;
+      c.innerHTML = `${esc(dayLabel(d))} <button type="button" onclick="removeMultiDay('${safe}')">✕</button>`;
       chips.appendChild(c);
     });
+
+    updateScopeBar();
   }
   el("daySelect").onchange = () => updateActiveCount();
 
@@ -649,6 +891,7 @@
     const daily = load(DAILY_KEY, {});
     el("todayCountPill").textContent = daily[todayKey()] || 0;
     el("streakPill").textContent = calcStreak();
+    checkGoalAndCelebrate();
   }
 
   function recordSession({mode, dir, total, score, wrongCount, days, ranges}){
@@ -656,6 +899,13 @@
     sessions.unshift({ ts: Date.now(), mode, dir, total, score, wrongCount, days, ranges });
     if (sessions.length > 200) sessions.length = 200;
     save(SESSION_KEY, sessions);
+  }
+
+  function normalizeAnswer(s){
+    return String(s ?? "")
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, " ");
   }
 
   function rangeLabel(){
@@ -667,10 +917,44 @@
     return parts.length ? parts.join(", ") : "선택없음";
   }
 
-  // ---------------- Bottom Sheet(오답/기록) ----------------
+  // ---------------- 상단 범위 표시줄 ----------------
+  function selectedDaysForPool(){
+    const multi = load(MULTI_DAY_KEY, []);
+    const base = el("daySelect").value;
+    return (multi.length > 0 ? multi : [base]).filter(Boolean);
+  }
+
+  function currentModeLabel(){
+    const tab = isLearnTab() ? "단어 암기" : "단어 시험";
+    const mode = isLearnTab()
+      ? "암기(Flash)"
+      : (el("modeSelect").value === "mc" ? "4지선다" : "주관식");
+    const dir = (el("dirSelect").value === "en2ko") ? "영→뜻" : "뜻→영";
+    return `${tab} · ${mode} · ${dir}`;
+  }
+
+  function updateScopeBar(){
+    el("scopeTabPill").textContent = `모드: ${currentModeLabel()}`;
+    const days = selectedDaysForPool();
+    el("scopeDaysPill").textContent = `DAY: ${days.length ? days.map(dayLabel).join(", ") : "-"}`;
+    el("scopeRangePill").textContent = `범위: ${rangeLabel()}`;
+    el("scopeCountPill").textContent = el("countSelect").value;
+    if(el("goalPill")) el("goalPill").textContent = getGoal();
+  }
+
+  ["modeSelect","dirSelect","countSelect","voiceSelect"].forEach(id=>{
+    el(id).addEventListener("change", updateScopeBar);
+  });
+  ["cb_core","cb_basic","cb_800","cb_900"].forEach(id=>{
+    el(id).addEventListener("change", updateScopeBar);
+  });
+
+  // ---------------- Bottom Sheet(오답/기록/즐겨찾기/달력) ----------------
   const overlay = el("overlay");
   const paneWords = el("paneWords");
   const paneWrong = el("paneWrong");
+  const paneFav = el("paneFav");
+  const paneCalendar = el("paneCalendar");
   const paneHistory = el("paneHistory");
 
   function openSheet(tab="words"){
@@ -681,25 +965,57 @@
   function closeSheet(){ overlay.classList.add("hidden"); }
 
   function setTabActive(activeId){
-    ["tabWords","tabWrong","tabHistory"].forEach(id => el(id).classList.remove("active"));
+    ["tabWords","tabWrong","tabFav","tabCalendar","tabHistory"].forEach(id => el(id).classList.remove("active"));
     el(activeId).classList.add("active");
   }
 
   function switchTab(tab){
     paneWords.classList.add("hidden");
     paneWrong.classList.add("hidden");
+    paneFav.classList.add("hidden");
+    paneCalendar.classList.add("hidden");
     paneHistory.classList.add("hidden");
+
     if(tab==="words"){ paneWords.classList.remove("hidden"); setTabActive("tabWords"); }
     if(tab==="wrong"){ paneWrong.classList.remove("hidden"); setTabActive("tabWrong"); }
+    if(tab==="fav"){ paneFav.classList.remove("hidden"); setTabActive("tabFav"); }
+    if(tab==="cal"){ paneCalendar.classList.remove("hidden"); setTabActive("tabCalendar"); }
     if(tab==="history"){ paneHistory.classList.remove("hidden"); setTabActive("tabHistory"); }
   }
 
-  function selectedDaysForPool(){
-    const multi = load(MULTI_DAY_KEY, []);
-    const base = el("daySelect").value;
-    return (multi.length > 0 ? multi : [base]).filter(Boolean);
+  function renderSheet(tab){
+    if(tab==="words") renderWordsList();
+    if(tab==="wrong") renderWrongList();
+    if(tab==="fav") renderFavList();
+    if(tab==="cal") renderCalendar();
+    if(tab==="history") renderHistoryList();
   }
 
+  el("openSheetBtn").onclick = () => openSheet("words");
+  el("closeSheetBtn").onclick = closeSheet;
+  overlay.addEventListener("click", (e) => { if(e.target === overlay) closeSheet(); });
+
+  el("tabWords").onclick = () => { switchTab("words"); renderWordsList(); };
+  el("tabWrong").onclick = () => { switchTab("wrong"); renderWrongList(); };
+  el("tabFav").onclick = () => { switchTab("fav"); renderFavList(); };
+  el("tabCalendar").onclick = () => { switchTab("cal"); renderCalendar(); };
+  el("tabHistory").onclick = () => { switchTab("history"); renderHistoryList(); };
+
+  // 전체 초기화
+  el("resetStatsBtn").onclick = () => {
+    if(!confirm("전체 초기화할까요? (단어 데이터 제외)\n- 오답노트/기록/일일학습/선택DAY/즐겨찾기/목표달성 기록이 초기화됩니다.")) return;
+    save(STATS_KEY, {});
+    save(SESSION_KEY, []);
+    save(DAILY_KEY, {});
+    save(MULTI_DAY_KEY, []);
+    save(FAVORITES_KEY, {});
+    save(GOAL_DONE_KEY, {});
+    updateActiveCount();
+    updateDailyUI();
+    alert("초기화 완료!");
+  };
+
+  // ---------------- 단어 리스트 + 검색 + 사전 + 즐겨찾기 ----------------
   function selectedRanges(){
     const arr = [];
     if(el("cb_core").checked) arr.push([1,40]);
@@ -708,41 +1024,95 @@
     if(el("cb_900").checked) arr.push([137, 999999]);
     return arr;
   }
-
   function inRanges(n, ranges){ return ranges.some(([s,e]) => n >= s && n <= e); }
-
-  function renderSheet(tab){
-    if(tab==="words") renderWordsList();
-    if(tab==="wrong") renderWrongList();
-    if(tab==="history") renderHistoryList();
-  }
 
   function renderWordsList(){
     const data = load(WORDS_KEY, {});
     const days = selectedDaysForPool();
     const ranges = selectedRanges();
+
     let list = [];
     days.forEach(d => list = list.concat(data[d] || []));
     list = list.filter(x => inRanges(x.n, ranges));
     list.sort((a,b) => (a.day.localeCompare(b.day, undefined, {numeric:true}) || (a.n-b.n)));
 
     paneWords.innerHTML = "";
+
     const head = document.createElement("div");
     head.className = "item";
     head.innerHTML = `
       <div class="itemTop">
         <div>
           <div class="itemWord">현재 선택 범위 단어</div>
-          <div class="muted">DAY: <b>${esc(days.join(", "))}</b> · 범위: <b>${esc(rangeLabel())}</b> · 총 <b>${list.length}</b>개</div>
+          <div class="muted">DAY: <b>${esc(days.map(dayLabel).join(", "))}</b> · 범위: <b>${esc(rangeLabel())}</b> · 총 <b id="wordsCountLabel">${list.length}</b>개</div>
         </div>
         <span class="badge">LIST</span>
       </div>
+
+      <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
+        <input id="wordSearchInput" placeholder="검색 (영단어/뜻)" style="flex:1; min-width: 200px;" />
+        <button class="btn btn-ghost" type="button" id="clearSearchBtn">지우기</button>
+      </div>
+
       <div class="miniBtns">
         <button class="btn btn-soft" type="button" id="speakFirstBtn">첫 단어 발음</button>
         <button class="btn btn-ghost" type="button" id="copyListBtn">복사</button>
       </div>
+
+      <div class="muted" style="margin-top:8px">팁: ☆/★ 즐겨찾기, 사전/예문으로 확장 학습</div>
     `;
     paneWords.appendChild(head);
+
+    const listWrap = document.createElement("div");
+    listWrap.id = "wordsListWrap";
+    listWrap.className = "list";
+    paneWords.appendChild(listWrap);
+
+    const renderItems = (arr) => {
+      listWrap.innerHTML = "";
+      arr.slice(0,300).forEach(x => {
+        const it = document.createElement("div");
+        it.className = "item";
+        it.innerHTML = `
+          <div class="itemTop">
+            <div>
+              <div class="itemWord">${esc(x.w)} <span class="muted">(${esc(dayLabel(x.day))} · #${esc(x.n)})</span></div>
+              <div class="muted">${esc(x.m)}</div>
+            </div>
+            <span class="badge">WORD</span>
+          </div>
+          <div class="miniBtns">
+            <button class="btn btn-soft" type="button">발음</button>
+            <button class="btn btn-ghost" type="button">사전</button>
+            <button class="btn btn-ghost" type="button">예문</button>
+            <button class="btn btn-ghost" type="button">${isFav(x) ? "★" : "☆"}</button>
+          </div>
+        `;
+        const [b1,b2,b3,b4] = it.querySelectorAll("button");
+        b1.onclick = () => speak(x.w);
+        b2.onclick = () => openNaverDict(x.w);
+        b3.onclick = () => openNaverExample(x.w);
+        b4.onclick = () => { toggleFav(x); b4.textContent = isFav(x) ? "★" : "☆"; };
+        listWrap.appendChild(it);
+      });
+
+      if(arr.length > 300){
+        const more = document.createElement("div");
+        more.className = "muted";
+        more.style.margin = "10px 2px";
+        more.textContent = `표시는 300개까지만! (총 ${arr.length}개)`;
+        listWrap.appendChild(more);
+      }
+    };
+
+    const applyFilter = () => {
+      const q = normalizeAnswer(el("wordSearchInput").value);
+      const filteredList = !q ? list : list.filter(x =>
+        normalizeAnswer(x.w).includes(q) || normalizeAnswer(x.m).includes(q)
+      );
+      paneWords.querySelector("#wordsCountLabel").textContent = filteredList.length;
+      renderItems(filteredList);
+    };
 
     el("speakFirstBtn").onclick = () => { if(list[0]?.w) speak(list[0].w); };
 
@@ -752,32 +1122,20 @@
       catch { alert("복사 실패(브라우저 권한)."); }
     };
 
-    list.slice(0, 300).forEach(x => {
-      const it = document.createElement("div");
-      it.className = "item";
-      it.innerHTML = `
-        <div class="itemTop">
-          <div>
-            <div class="itemWord">${esc(x.w)} <span class="muted">(${esc(x.day)} · #${esc(x.n)})</span></div>
-            <div class="muted">${esc(x.m)}</div>
-          </div>
-          <span class="badge">WORD</span>
-        </div>
-        <div class="miniBtns">
-          <button class="btn btn-soft" type="button">발음</button>
-        </div>
-      `;
-      it.querySelector("button").onclick = () => speak(x.w);
-      paneWords.appendChild(it);
-    });
+    el("clearSearchBtn").onclick = () => { el("wordSearchInput").value = ""; applyFilter(); };
+    el("wordSearchInput").addEventListener("input", applyFilter);
 
-    if(list.length > 300){
-      const more = document.createElement("div");
-      more.className = "muted";
-      more.style.margin = "10px 2px";
-      more.textContent = `표시는 300개까지만! (총 ${list.length}개)`;
-      paneWords.appendChild(more);
-    }
+    renderItems(list);
+  }
+
+  // ---------------- 오답노트 ----------------
+  function saveWrongStat(item){
+    let stats = load(STATS_KEY, {});
+    let k = keyOf(item);
+    if(!stats[k]) stats[k] = {...item, wrong:0};
+    stats[k].wrong = (stats[k].wrong || 0) + 1;
+    stats[k].last = Date.now();
+    save(STATS_KEY, stats);
   }
 
   function renderWrongList(){
@@ -825,7 +1183,7 @@
       it.innerHTML = `
         <div class="itemTop">
           <div>
-            <div class="itemWord">${esc(x.w)} <span class="muted">(${esc(x.day)} · #${esc(x.n)})</span></div>
+            <div class="itemWord">${esc(x.w)} <span class="muted">(${esc(dayLabel(x.day))} · #${esc(x.n)})</span></div>
             <div class="muted">${esc(x.m)}</div>
             <div class="muted">틀림: <b>${esc(x.wrong || 0)}</b> · 최근: <b>${esc(x.last ? fmtTime(x.last) : "-")}</b></div>
           </div>
@@ -833,11 +1191,15 @@
         </div>
         <div class="miniBtns">
           <button class="btn btn-soft" type="button">발음</button>
+          <button class="btn btn-ghost" type="button">사전</button>
+          <button class="btn btn-ghost" type="button">${isFav(x) ? "★" : "☆"}</button>
           <button class="btn btn-ghost" type="button">삭제</button>
         </div>
       `;
-      const [btnSpeak, btnDel] = it.querySelectorAll("button");
+      const [btnSpeak, btnDict, btnFav, btnDel] = it.querySelectorAll("button");
       btnSpeak.onclick = () => speak(x.w);
+      btnDict.onclick = () => openNaverDict(x.w);
+      btnFav.onclick = () => { toggleFav(x); btnFav.textContent = isFav(x) ? "★" : "☆"; };
       btnDel.onclick = () => {
         const k = `${x.day}||${x.n}||${x.w}`;
         const s = load(STATS_KEY, {});
@@ -849,6 +1211,160 @@
     });
   }
 
+  // ---------------- 즐겨찾기 탭 ----------------
+  function renderFavList(){
+    const list = favList();
+    paneFav.innerHTML = "";
+
+    const head = document.createElement("div");
+    head.className = "item";
+    head.innerHTML = `
+      <div class="itemTop">
+        <div>
+          <div class="itemWord">즐겨찾기</div>
+          <div class="muted">총 <b>${list.length}</b>개</div>
+        </div>
+        <span class="badge">FAV</span>
+      </div>
+      <div class="miniBtns">
+        <button class="btn btn-soft" type="button" id="startFavQuizBtn">즐겨찾기 퀴즈</button>
+        <button class="btn btn-danger" type="button" id="clearFavBtn">전체 삭제</button>
+      </div>
+    `;
+    paneFav.appendChild(head);
+
+    el("startFavQuizBtn").onclick = () => {
+      if(list.length===0) return alert("즐겨찾기가 비어있어요!");
+      closeSheet();
+      startQuiz(list, quizState?.mode || (isLearnTab() ? "flash" : el("modeSelect").value));
+    };
+
+    el("clearFavBtn").onclick = () => {
+      if(confirm("즐겨찾기를 전부 삭제할까요?")){
+        save(FAVORITES_KEY, {});
+        renderFavList();
+      }
+    };
+
+    if(list.length===0){
+      const empty = document.createElement("div");
+      empty.className="item";
+      empty.innerHTML = `<div class="muted">☆/★ 눌러서 어려운 단어를 모아보세요.</div>`;
+      paneFav.appendChild(empty);
+      return;
+    }
+
+    list.slice(0,300).forEach(x=>{
+      const it = document.createElement("div");
+      it.className="item";
+      it.innerHTML = `
+        <div class="itemTop">
+          <div>
+            <div class="itemWord">${esc(x.w)} <span class="muted">(${esc(dayLabel(x.day))} · #${esc(x.n)})</span></div>
+            <div class="muted">${esc(x.m)}</div>
+          </div>
+          <span class="badge">★</span>
+        </div>
+        <div class="miniBtns">
+          <button class="btn btn-soft" type="button">발음</button>
+          <button class="btn btn-ghost" type="button">사전</button>
+          <button class="btn btn-ghost" type="button">예문</button>
+          <button class="btn btn-ghost" type="button">삭제</button>
+        </div>
+      `;
+      const [b1,b2,b3,b4] = it.querySelectorAll("button");
+      b1.onclick = ()=> speak(x.w);
+      b2.onclick = ()=> openNaverDict(x.w);
+      b3.onclick = ()=> openNaverExample(x.w);
+      b4.onclick = ()=>{
+        const m = favMap();
+        delete m[keyOf(x)];
+        save(FAVORITES_KEY, m);
+        renderFavList();
+      };
+      paneFav.appendChild(it);
+    });
+  }
+
+  // ---------------- 달력(학습 기록) ----------------
+  function renderCalendar(){
+    paneCalendar.innerHTML = "";
+
+    const daily = load(DAILY_KEY, {});
+    const goal = getGoal();
+
+    const now = new Date();
+    let viewY = now.getFullYear();
+    let viewM = now.getMonth(); // 0-based
+
+    const wrap = document.createElement("div");
+    wrap.className = "item";
+    wrap.innerHTML = `
+      <div class="calWrap">
+        <div class="calHead">
+          <div class="itemWord" id="calTitle">${viewY}년 ${viewM+1}월</div>
+          <div class="miniBtns">
+            <button class="btn btn-ghost" type="button" id="calPrevBtn">◀ 이전달</button>
+            <button class="btn btn-soft" type="button" id="calTodayBtn">이번달</button>
+            <button class="btn btn-ghost" type="button" id="calNextBtn">다음달 ▶</button>
+          </div>
+        </div>
+        <div class="muted">표시: 학습한 날(초록) · 목표 달성(파랑) · 목표 ${goal}문제</div>
+        <div class="calGrid" id="calGrid"></div>
+      </div>
+    `;
+    paneCalendar.appendChild(wrap);
+
+    const draw = () => {
+      el("calTitle").textContent = `${viewY}년 ${viewM+1}월`;
+      const grid = el("calGrid");
+      grid.innerHTML = "";
+
+      const dows = ["일","월","화","수","목","금","토"];
+      dows.forEach(x=>{
+        const t = document.createElement("div");
+        t.className = "calDow";
+        t.textContent = x;
+        grid.appendChild(t);
+      });
+
+      const first = new Date(viewY, viewM, 1);
+      const startDow = first.getDay();
+      const lastDate = new Date(viewY, viewM+1, 0).getDate();
+
+      // blanks
+      for(let i=0;i<startDow;i++){
+        const b = document.createElement("div");
+        b.style.opacity = "0";
+        b.className = "calDay";
+        grid.appendChild(b);
+      }
+
+      for(let day=1; day<=lastDate; day++){
+        const key = `${viewY}-${String(viewM+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+        const cnt = daily[key] || 0;
+        const isHit = cnt > 0;
+        const isGoal = cnt >= goal;
+
+        const cell = document.createElement("div");
+        cell.className = "calDay" + (isHit ? " calHit" : "") + (isGoal ? " calGoal" : "");
+        cell.innerHTML = `
+          <div class="calNum">${day}</div>
+          <div class="calMeta">${isHit ? `학습 ${cnt}` : "—"}</div>
+          <div class="calMeta">${isGoal ? "목표 달성 🎉" : ""}</div>
+        `;
+        grid.appendChild(cell);
+      }
+    };
+
+    el("calPrevBtn").onclick = () => { viewM--; if(viewM<0){viewM=11; viewY--;} draw(); };
+    el("calNextBtn").onclick = () => { viewM++; if(viewM>11){viewM=0; viewY++;} draw(); };
+    el("calTodayBtn").onclick = () => { viewY = now.getFullYear(); viewM = now.getMonth(); draw(); };
+
+    draw();
+  }
+
+  // ---------------- 기록 탭 ----------------
   function renderHistoryList(){
     const sessions = load(SESSION_KEY, []);
     paneHistory.innerHTML = "";
@@ -894,7 +1410,7 @@
           <div>
             <div class="itemWord">${esc(modeName)} · ${esc(dirName)}</div>
             <div class="muted">${esc(fmtTime(s.ts))}</div>
-            <div class="muted">DAY: <b>${esc((s.days||[]).join(", "))}</b> · 범위: <b>${esc(s.ranges || "-")}</b></div>
+            <div class="muted">DAY: <b>${esc((s.days||[]).map(dayLabel).join(", "))}</b> · 범위: <b>${esc(s.ranges || "-")}</b></div>
             <div class="muted">점수: <b>${esc(s.score)}</b> / ${esc(s.total)} · 오답: <b>${esc(s.wrongCount)}</b></div>
           </div>
           <span class="badge">${esc(s.total)}Q</span>
@@ -904,33 +1420,16 @@
     });
   }
 
-  // Sheet 버튼 연결
-  el("openSheetBtn").onclick = () => openSheet("words");
-  el("closeSheetBtn").onclick = closeSheet;
-  overlay.addEventListener("click", (e) => { if(e.target === overlay) closeSheet(); });
-
-  el("tabWords").onclick = () => { switchTab("words"); renderWordsList(); };
-  el("tabWrong").onclick = () => { switchTab("wrong"); renderWrongList(); };
-  el("tabHistory").onclick = () => { switchTab("history"); renderHistoryList(); };
-
-  // 전체 초기화
-  el("resetStatsBtn").onclick = () => {
-    if(!confirm("전체 초기화할까요? (단어 데이터 제외)\n- 오답노트/기록/일일학습/선택DAY가 초기화됩니다.")) return;
-    save(STATS_KEY, {});
-    save(SESSION_KEY, []);
-    save(DAILY_KEY, {});
-    save(MULTI_DAY_KEY, []);
-    updateActiveCount();
-    updateDailyUI();
-    alert("초기화 완료!");
-  };
-
   // ---------------- 퀴즈 로직 ----------------
   let pool = [], idx = 0, score = 0, wrong = [], locked = false;
   let quizState = null; // mode/dir/days/ranges 고정
   let reinsertCount = {}; // flash 재삽입 카운트
 
-  function keyOf(item){ return `${item.day}||${item.n}||${item.w}`; }
+  function markAttempt(){
+    bumpDaily(1);
+    updateDailyUI();
+    checkGoalAndCelebrate();
+  }
 
   function buildPoolFromSelection() {
     const data = load(WORDS_KEY, {});
@@ -946,7 +1445,18 @@
 
   function startQuiz(customPool=null, forceMode=null) {
     clearAutoNext();
-    reinsertCount = {}; // reset
+    reinsertCount = {};
+
+    const dataNow = load(WORDS_KEY, {});
+    if (!dataNow || Object.keys(dataNow).length === 0) {
+      alert("단어 데이터가 없어요!\nCSV 로딩이 실패했거나 아직 로딩 중일 수 있어요.\n\n/ toeic_words_day1_30.csv 가 열리는지 확인해 주세요.");
+      return;
+    }
+
+    if (!el("cb_core").checked && !el("cb_basic").checked && !el("cb_800").checked && !el("cb_900").checked) {
+      alert("범위를 최소 1개 이상 선택해야 시작돼요! (핵심/기초/800/900)");
+      return;
+    }
 
     const { targetDays, filtered } = buildPoolFromSelection();
     const usePool = customPool || filtered;
@@ -955,12 +1465,11 @@
     const fixedMode = forceMode || (isLearnTab() ? "flash" : el("modeSelect").value);
     const fixedDir = el("dirSelect").value;
 
-    // 섞기 & 자르기
     const count = parseInt(el("countSelect").value, 10);
     pool = usePool.slice().sort(() => Math.random() - 0.5).slice(0, Math.min(count, usePool.length));
 
     idx = 0; score = 0; wrong = []; locked = false;
-    quizState = { mode: fixedMode, dir: fixedDir, days: targetDays, ranges: rangeLabel() };
+    quizState = { mode: fixedMode, dir: fixedDir, days: targetDays, ranges: rangeLabel(), count: pool.length };
 
     el("retestBox").classList.add("hidden");
     el("quizOverlay").classList.remove("hidden");
@@ -968,6 +1477,27 @@
   }
 
   startBtn.onclick = () => startQuiz();
+
+  function setQuizHeaderScope(){
+    const daysText = (quizState?.days || []).map(dayLabel).join(", ") || "-";
+    const rangeText = quizState?.ranges || "-";
+    const cnt = quizState?.count ?? pool.length;
+    el("quizScopeLine").textContent = `DAY: ${daysText} · 범위: ${rangeText} · 문제수: ${cnt}`;
+  }
+
+  function updateQuizQuickButtons(item){
+    const word = item?.w || "";
+    el("quizDictBtn").onclick = () => word && openNaverDict(word);
+    el("quizExBtn").onclick = () => word && openNaverExample(word);
+
+    const favBtn = el("quizFavBtn");
+    favBtn.textContent = item && isFav(item) ? "★" : "☆";
+    favBtn.onclick = () => {
+      if(!item) return;
+      toggleFav(item);
+      favBtn.textContent = isFav(item) ? "★" : "☆";
+    };
+  }
 
   function renderQuiz() {
     clearAutoNext();
@@ -980,6 +1510,8 @@
     const dir = quizState.dir;
 
     el("quizMeta").textContent = `(${mode === "flash" ? "Flash" : (mode === "mc" ? "MC" : "SA")} · ${dir === "en2ko" ? "영→뜻" : "뜻→영"})`;
+    setQuizHeaderScope();
+    updateQuizQuickButtons(item);
 
     el("progressPill").textContent = `${idx + 1}/${pool.length}`;
     el("progressBar").style.width = `${((idx + 1) / pool.length) * 100}%`;
@@ -993,7 +1525,6 @@
 
     if (dir === "en2ko") speak(item.w);
 
-    // 모드별 화면 세팅 + 상태 잔존 방지
     el("choices").classList.add("hidden");
     el("shortAnswer").classList.add("hidden");
     el("flashAnswerBox").classList.add("hidden");
@@ -1026,7 +1557,6 @@
          .filter(v => v && v !== correct)
     ));
 
-    // 섞기
     for(let i=candidates.length-1;i>0;i--){
       const j = Math.floor(Math.random()*(i+1));
       [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
@@ -1036,7 +1566,6 @@
     const choices = [correct, ...picks];
     while(choices.length < 4) choices.push("—");
 
-    // 다시 섞기
     for(let i=choices.length-1;i>0;i--){
       const j = Math.floor(Math.random()*(i+1));
       [choices[i], choices[j]] = [choices[j], choices[i]];
@@ -1050,15 +1579,6 @@
       b.onclick = () => judge(c === correct);
       el("choices").appendChild(b);
     });
-  }
-
-  function saveWrongStat(item){
-    let stats = load(STATS_KEY, {});
-    let k = keyOf(item);
-    if(!stats[k]) stats[k] = {...item, wrong:0};
-    stats[k].wrong = (stats[k].wrong || 0) + 1;
-    stats[k].last = Date.now();
-    save(STATS_KEY, stats);
   }
 
   function judge(isCorrect) {
@@ -1122,11 +1642,10 @@
     });
   }
 
-  // ✅ 종료 가드 추가
   function goNext() {
     clearAutoNext();
     if(idx >= pool.length - 1){
-      idx = pool.length; // 끝난 상태로 고정
+      idx = pool.length;
       finishQuiz();
       return;
     }
@@ -1147,7 +1666,6 @@
   };
 
   el("knowBtn").onclick = () => {
-    // Flash는 judge 안 타므로 공통 함수 사용
     markAttempt();
     score++;
     goNext();
@@ -1161,7 +1679,6 @@
     saveWrongStat(item);
     markAttempt();
 
-    // ✅ 재삽입 상한
     const k = keyOf(item);
     reinsertCount[k] = (reinsertCount[k] || 0) + 1;
 
@@ -1177,14 +1694,7 @@
     setTimeout(goNext, 500);
   };
 
-  // 주관식 제출(빈칸 버그 제거 + 분리 비교)
-  function normalizeAnswer(s){
-    return String(s ?? "")
-      .trim()
-      .toLowerCase()
-      .replace(/\s+/g, " ");
-  }
-
+  // 주관식
   el("submitAnswerBtn").onclick = () => {
     const user = normalizeAnswer(el("answerInput").value);
     if(!user) return alert("정답을 입력하세요!");
@@ -1241,7 +1751,11 @@
     if(!overlay.classList.contains("hidden")) closeSheet();
   });
 
-  // 초기 로드
+  // ---------------- 초기 로드 ----------------
+  // 초기 상태 Learn 고정
+  modeField.classList.add("hidden");
+  el("modeSelect").value = "flash";
+  updateScopeBar();
   ensureLoaded();
 </script>
 </body>

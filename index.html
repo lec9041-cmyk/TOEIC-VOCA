@@ -270,11 +270,11 @@
       bottom:6px;
       left:50%;
       transform:translateX(-50%);
-      width:6px;
-      height:6px;
-      border-radius:999px;
-      background:#64748b;
-      opacity:.9;
+      width:14px;
+      height:4px;
+      border-radius:2px;
+      background:#2563eb;
+      opacity:.95;
     }
     .calL0{ background:#ffffff; }
     .calL1{ background:#ecfdf5; }
@@ -282,6 +282,7 @@
     .calL3{ background:#86efac; }
     .calL4{ background:#4ade80; }
     .calGoal{ outline:2px solid #60a5fa; outline-offset:-2px; }
+    .calToday{ box-shadow: inset 0 0 0 2px #111827; }
     @media (max-width: 420px){
       .calGrid{gap:6px;}
       .calDay{min-height:62px;border-radius:10px;}
@@ -374,6 +375,12 @@
       </div>
 
       <div class="field">
+        <label style="display:flex;align-items:center;gap:6px;min-height:46px;">
+          <input id="flashOffToggle" type="checkbox" style="min-height:auto;" /> 플래시 숨김(정답 즉시 표시)
+        </label>
+      </div>
+
+      <div class="field">
         <label>방향</label>
         <select id="dirSelect">
           <option value="en2ko" selected>영단어 → 뜻</option>
@@ -384,6 +391,7 @@
 
     <div class="actions">
       <button id="openSheetBtn" class="btn btn-ghost" type="button">오답·기록 보기</button>
+      <button id="resumeBtn" class="btn btn-soft hidden" type="button">이어하기</button>
       <button id="resetStatsBtn" class="btn btn-danger" type="button">전체 초기화</button>
     </div>
 
@@ -392,6 +400,11 @@
       <span class="pill">오늘 학습: <b id="todayCountPill">0</b></span>
       <span class="pill">연속: <b id="streakPill">0</b>일</span>
     </div>
+
+    <details class="card" style="margin-top:12px;">
+      <summary style="font-weight:900; cursor:pointer;">📚 단어암기 리스트/진행도 (펼치기)</summary>
+      <div id="learnDayProgress" class="list" style="margin-top:10px;"></div>
+    </details>
   </div>
 
   <div class="card" id="scopeCard">
@@ -505,7 +518,6 @@
           <span class="pill">오답: <b id="wrongN">0</b></span>
           <button id="quizSpeakBtn" class="btn btn-ghost" type="button" style="min-height:38px;padding:8px 10px;border-radius:999px;">🔊</button>
           <button id="quizDictBtn" class="btn btn-ghost" type="button" style="min-height:38px;padding:8px 10px;border-radius:999px;">사전</button>
-          <button id="quizExBtn" class="btn btn-ghost" type="button" style="min-height:38px;padding:8px 10px;border-radius:999px;">예문</button>
           <button id="quizFavBtn" class="btn btn-ghost" type="button" style="min-height:38px;padding:8px 10px;border-radius:999px;">☆</button>
         </div>
 
@@ -582,6 +594,8 @@
   const FAVORITES_KEY = "toeic_favorites_v1";
   const GOAL_KEY = "toeic_goal_v1";
   const GOAL_DONE_KEY = "toeic_goal_done_v1";
+  const RESUME_KEY = "toeic_resume_v1";
+  const FLASH_OFF_KEY = "toeic_flash_off_v1";
   const DEFAULT_GOAL = 30;
 
   // Flash 재삽입 상한
@@ -788,10 +802,6 @@
   // ---------------- 네이버 사전/예문 ----------------
   function openNaverDict(word){
     const url = `https://en.dict.naver.com/#/search?query=${encodeURIComponent(word)}`;
-    window.open(url, "_blank");
-  }
-  function openNaverExample(word){
-    const url = `https://context.reverso.net/translation/english-korean/${encodeURIComponent(word)}`;
     window.open(url, "_blank");
   }
 
@@ -1002,6 +1012,7 @@
     bindGoalSetter();
     bindStatsCalNav();
     bindMainCalendarClick();
+    updateResumeButton();
 
     const dayCount = Object.keys(data).length;
     el("dataStatus").textContent = dayCount ? `· ✅ ${dayCount}개 DAY 로드됨` : "· ⚠️ 데이터 없음";
@@ -1178,6 +1189,11 @@
     save(WRONG_FIRST_KEY, !!e.target.checked);
   };
 
+  el("flashOffToggle").checked = !!load(FLASH_OFF_KEY, false);
+  el("flashOffToggle").onchange = (e) => {
+    save(FLASH_OFF_KEY, !!e.target.checked);
+  };
+
   // ---------------- 통계/기록 ----------------
   function bumpDaily(countAdd=1){
     const key = todayKey();
@@ -1209,14 +1225,14 @@
     }, 0);
   }
 
-  function makeCalCell(dayNum, cnt, goal){
+  function makeCalCell(dayNum, cnt, goal, isToday=false){
     const c = Math.max(0, Number(cnt) || 0);
     const goalNum = Number(goal);
     const normalizedGoal = Math.max(1, (Number.isFinite(goalNum) && goalNum > 0) ? goalNum : DEFAULT_GOAL);
     const level = c === 0 ? 0 : (c <= 10 ? 1 : (c <= 20 ? 2 : (c <= 30 ? 3 : 4)));
     const isGoal = c >= normalizedGoal;
     return {
-      className: `calDay calL${level}${isGoal ? " calGoal" : ""}`,
+      className: `calDay calL${level}${isGoal ? " calGoal" : ""}${isToday ? " calToday" : ""}`,
       title: `${dayNum}일 · 학습: ${c}문제`,
       cnt: c,
       dot: c > 0
@@ -1247,7 +1263,8 @@
     for(let day=1; day<=lastDate; day++){
       const key = `${year}-${String(month0+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
       const cnt = daily[key] || 0;
-      const info = makeCalCell(day, cnt, goal);
+      const isToday = key === todayKey();
+      const info = makeCalCell(day, cnt, goal, isToday);
       const cell = document.createElement("div");
       cell.className = info.className;
       cell.title = info.title;
@@ -1294,11 +1311,42 @@
     });
   }
 
+  function renderLearnDayProgress(){
+    const wrap = el("learnDayProgress");
+    if(!wrap) return;
+    const data = load(WORDS_KEY, {});
+    const stats = load(STATS_KEY, {});
+    const allDays = getAllDays(data);
+    wrap.innerHTML = "";
+
+    if(allDays.length === 0){
+      wrap.innerHTML = `<div class="item"><div class="muted">DAY 데이터가 없어요.</div></div>`;
+      return;
+    }
+
+    allDays.forEach(day => {
+      const words = data[day] || [];
+      const keys = words.map(keyOf);
+      const logged = keys.filter(k => !!stats[k]).length;
+      const wrongN = keys.reduce((acc, k) => acc + ((stats[k]?.wrongCount || 0) > 0 ? 1 : 0), 0);
+      const row = document.createElement("div");
+      row.className = "item";
+      row.innerHTML = `
+        <div class="itemTop" style="margin-bottom:0; align-items:center;">
+          <div class="itemWord">${esc(dayLabel(day))}</div>
+          <span class="badge">총 ${words.length}개 / 기록 ${logged}개 / 오답 ${wrongN}개</span>
+        </div>
+      `;
+      wrap.appendChild(row);
+    });
+  }
+
   function updateDailyUI(){
     const daily = load(DAILY_KEY, {});
     el("todayCountPill").textContent = daily[todayKey()] || 0;
     el("streakPill").textContent = calcStreak();
     renderMainCalendarSummary(statsViewY, statsViewM);
+    renderLearnDayProgress();
     checkGoalAndCelebrate();
   }
 
@@ -1367,6 +1415,11 @@
       const label = v === poolSize ? `${v} (전체)` : String(v);
       sel.add(new Option(label, String(v)));
     });
+
+    if(isLearnTab()){
+      sel.value = String(poolSize);
+      return;
+    }
 
     let next = options.includes(prev) ? prev : null;
     if(next === null) next = options.includes(30) ? 30 : options[0];
@@ -1460,6 +1513,8 @@
     save(WRONG_FIRST_KEY, false);
     save(FAVORITES_KEY, {});
     save(GOAL_DONE_KEY, {});
+    localStorage.removeItem(RESUME_KEY);
+    updateResumeButton();
     updateActiveCount();
     updateDailyUI();
     alert("초기화 완료!");
@@ -1509,7 +1564,7 @@
         <button class="btn btn-ghost" type="button" id="copyListBtn">복사</button>
       </div>
 
-      <div class="muted" style="margin-top:8px">팁: ☆/★ 즐겨찾기, 사전/예문으로 확장 학습</div>
+      <div class="muted" style="margin-top:8px">팁: ☆/★ 즐겨찾기, 사전으로 확장 학습</div>
     `;
     paneWords.appendChild(head);
 
@@ -1534,15 +1589,13 @@
           <div class="miniBtns">
             <button class="btn btn-soft" type="button">발음</button>
             <button class="btn btn-ghost" type="button">사전</button>
-            <button class="btn btn-ghost" type="button">예문</button>
             <button class="btn btn-ghost" type="button">${isFav(x) ? "★" : "☆"}</button>
           </div>
         `;
-        const [b1,b2,b3,b4] = it.querySelectorAll("button");
+        const [b1,b2,b3] = it.querySelectorAll("button");
         b1.onclick = () => speak(x.w);
         b2.onclick = () => openNaverDict(x.w);
-        b3.onclick = () => openNaverExample(x.w);
-        b4.onclick = () => { toggleFav(x); b4.textContent = isFav(x) ? "★" : "☆"; };
+        b3.onclick = () => { toggleFav(x); b3.textContent = isFav(x) ? "★" : "☆"; };
         listWrap.appendChild(it);
       });
 
@@ -1718,15 +1771,13 @@
         <div class="miniBtns">
           <button class="btn btn-soft" type="button">발음</button>
           <button class="btn btn-ghost" type="button">사전</button>
-          <button class="btn btn-ghost" type="button">예문</button>
           <button class="btn btn-ghost" type="button">삭제</button>
         </div>
       `;
-      const [b1,b2,b3,b4] = it.querySelectorAll("button");
+      const [b1,b2,b3] = it.querySelectorAll("button");
       b1.onclick = ()=> speak(x.w);
       b2.onclick = ()=> openNaverDict(x.w);
-      b3.onclick = ()=> openNaverExample(x.w);
-      b4.onclick = ()=>{
+      b3.onclick = ()=>{
         const m = favMap();
         delete m[keyOf(x)];
         save(FAVORITES_KEY, m);
@@ -1796,6 +1847,40 @@
   let pool = [], idx = 0, score = 0, wrong = [], locked = false;
   let quizState = null; // mode/dir/days/ranges 고정
   let reinsertCount = {}; // flash 재삽입 카운트
+
+  function updateResumeButton(){
+    const hasResume = !!load(RESUME_KEY, null);
+    el("resumeBtn").classList.toggle("hidden", !hasResume);
+  }
+
+  function saveResumeState(){
+    if(el("quizOverlay").classList.contains("hidden")) return;
+    if(!quizState || !Array.isArray(pool) || pool.length===0) return;
+    const payload = { pool, idx, score, wrong, quizState, reinsertCount, timestamp: Date.now() };
+    save(RESUME_KEY, payload);
+    updateResumeButton();
+  }
+
+  function clearResumeState(){
+    localStorage.removeItem(RESUME_KEY);
+    updateResumeButton();
+  }
+
+  function resumeQuiz(){
+    const r = load(RESUME_KEY, null);
+    if(!r || !Array.isArray(r.pool) || !r.quizState) return alert("이어할 퀴즈가 없어요.");
+    pool = r.pool;
+    idx = Number.isFinite(r.idx) ? r.idx : 0;
+    score = Number.isFinite(r.score) ? r.score : 0;
+    wrong = Array.isArray(r.wrong) ? r.wrong : [];
+    quizState = r.quizState;
+    reinsertCount = r.reinsertCount && typeof r.reinsertCount === "object" ? r.reinsertCount : {};
+    locked = false;
+    if(idx >= pool.length) idx = Math.max(0, pool.length - 1);
+    el("retestBox").classList.add("hidden");
+    el("quizOverlay").classList.remove("hidden");
+    renderQuiz();
+  }
 
   function markAttempt(){
     bumpDaily(1);
@@ -1887,6 +1972,7 @@
     if(load(RANDOM_DAY_AUTO_KEY, false) && el("randomDayToggle").checked) applyRandomDays();
     startQuiz();
   };
+  el("resumeBtn").onclick = resumeQuiz;
   el("question").onclick = () => {
     const word = pool[idx]?.w;
     if(word) openNaverDict(word);
@@ -1905,6 +1991,16 @@
     return item.w || "";
   }
 
+  function isWrongMarked(item){
+    if(!item) return false;
+    const k = keyOf(item);
+    if((wrong || []).some(w => keyOf(w) === k)) return true;
+    const stats = load(STATS_KEY, {});
+    const sc = stats[k];
+    const wc = Number(sc?.wrongCount ?? 0);
+    return Number.isFinite(wc) && wc > 0;
+  }
+
   el("quizSpeakBtn").onclick = () => {
     const t = getSpeakTextForCurrentQuestion();
     if(t) speak(t);
@@ -1913,7 +2009,6 @@
   function updateQuizQuickButtons(item){
     const word = item?.w || "";
     el("quizDictBtn").onclick = () => word && openNaverDict(word);
-    el("quizExBtn").onclick = () => word && openNaverExample(word);
 
     const favBtn = el("quizFavBtn");
     favBtn.textContent = item && isFav(item) ? "★" : "☆";
@@ -1947,7 +2042,8 @@
     el("nextBtn").classList.add("hidden");
 
     const qText = (dir === "en2ko") ? item.w : item.m;
-    el("question").textContent = qText;
+    const wrongPrefix = isWrongMarked(item) ? "🟥 오답 " : "";
+    el("question").textContent = `${wrongPrefix}${qText}`;
 
     if (dir === "en2ko") speak(item.w);
 
@@ -1966,9 +2062,15 @@
       el("answerInput").value = "";
       el("answerInput").focus();
     } else {
+      const flashOff = !!load(FLASH_OFF_KEY, false);
       el("flashAnswerBox").classList.remove("hidden");
       el("flashAnswerText").textContent = (dir === "en2ko") ? item.m : item.w;
+      if(flashOff){
+        el("flashAnswerText").classList.remove("hidden");
+        el("flashTapHint").classList.add("hidden");
+      }
     }
+    saveResumeState();
   }
 
   // ✅ MC 보기 생성: while 제거(안전)
@@ -2037,6 +2139,7 @@
     }
 
     el("nextBtn").classList.remove("hidden");
+    saveResumeState();
 
     autoNextTimer = setTimeout(() => {
       autoNextTimer = null;
@@ -2069,6 +2172,7 @@
       days: quizState.days || [],
       ranges: quizState.ranges || "-"
     });
+    clearResumeState();
   }
 
   function goNext() {
@@ -2097,6 +2201,7 @@
   el("knowBtn").onclick = () => {
     markAttempt();
     score++;
+    saveResumeState();
     goNext();
   };
 
@@ -2119,6 +2224,7 @@
     } else {
       el("feedback").innerHTML = `재삽입 한도 도달! 다음으로 넘어갑니다.`;
     }
+    saveResumeState();
 
     setTimeout(goNext, 500);
   };
@@ -2150,6 +2256,7 @@
     el("feedback").innerHTML = `정답: <b>${esc(ans)}</b>`;
     el("nextBtn").classList.remove("hidden");
     locked = true;
+    saveResumeState();
   };
 
   // 틀린 것만 다시 풀기
@@ -2170,8 +2277,14 @@
   // 끝내기
   el("stopBtn").onclick = () => {
     clearAutoNext();
+    saveResumeState();
     el("quizOverlay").classList.add("hidden");
+    updateResumeButton();
   };
+
+  window.addEventListener("beforeunload", () => {
+    saveResumeState();
+  });
 
   document.addEventListener("keydown", (e)=>{
     if(e.key.toLowerCase()!=="v") return;
@@ -2185,16 +2298,17 @@
   // ESC로 닫기
   document.addEventListener("keydown", (e) => {
     if(e.key !== "Escape") return;
-    if(!el("quizOverlay").classList.contains("hidden")) { clearAutoNext(); el("quizOverlay").classList.add("hidden"); }
+    if(!el("quizOverlay").classList.contains("hidden")) { clearAutoNext(); saveResumeState(); el("quizOverlay").classList.add("hidden"); updateResumeButton(); }
     if(!overlay.classList.contains("hidden")) closeSheet();
   });
-
   // ---------------- 수동 테스트 체크리스트 ----------------
-  // - 모바일에서 메인탭 1줄 유지되는지
-  // - 랜덤 ON 시 daySelect 및 멀티DAY 조작 막히는지
-  // - 랜덤 OFF 시 마지막 수동 day로 복구되는지
-  // - 랜덤 자동 재뽑기 ON 상태에서 시작 버튼 누를 때마다 DAY가 바뀌는지
-  // - 퀴즈 화면 🔊 버튼 / V 단축키로 발음 재생되는지 (4지/주관식/암기 모두)
+  // - 퀴즈 진행 중 [끝내기] 시 이어하기 버튼이 노출되고, 눌렀을 때 같은 문제/점수/오답 상태로 복원되는지
+  // - 퀴즈 완주(finishQuiz) 또는 전체 초기화 시 이어하기 버튼이 숨겨지는지
+  // - Flash 모드에서 "플래시 숨김" ON이면 정답이 처음부터 보이고, 탭 힌트가 숨겨지는지
+  // - 같은 세션에서 틀린 단어가 다시 나오면 문제 앞에 "🟥 오답" 표시가 붙는지
+  // - 단어 암기 > 접이식 리스트에서 DAY별 총 단어/기록/오답 개수가 표시되는지
+  // - 퀴즈 상단의 예문 버튼이 사라지고(사전/즐겨찾기/발음은 유지) 기존 퀴즈 동작이 유지되는지
+  // - 랜덤 ON 시 daySelect 및 멀티DAY 조작 막히는지, 랜덤 자동 재뽑기가 기존처럼 동작하는지
 
   // ---------------- 초기 로드 ----------------
   // 초기 상태 Learn 고정

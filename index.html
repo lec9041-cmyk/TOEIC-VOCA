@@ -56,6 +56,12 @@
         <option value="ko2en">뜻 → 영단어</option>
       </select>
 
+      <label><b>모드</b></label>
+      <select id="modeSelect">
+        <option value="mc" selected>4지선다</option>
+        <option value="sa">주관식(보기 없음)</option>
+      </select>
+
       <button id="startBtn">시험 시작</button>
       <button id="redoWrongBtn" class="hidden">오답만 다시</button>
     </div>
@@ -71,8 +77,20 @@
       <span class="pill">오답: <b id="wrongN">0</b></span>
       <button id="stopBtn">끝내기</button>
     </div>
+
     <div class="q" id="question"></div>
+
     <div class="choices" id="choices"></div>
+
+    <div id="shortAnswer" class="hidden" style="margin-top:10px">
+      <div class="row">
+        <input id="answerInput" placeholder="정답 입력" style="flex:1; min-width:220px" />
+        <button id="submitAnswerBtn">제출</button>
+        <button id="showAnswerBtn" type="button">정답 보기</button>
+      </div>
+      <div class="muted" style="margin-top:8px">뜻(한글)은 일부만 입력해도 정답 처리(포함 인정)</div>
+    </div>
+
     <div id="feedback" class="muted" style="margin-top:10px"></div>
   </div>
 
@@ -85,11 +103,30 @@
   const daySelect = el("daySelect");
   const dayCountEl = el("dayCount");
 
+  const countSelect = el("countSelect");
+  const dirSelect = el("dirSelect");
+  const modeSelect = el("modeSelect");
+  const startBtn = el("startBtn");
+  const redoWrongBtn = el("redoWrongBtn");
+
+  const quiz = el("quiz");
+  const question = el("question");
+  const choicesEl = el("choices");
+  const feedback = el("feedback");
+  const progressPill = el("progressPill");
+  const scoreEl = el("score");
+  const wrongNEl = el("wrongN");
+  const stopBtn = el("stopBtn");
+
+  const shortAnswer = el("shortAnswer");
+  const answerInput = el("answerInput");
+  const submitAnswerBtn = el("submitAnswerBtn");
+  const showAnswerBtn = el("showAnswerBtn");
+
   const loadAll = () => JSON.parse(localStorage.getItem(KEY) || "{}");
   const saveAll = (obj) => localStorage.setItem(KEY, JSON.stringify(obj));
 
   function parseCSVLine(line){
-    // Simple CSV parser handling quotes
     const out = [];
     let cur = "";
     let inQuotes = false;
@@ -113,7 +150,6 @@
     const lines = text.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
     if(lines.length === 0) return {};
 
-    // Header expected: day,no,word,meaning
     const header = parseCSVLine(lines[0]).map(x=>x.toLowerCase());
     const idxDay = header.indexOf("day");
     const idxWord = header.indexOf("word");
@@ -134,7 +170,6 @@
       data[day].push({ w, m });
     }
 
-    // De-dup per day
     for(const d of Object.keys(data)){
       const seen = new Set();
       data[d] = data[d].filter(p=>{
@@ -166,7 +201,6 @@
   }
 
   async function readFileAsText(file){
-    // Try utf-8; if you saved with UTF-8-SIG it's fine
     return await file.text();
   }
 
@@ -179,7 +213,6 @@
       const parsed = parseCSV(text);
 
       const all = loadAll();
-      // merge
       for(const day of Object.keys(parsed)){
         all[day] = parsed[day];
       }
@@ -199,7 +232,6 @@
     }
   };
 
-  // Optional sample loader
   el("loadSampleBtn").onclick = () => {
     const sample = `day,no,word,meaning
 DAY1,1,resume,이력서
@@ -217,23 +249,7 @@ DAY2,1,confirm,확인하다`;
     }
   };
 
-  refreshDayList();
-
-  // ---------- Quiz ----------
-  const countSelect = el("countSelect");
-  const dirSelect = el("dirSelect");
-  const startBtn = el("startBtn");
-  const redoWrongBtn = el("redoWrongBtn");
-
-  const quiz = el("quiz");
-  const question = el("question");
-  const choicesEl = el("choices");
-  const feedback = el("feedback");
-  const progressPill = el("progressPill");
-  const scoreEl = el("score");
-  const wrongNEl = el("wrongN");
-  const stopBtn = el("stopBtn");
-
+  // --------- Quiz logic ----------
   let pool = [];
   let idx = 0;
   let score = 0;
@@ -263,45 +279,118 @@ DAY2,1,confirm,확인하다`;
     return { opts, correctVal };
   }
 
+  function normalize(s){
+    return String(s || "")
+      .toLowerCase()
+      .replace(/\s+/g,"")
+      .replace(/[()"'“”‘’]/g,"")
+      .trim();
+  }
+
+  function isMeaningCorrect(userInput, correctMeaning){
+    const u = normalize(userInput);
+    if(!u) return false;
+
+    const parts = String(correctMeaning)
+      .split(/[,;\/·]|(?:\s*-\s*)/g)
+      .map(p => normalize(p))
+      .filter(Boolean);
+
+    if(parts.length === 0){
+      const c = normalize(correctMeaning);
+      return c.includes(u) || u.includes(c);
+    }
+    return parts.some(p => p.includes(u) || u.includes(p));
+  }
+
+  function finish(){
+    const total = pool.length;
+    feedback.innerHTML = `끝! 점수 <b>${score}</b> / ${total} (오답 ${wrong.length})`;
+    window.__lastWrong = wrong;
+    if(wrong.length > 0) redoWrongBtn.classList.remove("hidden");
+  }
+
+  function judge(ok, item, dir){
+    const correctText = (dir==="en2ko") ? item.m : item.w;
+
+    if(ok){
+      score++;
+      feedback.innerHTML = `<span class="ok">정답!</span>`;
+    } else {
+      wrong.push(item);
+      feedback.innerHTML = `<span class="bad">오답!</span> 정답: <b>${correctText}</b>`;
+    }
+
+    scoreEl.textContent = String(score);
+    wrongNEl.textContent = String(wrong.length);
+
+    setTimeout(() => {
+      idx++;
+      if(idx >= pool.length) finish();
+      else render();
+    }, 450);
+  }
+
   function render(){
     progressPill.textContent = `${idx+1}/${pool.length}`;
     scoreEl.textContent = String(score);
     wrongNEl.textContent = String(wrong.length);
 
     const dir = dirSelect.value;
+    const mode = modeSelect.value;
+
     const item = pool[idx];
     question.textContent = (dir==="en2ko") ? item.w : item.m;
-
-    const all = loadAll()[daySelect.value] || [];
-    const { opts, correctVal } = pickChoices(item, all, dir);
 
     choicesEl.innerHTML = "";
     feedback.textContent = "";
 
-    opts.forEach((opt) => {
-      const b = document.createElement("button");
-      b.textContent = opt;
-      b.onclick = () => {
-        if(opt === correctVal){
-          score++;
-          feedback.innerHTML = `<span class="ok">정답!</span>`;
-        } else {
-          wrong.push(item);
-          const show = (dir==="en2ko") ? item.m : item.w;
-          feedback.innerHTML = `<span class="bad">오답!</span> 정답: <b>${show}</b>`;
-        }
+    // UI toggle
+    if(mode === "sa"){
+      choicesEl.classList.add("hidden");
+      shortAnswer.classList.remove("hidden");
+      answerInput.value = "";
+      answerInput.focus();
+    } else {
+      choicesEl.classList.remove("hidden");
+      shortAnswer.classList.add("hidden");
+    }
 
-        setTimeout(() => {
-          idx++;
-          if(idx >= pool.length){
-            finish();
-          } else {
-            render();
-          }
-        }, 450);
-      };
-      choicesEl.appendChild(b);
-    });
+    const all = loadAll()[daySelect.value] || [];
+
+    if(mode === "mc"){
+      const { opts, correctVal } = pickChoices(item, all, dir);
+      choicesEl.innerHTML = "";
+      opts.forEach((opt) => {
+        const b = document.createElement("button");
+        b.textContent = opt;
+        b.onclick = () => judge(opt === correctVal, item, dir);
+        choicesEl.appendChild(b);
+      });
+      return;
+    }
+
+    // Short answer mode
+    submitAnswerBtn.onclick = () => {
+      const user = (answerInput.value || "").trim();
+      let ok = false;
+
+      if(dir === "en2ko"){
+        ok = isMeaningCorrect(user, item.m);      // 뜻은 포함 인정
+      } else {
+        ok = normalize(user) === normalize(item.w); // 영단어는 정확히
+      }
+      judge(ok, item, dir);
+    };
+
+    showAnswerBtn.onclick = () => {
+      const correctText = (dir==="en2ko") ? item.m : item.w;
+      feedback.innerHTML = `정답: <b>${correctText}</b>`;
+    };
+
+    answerInput.onkeydown = (e) => {
+      if(e.key === "Enter") submitAnswerBtn.click();
+    };
   }
 
   function start(withWrong=false){
@@ -326,16 +415,12 @@ DAY2,1,confirm,확인하다`;
     render();
   }
 
-  function finish(){
-    const total = pool.length;
-    feedback.innerHTML = `끝! 점수 <b>${score}</b> / ${total} (오답 ${wrong.length})`;
-    window.__lastWrong = wrong;
-    if(wrong.length > 0) redoWrongBtn.classList.remove("hidden");
-  }
-
   startBtn.onclick = () => start(false);
   redoWrongBtn.onclick = () => start(true);
   stopBtn.onclick = () => { quiz.classList.add("hidden"); };
+
+  // initial
+  refreshDayList();
 </script>
 </body>
 </html>

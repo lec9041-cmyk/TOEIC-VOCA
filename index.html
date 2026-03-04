@@ -32,6 +32,7 @@
     /* 메인 탭 디자인 */
     .main-tabs {
       display: flex;
+      flex-wrap: nowrap;
       gap: 10px;
       margin-bottom: 12px;
       padding: 5px;
@@ -40,14 +41,21 @@
     }
     .main-tab {
       flex: 1;
+      min-width: 0;
       padding: 15px;
       text-align: center;
+      display:flex;
+      align-items:center;
+      justify-content:center;
       font-weight: 900;
       cursor: pointer;
       border-radius: 16px;
       transition: 0.2s;
       color: #64748b;
       user-select:none;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .main-tab.active {
       background: #fff;
@@ -214,6 +222,10 @@
       .field{grid-column: span 3;}
       .chips{grid-template-columns: repeat(4, minmax(0, 1fr));}
     }
+    @media (max-width: 420px){
+      .main-tabs{gap:6px;padding:4px;}
+      .main-tab{padding:12px 8px;font-size:13px;}
+    }
     .hidden{display:none !important;}
 
     /* FULLSCREEN QUIZ OVERLAY */
@@ -242,18 +254,40 @@
     .calDow{font-size:12px; color:var(--muted); text-align:center; font-weight:900;}
     .calDay{
       border:1px solid var(--bd);
-      border-radius:16px;
-      padding:10px;
-      min-height:64px;
+      border-radius:12px;
+      min-height:66px;
       background:#fff;
       display:flex;
-      flex-direction:column;
-      gap:6px;
+      align-items:center;
+      justify-content:center;
+      position:relative;
+      cursor:pointer;
+      user-select:none;
     }
-    .calNum{font-weight:900; font-size:14px;}
-    .calMeta{font-size:12px; color:var(--muted);}
-    .calHit{border-color:#bbf7d0; background:#f0fdf4;}
-    .calGoal{border-color:#bfdbfe; background:#eff6ff;}
+    .calNum{font-weight:900; font-size:16px; line-height:1;}
+    .calDot{
+      position:absolute;
+      bottom:6px;
+      left:50%;
+      transform:translateX(-50%);
+      width:6px;
+      height:6px;
+      border-radius:999px;
+      background:#64748b;
+      opacity:.9;
+    }
+    .calL0{ background:#ffffff; }
+    .calL1{ background:#ecfdf5; }
+    .calL2{ background:#bbf7d0; }
+    .calL3{ background:#86efac; }
+    .calL4{ background:#4ade80; }
+    .calGoal{ outline:2px solid #60a5fa; outline-offset:-2px; }
+    @media (max-width: 420px){
+      .calGrid{gap:6px;}
+      .calDay{min-height:62px;border-radius:10px;}
+      .calNum{font-size:15px;}
+      .calDot{bottom:5px;}
+    }
     .summaryStats{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px;}
     .summaryStat{border:1px solid var(--bd); border-radius:14px; padding:10px; background:#fff;}
     .summaryStat .k{font-size:12px; color:var(--muted);}
@@ -290,6 +324,25 @@
         <div id="multiDayChips" class="row" style="margin-top:10px"></div>
       </div>
 
+      <div class="field" style="grid-column: span 2;">
+        <label>랜덤 DAY</label>
+        <div class="row" style="gap:10px">
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;">
+            <input id="randomDayToggle" type="checkbox" style="min-height:auto;" /> 랜덤 DAY 사용
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;">
+            랜덤 DAY 개수
+            <select id="randomDayCountSelect" style="min-width: 88px;"></select>
+          </label>
+        </div>
+        <div class="row" style="gap:10px; margin-top:10px;">
+          <button id="randomDayPickBtn" class="btn btn-ghost" type="button">랜덤 다시 뽑기</button>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;">
+            <input id="randomDayAutoToggle" type="checkbox" style="min-height:auto;" /> 시작할 때마다 자동 재랜덤
+          </label>
+        </div>
+      </div>
+
       <div class="field hidden" id="modeField">
         <label>시험 모드</label>
         <select id="modeSelect">
@@ -311,9 +364,13 @@
 
       <div class="field">
         <label>문제수</label>
-        <select id="countSelect">
-          <option>10</option><option>20</option><option selected>30</option><option>50</option><option>100</option>
-        </select>
+        <select id="countSelect"></select>
+      </div>
+
+      <div class="field">
+        <label style="display:flex;align-items:center;gap:6px;min-height:46px;">
+          <input id="wrongFirstToggle" type="checkbox" style="min-height:auto;" /> 오답 우선 출제(가중 랜덤)
+        </label>
       </div>
 
       <div class="field">
@@ -446,6 +503,7 @@
           <span class="pill" id="progressPill">0/0</span>
           <span class="pill">점수: <b id="score">0</b></span>
           <span class="pill">오답: <b id="wrongN">0</b></span>
+          <button id="quizSpeakBtn" class="btn btn-ghost" type="button" style="min-height:38px;padding:8px 10px;border-radius:999px;">🔊</button>
           <button id="quizDictBtn" class="btn btn-ghost" type="button" style="min-height:38px;padding:8px 10px;border-radius:999px;">사전</button>
           <button id="quizExBtn" class="btn btn-ghost" type="button" style="min-height:38px;padding:8px 10px;border-radius:999px;">예문</button>
           <button id="quizFavBtn" class="btn btn-ghost" type="button" style="min-height:38px;padding:8px 10px;border-radius:999px;">☆</button>
@@ -516,6 +574,11 @@
   const SESSION_KEY = "toeic_sessions_v1";
   const DAILY_KEY = "toeic_daily_v1";
   const MULTI_DAY_KEY = "toeic_multi_days_v1";
+  const RANDOM_DAY_ON_KEY = "toeic_random_day_on_v1";
+  const RANDOM_DAY_COUNT_KEY = "toeic_random_day_count_v1";
+  const RANDOM_DAY_AUTO_KEY = "toeic_random_day_auto_v1";
+  const LAST_MANUAL_DAY_KEY = "toeic_last_manual_day_v1";
+  const WRONG_FIRST_KEY = "toeic_wrong_first_on_v1";
   const FAVORITES_KEY = "toeic_favorites_v1";
   const GOAL_KEY = "toeic_goal_v1";
   const GOAL_DONE_KEY = "toeic_goal_done_v1";
@@ -771,6 +834,7 @@
   const statsCard = el("statsCard");
   let statsViewY = new Date().getFullYear();
   let statsViewM = new Date().getMonth();
+  let calClickBound = false;
 
   function isLearnTab() { return mainTabLearn.classList.contains("active"); }
 
@@ -834,6 +898,19 @@
       statsViewM = now.getMonth();
       renderMainCalendarSummary(statsViewY, statsViewM);
     };
+  }
+
+  function bindMainCalendarClick(){
+    if(calClickBound) return;
+    const grid = el("mainCalGrid");
+    if(!grid) return;
+    grid.addEventListener("click", (e) => {
+      const cell = e.target.closest(".calDay");
+      if(!cell || !grid.contains(cell)) return;
+      if(typeof cell.dataset?.cnt === "undefined") return;
+      alert(`학습: ${cell.dataset.cnt}문제`);
+    });
+    calClickBound = true;
   }
 
   // ---------------- CSV 파싱(따옴표/콤마 대응) ----------------
@@ -917,18 +994,25 @@
     }
 
     renderDaySelect(data);
+    initRandomDayControls(data);
     updateActiveCount();
     updateDailyUI();
     updateScopeBar();
     checkGoalAndCelebrate();
     bindGoalSetter();
     bindStatsCalNav();
+    bindMainCalendarClick();
 
     const dayCount = Object.keys(data).length;
     el("dataStatus").textContent = dayCount ? `· ✅ ${dayCount}개 DAY 로드됨` : "· ⚠️ 데이터 없음";
 
     if(dayCount > 0) setStartButtonState(false);
     else { startBtn.disabled = true; startBtn.textContent = "데이터 없음"; }
+  }
+
+  function getAllDays(data=null) {
+    const src = data && typeof data === "object" ? data : load(WORDS_KEY, {});
+    return Object.keys(src || {}).sort((a,b) => a.localeCompare(b, undefined, {numeric: true}));
   }
 
   function renderDaySelect(data) {
@@ -945,6 +1029,66 @@
     });
 
     if (!ds.value && days.length) ds.value = days[0];
+    updateRandomDayCountOptions(days.length);
+  }
+
+  function updateRandomDayCountOptions(dayCount) {
+    const countSel = el("randomDayCountSelect");
+    const max = Math.max(1, Math.min(10, dayCount || 1));
+    const saved = parseInt(load(RANDOM_DAY_COUNT_KEY, 1), 10);
+    const nextVal = String(Math.min(Math.max(Number.isFinite(saved) ? saved : 1, 1), max));
+    countSel.innerHTML = "";
+    for(let i=1; i<=max; i++) countSel.add(new Option(String(i), String(i)));
+    countSel.value = nextVal;
+    save(RANDOM_DAY_COUNT_KEY, Number(nextVal));
+  }
+
+  function setRandomDayUiState(){
+    const on = !!el("randomDayToggle").checked;
+    el("daySelect").disabled = on;
+    el("multiDayAddSelect").disabled = on;
+    el("multiDayClearBtn").disabled = on;
+    el("randomDayPickBtn").disabled = !on;
+  }
+
+  function pickRandomDays(days, n){
+    const list = (days || []).slice();
+    for(let i=list.length-1; i>0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [list[i], list[j]] = [list[j], list[i]];
+    }
+    const take = Math.max(0, Math.min(list.length, parseInt(n, 10) || 1));
+    return list.slice(0, take);
+  }
+
+  function applyRandomDays(data=null){
+    if(!el("randomDayToggle").checked) return;
+    const allDays = getAllDays(data);
+    if(allDays.length === 0) return;
+    const n = parseInt(el("randomDayCountSelect").value, 10) || 1;
+    const picked = pickRandomDays(allDays, n);
+    save(MULTI_DAY_KEY, picked);
+    if(picked[0]) el("daySelect").value = picked[0];
+    updateActiveCount();
+    updateScopeBar();
+  }
+
+  function initRandomDayControls(data){
+    const on = !!load(RANDOM_DAY_ON_KEY, false);
+    const auto = !!load(RANDOM_DAY_AUTO_KEY, false);
+    el("randomDayToggle").checked = on;
+    el("randomDayAutoToggle").checked = auto;
+
+    const daySel = el("daySelect");
+    const allDays = getAllDays(data);
+    if(!load(LAST_MANUAL_DAY_KEY, "") && daySel.value){
+      save(LAST_MANUAL_DAY_KEY, daySel.value);
+    }
+    const manualDay = load(LAST_MANUAL_DAY_KEY, "");
+    if(!on && manualDay && allDays.includes(manualDay)) daySel.value = manualDay;
+
+    setRandomDayUiState();
+    if(on) applyRandomDays(data);
   }
 
   // ---------------- 선택 DAY 관리 ----------------
@@ -952,7 +1096,8 @@
     const multi = load(MULTI_DAY_KEY, []);
     const base = el("daySelect").value;
     const days = multi.length > 0 ? multi : (base ? [base] : []);
-    el("selectedDaysPill").textContent = `선택 DAY: ${days.length ? days.map(dayLabel).join(", ") : "-"}`;
+    const randomBadge = el("randomDayToggle")?.checked ? " (랜덤)" : "";
+    el("selectedDaysPill").textContent = `선택 DAY: ${days.length ? days.map(dayLabel).join(", ") : "-"}${randomBadge}`;
 
     const chips = el("multiDayChips");
     chips.innerHTML = "";
@@ -960,13 +1105,19 @@
       const safe = String(d).replace(/'/g,"\\'");
       const c = document.createElement("span");
       c.className = "daychip";
-      c.innerHTML = `${esc(dayLabel(d))} <button type="button" onclick="removeMultiDay('${safe}')">✕</button>`;
+      const disabled = el("randomDayToggle")?.checked ? "disabled" : "";
+      c.innerHTML = `${esc(dayLabel(d))} <button type="button" ${disabled} onclick="removeMultiDay('${safe}')">✕</button>`;
       chips.appendChild(c);
     });
 
     updateScopeBar();
   }
-  el("daySelect").onchange = () => updateActiveCount();
+  el("daySelect").onchange = () => {
+    if(!el("randomDayToggle").checked){
+      save(LAST_MANUAL_DAY_KEY, el("daySelect").value);
+    }
+    updateActiveCount();
+  };
 
   el("multiDayAddSelect").onchange = (e) => {
     if (!e.target.value) return;
@@ -978,6 +1129,7 @@
   };
 
   window.removeMultiDay = (d) => {
+    if(el("randomDayToggle")?.checked) return;
     let multi = load(MULTI_DAY_KEY, []);
     multi = multi.filter(x => x !== d);
     save(MULTI_DAY_KEY, multi);
@@ -985,6 +1137,46 @@
   };
 
   el("multiDayClearBtn").onclick = () => { save(MULTI_DAY_KEY, []); updateActiveCount(); };
+
+  el("randomDayToggle").onchange = (e) => {
+    const on = !!e.target.checked;
+    save(RANDOM_DAY_ON_KEY, on);
+    const allDays = getAllDays();
+    const daySel = el("daySelect");
+
+    if(on){
+      if(daySel.value) save(LAST_MANUAL_DAY_KEY, daySel.value);
+      setRandomDayUiState();
+      applyRandomDays();
+      return;
+    }
+
+    setRandomDayUiState();
+    save(MULTI_DAY_KEY, []);
+    const savedManual = load(LAST_MANUAL_DAY_KEY, "");
+    if(savedManual && allDays.includes(savedManual)) daySel.value = savedManual;
+    else if(allDays[0]) daySel.value = allDays[0];
+    updateActiveCount();
+  };
+
+  el("randomDayCountSelect").onchange = (e) => {
+    const v = parseInt(e.target.value, 10) || 1;
+    save(RANDOM_DAY_COUNT_KEY, v);
+    if(el("randomDayToggle").checked) applyRandomDays();
+  };
+
+  el("randomDayPickBtn").onclick = () => {
+    if(el("randomDayToggle").checked) applyRandomDays();
+  };
+
+  el("randomDayAutoToggle").onchange = (e) => {
+    save(RANDOM_DAY_AUTO_KEY, !!e.target.checked);
+  };
+
+  el("wrongFirstToggle").checked = !!load(WRONG_FIRST_KEY, false);
+  el("wrongFirstToggle").onchange = (e) => {
+    save(WRONG_FIRST_KEY, !!e.target.checked);
+  };
 
   // ---------------- 통계/기록 ----------------
   function bumpDaily(countAdd=1){
@@ -1017,6 +1209,20 @@
     }, 0);
   }
 
+  function makeCalCell(dayNum, cnt, goal){
+    const c = Math.max(0, Number(cnt) || 0);
+    const goalNum = Number(goal);
+    const normalizedGoal = Math.max(1, (Number.isFinite(goalNum) && goalNum > 0) ? goalNum : DEFAULT_GOAL);
+    const level = c === 0 ? 0 : (c <= 10 ? 1 : (c <= 20 ? 2 : (c <= 30 ? 3 : 4)));
+    const isGoal = c >= normalizedGoal;
+    return {
+      className: `calDay calL${level}${isGoal ? " calGoal" : ""}`,
+      title: `${dayNum}일 · 학습: ${c}문제`,
+      cnt: c,
+      dot: c > 0
+    };
+  }
+
   function drawCalendarGrid(gridEl, {year, month0, daily, goal}){
     gridEl.innerHTML = "";
     const dows = ["일","월","화","수","목","금","토"];
@@ -1041,16 +1247,12 @@
     for(let day=1; day<=lastDate; day++){
       const key = `${year}-${String(month0+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
       const cnt = daily[key] || 0;
-      const isHit = cnt > 0;
-      const isGoal = cnt >= goal;
-
+      const info = makeCalCell(day, cnt, goal);
       const cell = document.createElement("div");
-      cell.className = "calDay" + (isHit ? " calHit" : "") + (isGoal ? " calGoal" : "");
-      cell.innerHTML = `
-        <div class="calNum">${day}</div>
-        <div class="calMeta">${isHit ? `학습 ${cnt}` : "—"}</div>
-        <div class="calMeta">${isGoal ? "목표 달성 🎉" : ""}</div>
-      `;
+      cell.className = info.className;
+      cell.title = info.title;
+      cell.dataset.cnt = String(info.cnt);
+      cell.innerHTML = `<div class="calNum">${day}</div>${info.dot ? '<span class="calDot" aria-hidden="true"></span>' : ''}`;
       gridEl.appendChild(cell);
     }
   }
@@ -1140,6 +1342,37 @@
     return `${tab} · ${mode} · ${dir}`;
   }
 
+  function getCurrentPoolSize(){
+    const { filtered } = buildPoolFromSelection();
+    return filtered.length;
+  }
+
+  function refreshCountSelectOptions(){
+    const sel = el("countSelect");
+    const poolSize = getCurrentPoolSize();
+    const prev = parseInt(sel.value, 10);
+
+    if(poolSize <= 0){
+      sel.innerHTML = "";
+      sel.add(new Option("0", "0"));
+      sel.value = "0";
+      return;
+    }
+
+    const base = [10,20,30,50,100].filter(v => v < poolSize);
+    const options = [...base, poolSize];
+
+    sel.innerHTML = "";
+    options.forEach(v => {
+      const label = v === poolSize ? `${v} (전체)` : String(v);
+      sel.add(new Option(label, String(v)));
+    });
+
+    let next = options.includes(prev) ? prev : null;
+    if(next === null) next = options.includes(30) ? 30 : options[0];
+    sel.value = String(next);
+  }
+
   function updateScopeCoverage(){
     const data = load(WORDS_KEY, {});
     const days = selectedDaysForPool();
@@ -1156,6 +1389,7 @@
 
   function updateScopeBar(){
     updateScopeCoverage();
+    refreshCountSelectOptions();
   }
 
   ["modeSelect","dirSelect","countSelect","voiceSelect"].forEach(id=>{
@@ -1219,6 +1453,11 @@
     save(SESSION_KEY, []);
     save(DAILY_KEY, {});
     save(MULTI_DAY_KEY, []);
+    save(RANDOM_DAY_ON_KEY, false);
+    save(RANDOM_DAY_COUNT_KEY, 1);
+    save(RANDOM_DAY_AUTO_KEY, false);
+    save(LAST_MANUAL_DAY_KEY, "");
+    save(WRONG_FIRST_KEY, false);
     save(FAVORITES_KEY, {});
     save(GOAL_DONE_KEY, {});
     updateActiveCount();
@@ -1576,6 +1815,41 @@
     return { targetDays, intervals, filtered };
   }
 
+  function wrongWeightForItem(item){
+    const stats = load(STATS_KEY, {});
+    const k = (typeof keyOf === "function" && item) ? keyOf(item) : (item?.w || "");
+    const entry = (k && stats[k]) ? stats[k] : (item?.w ? Object.values(stats).find(x => x?.w === item.w) : null) || {};
+    const raw = Number(entry.wrongCount ?? entry.wrong ?? entry.errors ?? entry.fail ?? 0);
+    const wrongCount = Number.isFinite(raw) ? Math.max(0, raw) : 0;
+    return 1 + Math.min(5, wrongCount);
+  }
+
+  function weightedSampleWithoutReplacement(items, takeN, weightFn){
+    const src = (items || []).slice();
+    const out = [];
+    const n = Math.min(Math.max(0, takeN), src.length);
+    for(let c=0; c<n; c++){
+      let total = 0;
+      for(const it of src) total += Math.max(0.000001, Number(weightFn(it)) || 1);
+      let r = Math.random() * total;
+      let pickIdx = 0;
+      for(let i=0;i<src.length;i++){
+        r -= Math.max(0.000001, Number(weightFn(src[i])) || 1);
+        if(r <= 0){ pickIdx = i; break; }
+      }
+      out.push(src.splice(pickIdx, 1)[0]);
+    }
+    return out;
+  }
+
+  function pickQuizItems(source, count){
+    const n = Math.min(count, source.length);
+    if(!el("wrongFirstToggle").checked){
+      return source.slice().sort(() => Math.random() - 0.5).slice(0, n);
+    }
+    return weightedSampleWithoutReplacement(source, n, wrongWeightForItem);
+  }
+
   function startQuiz(customPool=null, forceMode=null) {
     clearAutoNext();
     reinsertCount = {};
@@ -1599,7 +1873,7 @@
     const fixedDir = el("dirSelect").value;
 
     const count = parseInt(el("countSelect").value, 10);
-    pool = usePool.slice().sort(() => Math.random() - 0.5).slice(0, Math.min(count, usePool.length));
+    pool = pickQuizItems(usePool, Number.isFinite(count) ? count : usePool.length);
 
     idx = 0; score = 0; wrong = []; locked = false;
     quizState = { mode: fixedMode, dir: fixedDir, days: targetDays, ranges: rangeLabel(), count: pool.length };
@@ -1609,7 +1883,10 @@
     renderQuiz();
   }
 
-  startBtn.onclick = () => startQuiz();
+  startBtn.onclick = () => {
+    if(load(RANDOM_DAY_AUTO_KEY, false) && el("randomDayToggle").checked) applyRandomDays();
+    startQuiz();
+  };
   el("question").onclick = () => {
     const word = pool[idx]?.w;
     if(word) openNaverDict(word);
@@ -1621,6 +1898,17 @@
     const cnt = quizState?.count ?? pool.length;
     el("quizScopeLine").textContent = `DAY: ${daysText} · 범위: ${rangeText} · 문제수: ${cnt}`;
   }
+
+  function getSpeakTextForCurrentQuestion(){
+    const item = pool?.[idx];
+    if(!item) return "";
+    return item.w || "";
+  }
+
+  el("quizSpeakBtn").onclick = () => {
+    const t = getSpeakTextForCurrentQuestion();
+    if(t) speak(t);
+  };
 
   function updateQuizQuickButtons(item){
     const word = item?.w || "";
@@ -1885,12 +2173,28 @@
     el("quizOverlay").classList.add("hidden");
   };
 
+  document.addEventListener("keydown", (e)=>{
+    if(e.key.toLowerCase()!=="v") return;
+    if(el("quizOverlay").classList.contains("hidden")) return;
+    const ai = el("answerInput");
+    if(ai && document.activeElement===ai) return;
+    const t = getSpeakTextForCurrentQuestion();
+    if(t) speak(t);
+  });
+
   // ESC로 닫기
   document.addEventListener("keydown", (e) => {
     if(e.key !== "Escape") return;
     if(!el("quizOverlay").classList.contains("hidden")) { clearAutoNext(); el("quizOverlay").classList.add("hidden"); }
     if(!overlay.classList.contains("hidden")) closeSheet();
   });
+
+  // ---------------- 수동 테스트 체크리스트 ----------------
+  // - 모바일에서 메인탭 1줄 유지되는지
+  // - 랜덤 ON 시 daySelect 및 멀티DAY 조작 막히는지
+  // - 랜덤 OFF 시 마지막 수동 day로 복구되는지
+  // - 랜덤 자동 재뽑기 ON 상태에서 시작 버튼 누를 때마다 DAY가 바뀌는지
+  // - 퀴즈 화면 🔊 버튼 / V 단축키로 발음 재생되는지 (4지/주관식/암기 모두)
 
   // ---------------- 초기 로드 ----------------
   // 초기 상태 Learn 고정

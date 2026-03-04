@@ -11,10 +11,11 @@
       --blue:#1d4ed8;
       --bg:#ffffff;
       --chip:#f9fafb;
+      --shadow: 0 14px 40px rgba(0,0,0,.12);
     }
     body{
       font-family:system-ui,Segoe UI,Apple SD Gothic Neo,Malgun Gothic,sans-serif;
-      margin:16px;
+      margin:12px;
       line-height:1.35;
       background:var(--bg);
       color:#111827;
@@ -22,96 +23,96 @@
     }
     h1{font-size:22px;margin:10px 0 6px}
     .sub{color:var(--muted);font-size:13px;margin-bottom:14px}
+    code{background:#f3f4f6;padding:2px 6px;border-radius:8px}
 
     .card{
       border:1px solid var(--bd);
-      border-radius:16px;
-      padding:14px;
+      border-radius:18px;
+      padding:12px;
       margin:12px 0;
       background:#fff;
     }
-    .card h2{
-      font-size:15px;
-      margin:0 0 10px;
-    }
+    .card h2{font-size:15px;margin:0 0 10px}
     .muted{color:var(--muted);font-size:13px}
-    code{background:#f3f4f6;padding:2px 6px;border-radius:8px}
+    .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .pill{
+      display:inline-block;border:1px solid var(--bd);
+      border-radius:999px;padding:7px 10px;
+      font-size:12px;color:#374151;background:#fff
+    }
 
-    /* 폼 레이아웃 */
+    /* mobile-first 2 columns */
     .grid{
       display:grid;
-      grid-template-columns: repeat(12, 1fr);
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap:10px;
       align-items:end;
     }
     .field{
-      grid-column: span 3;
       display:flex;
       flex-direction:column;
       gap:6px;
       min-width:0;
     }
-    .field label{font-size:12px;color:#374151;font-weight:700}
+    .field label{font-size:12px;color:#374151;font-weight:900}
+
     select,input,button{
-      padding:11px 12px;
+      padding:12px 12px;
       font-size:14px;
       border:1px solid var(--bd);
-      border-radius:12px;
+      border-radius:16px;
       background:#fff;
+      min-height:46px;
     }
     button{cursor:pointer}
     button:active{transform: translateY(1px)}
+    input::placeholder{color:#9ca3af}
+
     .btn{
       display:inline-flex;
       align-items:center;
       justify-content:center;
       gap:8px;
-      font-weight:700;
+      font-weight:900;
     }
+    .btn-ghost{background:#fff}
+    .btn-soft{background:#f8fafc}
+    .btn-danger{border-color:#fecaca;color:#991b1b;background:#fff}
+
     #startBtn{
       background:var(--blue);
       border-color:var(--blue);
       color:#fff;
       font-size:16px;
       padding:14px 14px;
-      border-radius:14px;
+      border-radius:18px;
       width:100%;
     }
-    #startBtn:hover{filter:brightness(.96)}
-    .btn-ghost{background:#fff}
-    .btn-soft{background:#f8fafc}
 
-    /* 체크칩 */
     .chips{
       display:grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap:10px;
     }
     .chip{
       display:flex;
       align-items:center;
       gap:10px;
-      padding:10px 12px;
+      padding:12px 12px;
       border:1px solid var(--bd);
-      border-radius:999px;
+      border-radius:18px;
       background:var(--chip);
       user-select:none;
       font-size:13px;
-      font-weight:700;
+      font-weight:1000;
       white-space:nowrap;
     }
-    .chip input{transform:scale(1.1)}
+    .chip input{transform:scale(1.15)}
 
-    /* 퀴즈 영역 */
-    .pill{
-      display:inline-block;border:1px solid var(--bd);
-      border-radius:999px;padding:6px 10px;
-      font-size:12px;color:#374151;background:#fff
-    }
-    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-    .q{font-size:20px;font-weight:900;margin:8px 0 10px}
+    /* quiz */
+    .q{font-size:20px;font-weight:1000;margin:10px 0 10px}
     .choices{display:grid;gap:10px}
-    .choices button{text-align:left;border:1px solid var(--bd);border-radius:14px;background:#fff}
+    .choices button{text-align:left;border:1px solid var(--bd);border-radius:18px;background:#fff}
     .hidden{display:none}
     .ok{color:#0a7}
     .bad{color:#c23}
@@ -119,22 +120,63 @@
     #nextBtn{
       margin-top:10px;
       width:100%;
-      padding:13px 12px;
-      border-radius:14px;
-      font-weight:900;
+      padding:14px 12px;
+      border-radius:18px;
+      font-weight:1000;
     }
 
-    /* 탭 */
-    .tabs{
-      display:flex; gap:8px; flex-wrap:wrap;
+    .actions{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
       margin-top:10px;
     }
+    .actions button{
+      border-radius:18px;
+      font-weight:1000;
+      min-height:48px;
+    }
+
+    /* bottom sheet */
+    .overlay{
+      position:fixed; inset:0;
+      background:rgba(17,24,39,.48);
+      display:flex;
+      align-items:flex-end;
+      justify-content:center;
+      padding:14px;
+      padding-bottom: calc(14px + env(safe-area-inset-bottom));
+      z-index:50;
+    }
+    .sheet{
+      width:min(980px, 100%);
+      max-height:84dvh; /* ✅ 키보드/주소창 변화 대응 */
+      background:#fff;
+      border:1px solid var(--bd);
+      border-radius:24px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+    }
+    .sheetHead{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:12px;
+      border-bottom:1px solid var(--bd);
+      gap:10px;
+    }
+    .sheetTitle{font-weight:1000;font-size:15px}
+    .sheetBody{padding:12px;overflow:auto}
+
+    .tabs{display:flex;gap:8px;flex-wrap:wrap}
     .tab{
       padding:10px 12px;
       border:1px solid var(--bd);
       border-radius:999px;
       background:#fff;
-      font-weight:800;
+      font-weight:1000;
       cursor:pointer;
       font-size:13px;
     }
@@ -144,63 +186,64 @@
       color:#fff;
     }
 
-    /* 반응형: 모바일은 2열 + 버튼 풀폭 */
-    @media (max-width: 560px){
-      body{margin:14px}
-      .field{grid-column: span 6;}
-      .chips{grid-template-columns: repeat(2, minmax(0, 1fr));}
+    /* card list items */
+    .list{display:grid;gap:10px;margin-top:10px}
+    .item{
+      border:1px solid var(--bd);
+      border-radius:20px;
+      padding:12px;
+      background:#fff;
     }
-    @media (max-width: 360px){
-      .field{grid-column: span 12;}
-      .chips{grid-template-columns: 1fr;}
+    .itemTop{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:8px;
+    }
+    .itemWord{font-weight:1100;font-size:16px;letter-spacing:.2px}
+    .itemMeta{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+    .badge{
+      border:1px solid var(--bd);
+      border-radius:999px;
+      padding:6px 10px;
+      font-size:12px;
+      background:#fff;
+      white-space:nowrap;
+    }
+    .itemMeaning{font-size:14px;line-height:1.35}
+
+    /* desktop */
+    @media (min-width: 760px){
+      body{margin:16px}
+      .grid{grid-template-columns: repeat(12, 1fr);}
+      .field{grid-column: span 3;}
+      .chips{grid-template-columns: repeat(4, minmax(0, 1fr));}
+      .actions{grid-template-columns: 2fr 1fr;}
     }
   </style>
 </head>
 <body>
   <h1>TOEIC 단어시험 📚</h1>
-  <div class="sub">자동 로드: <code>./toeic_words_day1_30.csv</code> (index.html과 같은 폴더)</div>
+  <div class="sub">내장 로드: <code>./toeic_words_day1_30.csv</code> (같은 폴더)</div>
 
-  <!-- 1) 데이터 -->
+  <!-- 시험 설정 -->
   <div class="card">
-    <h2>1) 데이터</h2>
+    <h2>1) 시험 설정</h2>
     <div class="grid">
-      <div class="field" style="grid-column: span 8;">
-        <label>CSV 업로드(선택)</label>
-        <input id="file" type="file" accept=".csv,text/csv" />
-      </div>
-      <div class="field" style="grid-column: span 4;">
-        <label>저장</label>
-        <button id="clearBtn" class="btn btn-ghost">저장 초기화</button>
-      </div>
-    </div>
-    <div class="muted" style="margin-top:10px">
-      ✅ 기본은 자동 로드(업로드 없이 사용). 필요하면 업로드로 덮어쓰기 가능. <br/>
-      <span id="status"></span>
-    </div>
-  </div>
-
-  <!-- 2) 시험 설정 -->
-  <div class="card">
-    <h2>2) 시험 설정</h2>
-    <div class="grid">
-      <div class="field" style="grid-column: span 4;">
+      <div class="field">
         <label>시험 DAY</label>
         <select id="daySelect"></select>
       </div>
 
-      <div class="field" style="grid-column: span 4;">
-        <label>닉네임(사람별 기록 분리)</label>
-        <input id="userNick" placeholder="예: Eunchong" />
-      </div>
-
-      <div class="field" style="grid-column: span 2;">
+      <div class="field">
         <label>문제수</label>
         <select id="countSelect">
           <option>10</option><option>20</option><option selected>30</option><option>50</option><option>100</option>
         </select>
       </div>
 
-      <div class="field" style="grid-column: span 2;">
+      <div class="field">
         <label>방향</label>
         <select id="dirSelect">
           <option value="en2ko" selected>영단어 → 뜻</option>
@@ -208,7 +251,7 @@
         </select>
       </div>
 
-      <div class="field" style="grid-column: span 3;">
+      <div class="field">
         <label>모드</label>
         <select id="modeSelect">
           <option value="mc" selected>4지선다</option>
@@ -216,7 +259,7 @@
         </select>
       </div>
 
-      <div class="field" style="grid-column: span 3;">
+      <div class="field">
         <label>문제 이동</label>
         <select id="nextMode">
           <option value="auto" selected>자동</option>
@@ -224,7 +267,7 @@
         </select>
       </div>
 
-      <div class="field" style="grid-column: span 3;">
+      <div class="field">
         <label>자동 속도</label>
         <select id="autoDelay">
           <option value="600">0.6초</option>
@@ -234,21 +277,30 @@
         </select>
       </div>
 
-      <div class="field" style="grid-column: span 3;">
+      <div class="field">
         <label>저장된 DAY</label>
         <div class="pill"><b id="dayCount">0</b>개</div>
       </div>
 
-      <div class="field" style="grid-column: span 3;">
+      <div class="field">
         <label>선택 구간 단어</label>
         <div class="pill"><b id="activeCount">0</b>개</div>
       </div>
     </div>
+
+    <div class="actions">
+      <button id="openSheetBtn" class="btn btn-ghost" type="button">단어 · 오답 · 기록 보기</button>
+      <button id="resetStatsBtn" class="btn btn-danger" type="button">기록 초기화</button>
+    </div>
+    <div class="muted" style="margin-top:8px">
+      기록/오답노트는 이 기기(브라우저) 안에만 저장돼요.
+      <span id="status"></span>
+    </div>
   </div>
 
-  <!-- 3) 단어 구간 + 시작 -->
+  <!-- 단어 구간 + 시작 -->
   <div class="card">
-    <h2>3) 단어 구간 선택</h2>
+    <h2>2) 단어 구간 선택</h2>
 
     <div class="chips">
       <label class="chip"><input id="cb_core" type="checkbox" checked /> 핵심빈출 (1~40)</label>
@@ -258,15 +310,15 @@
     </div>
 
     <div class="grid" style="margin-top:12px">
-      <div class="field" style="grid-column: span 3;">
+      <div class="field">
         <label>빠른 선택</label>
         <button id="selectAllBtn" type="button" class="btn btn-soft">전체 선택</button>
       </div>
-      <div class="field" style="grid-column: span 3;">
+      <div class="field">
         <label>&nbsp;</label>
         <button id="selectNoneBtn" type="button" class="btn btn-soft">모두 해제</button>
       </div>
-      <div class="field" style="grid-column: span 6;">
+      <div class="field" style="grid-column: span 2;">
         <label>시작</label>
         <button id="startBtn" class="btn">시험 시작</button>
       </div>
@@ -274,90 +326,12 @@
 
     <div class="row" style="margin-top:10px">
       <button id="redoWrongBtn" class="btn btn-ghost hidden" type="button">오답만 다시</button>
+      <button id="startWrongBtn" class="btn btn-soft" type="button">오답노트로 시험</button>
+      <span class="pill">오답노트 범위: DAY(기본)</span>
     </div>
 
     <div class="muted" style="margin-top:10px">
-      팁: 800/900만 체크해서 “고득점 모드”로 돌리면 집중력 올라감.
-    </div>
-  </div>
-
-  <!-- 4) DAY 단어표 + 오답노트 -->
-  <div class="card" id="listCard">
-    <h2>4) 단어 리스트 / 오답노트</h2>
-
-    <div class="tabs">
-      <button id="tabAll" class="tab active" type="button">DAY 단어</button>
-      <button id="tabWrong" class="tab" type="button">오답노트</button>
-      <button id="startWrongBtn" class="tab" type="button">오답노트로 시험</button>
-    </div>
-
-    <div class="grid" style="margin-top:10px">
-      <div class="field" style="grid-column: span 4;">
-        <label>DAY</label>
-        <select id="listDaySelect"></select>
-      </div>
-
-      <div class="field" style="grid-column: span 4;">
-        <label>검색 (단어/뜻)</label>
-        <input id="listSearch" placeholder="예: contract / 계약" />
-      </div>
-
-      <div class="field" style="grid-column: span 2;">
-        <label>필터(DAY 단어)</label>
-        <select id="listFilter">
-          <option value="all" selected>전체</option>
-          <option value="selected">선택 구간만</option>
-        </select>
-      </div>
-
-      <div class="field" style="grid-column: span 2;">
-        <label>정렬(DAY 단어)</label>
-        <select id="listSort">
-          <option value="no" selected>No</option>
-          <option value="word">단어</option>
-        </select>
-      </div>
-
-      <div class="field" style="grid-column: span 4;">
-        <label>오답노트 범위</label>
-        <select id="wrongScope">
-          <option value="day" selected>선택 DAY만</option>
-          <option value="all">전체 DAY</option>
-        </select>
-      </div>
-
-      <div class="field" style="grid-column: span 4;">
-        <label>오답노트 정렬</label>
-        <select id="wrongSort">
-          <option value="wrongDesc" selected>오답횟수 높은 순</option>
-          <option value="rateDesc">오답률 높은 순</option>
-          <option value="recentDesc">최근 틀린 순</option>
-        </select>
-      </div>
-
-      <div class="field" style="grid-column: span 4;">
-        <label>표시</label>
-        <div class="pill">총 <b id="listCount">0</b>개</div>
-      </div>
-    </div>
-
-    <div style="overflow:auto; margin-top:10px">
-      <table id="wordTable" style="width:100%; border-collapse:separate; border-spacing:0 8px;">
-        <thead>
-          <tr class="muted" style="text-align:left">
-            <th style="width:90px">DAY</th>
-            <th style="width:70px">No</th>
-            <th style="width:220px">Word</th>
-            <th style="width:140px">오답률</th>
-            <th>Meaning</th>
-          </tr>
-        </thead>
-        <tbody id="wordTbody"></tbody>
-      </table>
-    </div>
-
-    <div class="muted" style="margin-top:10px">
-      오답노트 시험은 “가중치 랜덤” 🎲 (오답횟수가 많은 단어가 조금 더 자주 나와요)
+      오답노트 시험은 “가중치 랜덤(적당히)” 🎲 (자주 틀린 단어가 조금 더 자주 나와요)
     </div>
   </div>
 
@@ -376,15 +350,15 @@
 
     <div id="shortAnswer" class="hidden" style="margin-top:10px">
       <div class="grid">
-        <div class="field" style="grid-column: span 8;">
+        <div class="field" style="grid-column: span 2;">
           <label>정답 입력</label>
           <input id="answerInput" placeholder="정답 입력" />
         </div>
-        <div class="field" style="grid-column: span 2;">
+        <div class="field">
           <label>&nbsp;</label>
           <button id="submitAnswerBtn" class="btn btn-soft" type="button">제출</button>
         </div>
-        <div class="field" style="grid-column: span 2;">
+        <div class="field">
           <label>&nbsp;</label>
           <button id="showAnswerBtn" class="btn btn-ghost" type="button">정답</button>
         </div>
@@ -396,27 +370,128 @@
     <button id="nextBtn" class="hidden btn btn-soft" type="button">다음 문제 ▶</button>
   </div>
 
+  <!-- Bottom Sheet -->
+  <div id="overlay" class="overlay hidden" aria-hidden="true">
+    <div class="sheet" role="dialog" aria-modal="true">
+      <div class="sheetHead">
+        <div class="sheetTitle">단어 · 오답 · 기록</div>
+        <button id="closeSheetBtn" class="btn btn-ghost" type="button">닫기</button>
+      </div>
+      <div class="sheetBody">
+        <div class="tabs">
+          <button id="tabWords" class="tab active" type="button">단어리스트</button>
+          <button id="tabWrong" class="tab" type="button">오답노트</button>
+          <button id="tabHistory" class="tab" type="button">기록</button>
+        </div>
+
+        <!-- Words Pane -->
+        <div id="paneWords" style="margin-top:10px">
+          <div class="grid">
+            <div class="field">
+              <label>DAY</label>
+              <select id="listDaySelect"></select>
+            </div>
+            <div class="field">
+              <label>검색</label>
+              <input id="listSearch" placeholder="예: contract / 계약" />
+            </div>
+            <div class="field">
+              <label>필터</label>
+              <select id="listFilter">
+                <option value="all" selected>전체</option>
+                <option value="selected">선택 구간만</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>정렬</label>
+              <select id="listSort">
+                <option value="no" selected>No</option>
+                <option value="word">단어</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:10px">
+            <span class="pill">총 <b id="listCount">0</b>개</span>
+          </div>
+
+          <div id="listWords" class="list"></div>
+        </div>
+
+        <!-- Wrong Pane -->
+        <div id="paneWrong" class="hidden" style="margin-top:10px">
+          <div class="grid">
+            <div class="field">
+              <label>범위</label>
+              <select id="wrongScope">
+                <option value="day" selected>선택 DAY만</option>
+                <option value="all">전체 DAY</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>정렬</label>
+              <select id="wrongSort">
+                <option value="wrongDesc" selected>오답횟수 높은 순</option>
+                <option value="rateDesc">오답률 높은 순</option>
+                <option value="recentDesc">최근 틀린 순</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>검색</label>
+              <input id="wrongSearch" placeholder="예: invoice / 청구서" />
+            </div>
+            <div class="field">
+              <label>시험</label>
+              <button id="startWrongBtn2" class="btn btn-soft" type="button">오답노트로 시험</button>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:10px">
+            <span class="pill">총 <b id="wrongCount">0</b>개</span>
+          </div>
+
+          <div id="listWrong" class="list"></div>
+        </div>
+
+        <!-- History Pane -->
+        <div id="paneHistory" class="hidden" style="margin-top:10px">
+          <div class="row">
+            <span class="pill">최근 <b id="historyCount">0</b>개</span>
+            <span class="pill">표시는 40개</span>
+          </div>
+          <div id="listHistory" class="list"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
 <script>
-  const KEY = "toeic_words_csv_v8_fixed";
+  // ---------------- safe localStorage ----------------
+  function safeSetItem(key, val){ try{ localStorage.setItem(key, val); } catch(e){ console.warn("저장 실패:", e); } }
+  function safeGetItem(key){ try{ return localStorage.getItem(key); } catch(e){ return null; } }
+  function safeRemoveItem(key){ try{ localStorage.removeItem(key); } catch(e){ /* noop */ } }
+
+  // ✅ XSS 방지 escape
+  function esc(s){
+    return String(s ?? "")
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;")
+      .replace(/'/g,"&#39;");
+  }
 
   const el = (id)=>document.getElementById(id);
 
-  // safe localStorage
-  function safeSetItem(key, val){
-    try{ localStorage.setItem(key, val); }
-    catch(e){ console.warn("저장 실패:", e); }
-  }
-  function safeGetItem(key){
-    try{ return localStorage.getItem(key); }
-    catch(e){ return null; }
-  }
-  function safeRemoveItem(key){
-    try{ localStorage.removeItem(key); }
-    catch(e){ /* noop */ }
-  }
+  // ---------------- keys ----------------
+  const WORDS_KEY = "toeic_words_v1_device";
+  const STATS_KEY = "toeic_stats_v2_device";
+  const SESSION_KEY = "toeic_sessions_v1_device";
 
-  const fileInput = el("file");
+  // ---------------- elements ----------------
   const statusEl = el("status");
+
   const daySelect = el("daySelect");
   const dayCountEl = el("dayCount");
   const activeCountEl = el("activeCount");
@@ -428,21 +503,7 @@
   const autoDelay = el("autoDelay");
   const startBtn = el("startBtn");
   const redoWrongBtn = el("redoWrongBtn");
-
-  const quiz = el("quiz");
-  const question = el("question");
-  const choicesEl = el("choices");
-  const feedback = el("feedback");
-  const progressPill = el("progressPill");
-  const scoreEl = el("score");
-  const wrongNEl = el("wrongN");
-  const stopBtn = el("stopBtn");
-
-  const shortAnswer = el("shortAnswer");
-  const answerInput = el("answerInput");
-  const submitAnswerBtn = el("submitAnswerBtn");
-  const showAnswerBtn = el("showAnswerBtn");
-  const nextBtn = el("nextBtn");
+  const startWrongBtn = el("startWrongBtn");
 
   const cbCore = el("cb_core");
   const cbBasic = el("cb_basic");
@@ -451,110 +512,74 @@
   const selectAllBtn = el("selectAllBtn");
   const selectNoneBtn = el("selectNoneBtn");
 
-  // List / Wrongnote UI
-  const tabAll = el("tabAll");
+  const resetStatsBtn = el("resetStatsBtn");
+
+  // quiz
+  const quiz = el("quiz");
+  const question = el("question");
+  const choicesEl = el("choices");
+  const feedback = el("feedback");
+  const progressPill = el("progressPill");
+  const scoreEl = el("score");
+  const wrongNEl = el("wrongN");
+  const stopBtn = el("stopBtn");
+  const shortAnswer = el("shortAnswer");
+  const answerInput = el("answerInput");
+  const submitAnswerBtn = el("submitAnswerBtn");
+  const showAnswerBtn = el("showAnswerBtn");
+  const nextBtn = el("nextBtn");
+
+  // sheet
+  const overlay = el("overlay");
+  const openSheetBtn = el("openSheetBtn");
+  const closeSheetBtn = el("closeSheetBtn");
+
+  const tabWords = el("tabWords");
   const tabWrong = el("tabWrong");
-  const startWrongBtn = el("startWrongBtn");
+  const tabHistory = el("tabHistory");
+
+  const paneWords = el("paneWords");
+  const paneWrong = el("paneWrong");
+  const paneHistory = el("paneHistory");
+
+  // words pane controls
   const listDaySelect = el("listDaySelect");
   const listSearch = el("listSearch");
   const listFilter = el("listFilter");
   const listSort = el("listSort");
+  const listCount = el("listCount");
+  const listWords = el("listWords");
+
+  // wrong pane controls
   const wrongScope = el("wrongScope");
   const wrongSort = el("wrongSort");
-  const listCount = el("listCount");
-  const wordTbody = el("wordTbody");
+  const wrongSearch = el("wrongSearch");
+  const wrongCount = el("wrongCount");
+  const listWrong = el("listWrong");
+  const startWrongBtn2 = el("startWrongBtn2");
 
-  // --------- User & Stats ----------
-  const USER_KEY = "toeic_user_nick_v1";
-  const STATS_PREFIX = "toeic_stats_v2_"; // v2: 안정화
+  // history
+  const historyCount = el("historyCount");
+  const listHistory = el("listHistory");
 
-  const userNick = el("userNick");
+  // ---------------- data helpers ----------------
+  const loadWordsAll = () => JSON.parse(safeGetItem(WORDS_KEY) || "{}");
+  const saveWordsAll = (obj) => safeSetItem(WORDS_KEY, JSON.stringify(obj));
 
-  function getNick(){
-    return (safeGetItem(USER_KEY) || "default").trim() || "default";
-  }
-  function setNick(n){
-    const v = (n || "").trim() || "default";
-    safeSetItem(USER_KEY, v);
-  }
-  function statsKey(){
-    return STATS_PREFIX + getNick();
-  }
-  function loadStats(){
-    return JSON.parse(safeGetItem(statsKey()) || "{}");
-  }
-  function saveStats(stats){
-    safeSetItem(statsKey(), JSON.stringify(stats));
-  }
+  const loadStats = () => JSON.parse(safeGetItem(STATS_KEY) || "{}");
+  const saveStats = (obj) => safeSetItem(STATS_KEY, JSON.stringify(obj));
 
-  // 데이터 저장 (DAY별 단어)
-  const loadAll = () => JSON.parse(safeGetItem(KEY) || "{}");
-  const saveAll = (obj) => safeSetItem(KEY, JSON.stringify(obj));
+  const loadSessions = () => {
+    try { return JSON.parse(safeGetItem(SESSION_KEY) || "[]"); }
+    catch(e){ return []; }
+  };
+  const saveSessions = (arr) => safeSetItem(SESSION_KEY, JSON.stringify(arr));
 
-  function normWord(s){
-    return String(s||"").toLowerCase().trim();
-  }
-
-  function makeWordKeyByParts(day, n, w){
-    return `${String(day||"").toUpperCase()}||${Number(n||0)}||${normWord(w)}`;
-  }
-
-  function makeWordKey(item, day){
-    const d = item.day || day;
-    return makeWordKeyByParts(d, item.n||0, item.w||"");
-  }
-
-  function getStatForItem(item){
-    const stats = loadStats();
-    const d = item.day || daySelect.value;
-    const k = makeWordKey(item, d);
-    const st = stats[k] || { right: 0, wrong: 0, last: 0 };
-    const right = st.right || 0;
-    const wrong = st.wrong || 0;
-    const total = right + wrong;
-    const rate = total ? Math.round((wrong / total) * 100) : 0;
-    const last = st.last || 0;
-    return { right, wrong, total, rate, last };
-  }
-
-  // Weighted random (no replace) for wrongnote quiz
-  function getWrongWeight(item){
-    const wrong = item.wrong || 0;
-    return Math.sqrt(wrong + 1); // 적당히
-  }
-
-  function weightedSampleNoReplace(items, k, weightFn){
-    const src = items.map(it => ({
-      it,
-      w: Math.max(0, Number(weightFn(it)) || 0)
-    })).filter(x => x.w > 0);
-
-    const out = [];
-    const pickOne = () => {
-      let sum = 0;
-      for(const x of src) sum += x.w;
-      if(sum <= 0) return null;
-
-      let r = Math.random() * sum;
-      for(let i=0; i<src.length; i++){
-        r -= src[i].w;
-        if(r <= 0){
-          const chosen = src[i].it;
-          src.splice(i, 1);
-          return chosen;
-        }
-      }
-      const last = src.pop();
-      return last ? last.it : null;
-    };
-
-    const n = Math.min(k, src.length);
-    for(let t=0; t<n; t++){
-      const one = pickOne();
-      if(!one) break;
-      out.push(one);
-    }
-    return out;
+  function fmtDate(d){
+    const y=d.getFullYear();
+    const m=String(d.getMonth()+1).padStart(2,"0");
+    const dd=String(d.getDate()).padStart(2,"0");
+    return `${y}-${m}-${dd}`;
   }
 
   function parseCSVLine(line){
@@ -601,7 +626,7 @@
 
       if(!day || !w || !m) continue;
       if(!data[day]) data[day] = [];
-      data[day].push({ n: no, w, m, day });
+      data[day].push({ day, n: no, w, m });
     }
 
     for(const d of Object.keys(data)){
@@ -617,6 +642,25 @@
     return data;
   }
 
+  async function ensureLoaded(){
+    const existing = loadWordsAll();
+    if(Object.keys(existing).length > 0){
+      statusEl.textContent = " · 내장 데이터 로드됨";
+      return;
+    }
+    try{
+      const res = await fetch("./toeic_words_day1_30.csv", { cache: "no-store" });
+      if(!res.ok) throw new Error("CSV not found");
+      const text = await res.text();
+      const parsed = parseCSV(text);
+      saveWordsAll(parsed);
+      statusEl.textContent = " · 내장 데이터 로드 완료";
+    } catch(e){
+      statusEl.textContent = " · 로드 실패(같은 폴더에 CSV 있는지 확인)";
+    }
+  }
+
+  // ---------------- interval helpers ----------------
   function selectedIntervals(){
     const intervals = [];
     if(cbCore.checked) intervals.push([1,40]);
@@ -625,7 +669,6 @@
     if(cb900.checked) intervals.push([137, Number.POSITIVE_INFINITY]);
     return intervals;
   }
-
   function inIntervals(no, intervals){
     for(const [a,b] of intervals){
       if(no >= a && no <= b) return true;
@@ -633,200 +676,53 @@
     return false;
   }
 
-  function getActiveList(){
-    const all = loadAll();
-    const day = daySelect.value;
-    const list = all[day] || [];
-    const intervals = selectedIntervals();
-
-    if(intervals.length === 0) return [];
-
-    const hasNo = list.some(x => (x.n || 0) > 0);
-    if(!hasNo) return list.map(x => ({...x, day}));
-
-    return list
-      .filter(x => inIntervals(x.n || 0, intervals))
-      .map(x => ({...x, day}));
-  }
-
-  function updateActiveCount(){
-    const active = getActiveList();
-    activeCountEl.textContent = String(active.length);
-  }
-
-  async function hydrateFromCSVText(text, label){
-    const parsed = parseCSV(text);
-    const all = loadAll();
-    for(const day of Object.keys(parsed)) all[day] = parsed[day];
-    saveAll(all);
-    refreshDayList();
-    statusEl.textContent = label;
-  }
-
-  async function autoLoadFromRepoIfEmpty(){
-    const existing = loadAll();
-    if(Object.keys(existing).length > 0){
-      statusEl.textContent = "저장된 데이터 로드 완료";
-      refreshDayList();
-      return;
-    }
-    try{
-      const res = await fetch("./toeic_words_day1_30.csv", { cache: "no-store" });
-      if(!res.ok) throw new Error("CSV not found");
-      const text = await res.text();
-      await hydrateFromCSVText(text, "자동 로드 완료 (업로드 필요 없음)");
-    } catch(e){
-      statusEl.textContent = "자동 로드 실패: CSV가 같은 폴더(루트)에 있는지 확인!";
-      refreshDayList();
-    }
-  }
-
-  async function readFileAsText(file){ return await file.text(); }
-
-  fileInput.addEventListener("change", async () => {
-    const f = fileInput.files?.[0];
-    if(!f) return;
-    try{
-      const text = await readFileAsText(f);
-      await hydrateFromCSVText(text, `업로드 로드 완료: ${f.name}`);
-    } catch(err){
-      statusEl.textContent = `업로드 에러: ${err.message || err}`;
-    }
-  });
-
-  el("clearBtn").onclick = () => {
-    if(confirm("저장된 단어 데이터를 모두 삭제할까요?")){
-      safeRemoveItem(KEY);
-      statusEl.textContent = "초기화 완료";
-      refreshDayList();
-    }
-  };
-
-  // Nickname
-  userNick.addEventListener("change", () => {
-    setNick(userNick.value);
-    renderWordTable();
-  });
-
-  // checkbox / day change
-  [cbCore, cbBasic, cb800, cb900].forEach(cb => cb.addEventListener("change", () => {
-    updateActiveCount();
-    renderWordTable();
-  }));
-
-  daySelect.addEventListener("change", () => {
-    updateActiveCount();
-    syncListDayOptions();
-    renderWordTable();
-  });
-
-  selectAllBtn.onclick = () => {
-    cbCore.checked = cbBasic.checked = cb800.checked = cb900.checked = true;
-    updateActiveCount();
-    renderWordTable();
-  };
-  selectNoneBtn.onclick = () => {
-    cbCore.checked = cbBasic.checked = cb800.checked = cb900.checked = false;
-    updateActiveCount();
-    renderWordTable();
-  };
-
-  function refreshDayList(){
-    const all = loadAll();
-    const days = Object.keys(all).sort((a,b)=>{
-      const na = parseInt(a.replace(/\D/g,"")) || 0;
-      const nb = parseInt(b.replace(/\D/g,"")) || 0;
-      return na-nb;
-    });
-
-    daySelect.innerHTML = "";
-    for(const d of days){
-      const opt = document.createElement("option");
-      opt.value = d;
-      opt.textContent = `${d} (${(all[d]||[]).length})`;
-      daySelect.appendChild(opt);
-    }
-    dayCountEl.textContent = String(days.length);
-    updateActiveCount();
-    syncListDayOptions();
-  }
-
-  // ---------- List / Wrongnote ----------
-  let listMode = "all"; // "all" | "wrong"
-
-  function setTab(mode){
-    listMode = mode;
-    tabAll.classList.toggle("active", mode === "all");
-    tabWrong.classList.toggle("active", mode === "wrong");
-    renderWordTable();
-  }
-  tabAll.onclick = () => setTab("all");
-  tabWrong.onclick = () => setTab("wrong");
-
-  listDaySelect.addEventListener("change", () => {
-    daySelect.value = listDaySelect.value;
-    updateActiveCount();
-    renderWordTable();
-  });
-  listSearch.addEventListener("input", renderWordTable);
-  listFilter.addEventListener("change", renderWordTable);
-  listSort.addEventListener("change", renderWordTable);
-  wrongScope.addEventListener("change", renderWordTable);
-  wrongSort.addEventListener("change", renderWordTable);
-
-  function syncListDayOptions(){
-    listDaySelect.innerHTML = daySelect.innerHTML;
-    if(daySelect.value) listDaySelect.value = daySelect.value;
-  }
-
-  function getListForDay(day){
-    const all = loadAll();
+  function getDayList(day){
+    const all = loadWordsAll();
     return (all[day] || []).map(x => ({...x, day}));
   }
 
-  function applySearch(list){
-    const q = (listSearch.value || "").trim().toLowerCase();
-    if(!q) return list;
-    return list.filter(x =>
-      String(x.w || "").toLowerCase().includes(q) ||
-      String(x.m || "").toLowerCase().includes(q) ||
-      String(x.day || "").toLowerCase().includes(q)
-    );
-  }
-
-  function applyDayFilter(list){
-    const v = listFilter.value;
-    if(v !== "selected") return list;
+  function getActiveList(){
+    const day = daySelect.value;
+    const list = getDayList(day);
     const intervals = selectedIntervals();
     if(intervals.length === 0) return [];
+
     const hasNo = list.some(x => (x.n || 0) > 0);
     if(!hasNo) return list;
     return list.filter(x => inIntervals(x.n || 0, intervals));
   }
 
-  function applyDaySort(list){
-    const v = listSort.value;
-    const copy = [...list];
-    if(v === "word"){
-      copy.sort((a,b)=> String(a.w||"").localeCompare(String(b.w||""), "en"));
-    } else {
-      copy.sort((a,b)=> (a.n||0) - (b.n||0));
-    }
-    return copy;
+  function updateActiveCount(){
+    activeCountEl.textContent = String(getActiveList().length);
+  }
+
+  // ---------------- stats ----------------
+  function normWord(s){ return String(s||"").toLowerCase().trim(); }
+  function makeWordKey(item){
+    return `${String(item.day||"").toUpperCase()}||${Number(item.n||0)}||${normWord(item.w)}`;
+  }
+
+  function getStatForItem(item){
+    const stats = loadStats();
+    const k = makeWordKey(item);
+    const st = stats[k] || { right:0, wrong:0, last:0 };
+    const right = st.right || 0;
+    const wrong = st.wrong || 0;
+    const total = right + wrong;
+    const rate = total ? Math.round((wrong/total)*100) : 0;
+    return { right, wrong, total, rate, last: st.last || 0 };
   }
 
   function getWrongNoteList(scope){
     const stats = loadStats();
     const curDay = daySelect.value;
 
-    // 방어: 구버전/오염 레코드 제거(w/m 없으면 삭제)
-    let arr = Object.entries(stats)
-      .map(([k, v]) => ({ k, ...v }))
-      .filter(x => x && x.w && x.m)
+    let arr = Object.values(stats)
+      .filter(x => x && x.w && x.m)                // 방어
       .filter(x => (x.wrong || 0) > 0)
-      .filter(x => (scope === "all") ? true : (String(x.day||"") === String(curDay)))
+      .filter(x => scope === "all" ? true : (x.day === curDay))
       .map(x => ({
-        day: x.day || curDay,          // 구버전 대비
+        day: x.day || curDay,
         n: x.n || 0,
         w: x.w,
         m: x.m,
@@ -835,80 +731,272 @@
         last: x.last || 0
       }));
 
-    const sortMode = wrongSort.value || "wrongDesc";
-    arr.sort((a,b) => {
-      const at = (a.right + a.wrong) || 0;
-      const bt = (b.right + b.wrong) || 0;
-      const ar = at ? (a.wrong / at) : 0;
-      const br = bt ? (b.wrong / bt) : 0;
-
-      if(sortMode === "rateDesc"){
-        return (br - ar) || (b.wrong - a.wrong) || (b.last - a.last);
-      }
-      if(sortMode === "recentDesc"){
-        return (b.last - a.last) || (b.wrong - a.wrong) || (br - ar);
-      }
-      return (b.wrong - a.wrong) || (br - ar) || (b.last - a.last);
-    });
-
-    return applySearch(arr);
-  }
-
-  function renderWordTable(){
-    const day = listDaySelect.value || daySelect.value;
-    let list = [];
-
-    if(listMode === "wrong"){
-      const scope = wrongScope.value || "day";
-      list = getWrongNoteList(scope);
-    } else {
-      list = getListForDay(day);
-      list = applyDayFilter(list);
-      list = applySearch(list);
-      list = applyDaySort(list);
+    // search
+    const q = (wrongSearch.value || "").trim().toLowerCase();
+    if(q){
+      arr = arr.filter(x =>
+        String(x.w||"").toLowerCase().includes(q) ||
+        String(x.m||"").toLowerCase().includes(q) ||
+        String(x.day||"").toLowerCase().includes(q)
+      );
     }
 
-    wordTbody.innerHTML = "";
-
-    list.forEach(x => {
-      const st = getStatForItem(x);
-      const badge = st.total ? `${st.rate}% (${st.wrong}/${st.total})` : `-`;
-
-      const tr = document.createElement("tr");
-      tr.style.background = "#fff";
-
-      tr.innerHTML = `
-        <td style="padding:10px 8px; border:1px solid var(--bd); border-right:0; border-radius:14px 0 0 14px;">
-          <span class="pill">${x.day || day}</span>
-        </td>
-        <td style="padding:10px 8px; border-top:1px solid var(--bd); border-bottom:1px solid var(--bd);">
-          ${x.n || ""}
-        </td>
-        <td style="padding:10px 8px; border-top:1px solid var(--bd); border-bottom:1px solid var(--bd);">
-          <b>${x.w || ""}</b>
-        </td>
-        <td style="padding:10px 8px; border-top:1px solid var(--bd); border-bottom:1px solid var(--bd);">
-          <span class="pill">${badge}</span>
-        </td>
-        <td style="padding:10px 8px; border:1px solid var(--bd); border-left:0; border-radius:0 14px 14px 0;">
-          ${x.m || ""}
-        </td>
-      `;
-      wordTbody.appendChild(tr);
+    // sort
+    const sortMode = wrongSort.value || "wrongDesc";
+    arr.sort((a,b)=>{
+      const at=(a.right+a.wrong)||0, bt=(b.right+b.wrong)||0;
+      const ar=at? (a.wrong/at):0, br=bt? (b.wrong/bt):0;
+      if(sortMode==="rateDesc") return (br-ar) || (b.wrong-a.wrong) || (b.last-a.last);
+      if(sortMode==="recentDesc") return (b.last-a.last) || (b.wrong-a.wrong) || (br-ar);
+      return (b.wrong-a.wrong) || (br-ar) || (b.last-a.last);
     });
 
-    listCount.textContent = String(list.length);
+    return arr;
   }
 
-  // --------- Quiz ----------
+  // ---------------- weighted random (moderate) ----------------
+  function getWrongWeight(item){
+    return Math.sqrt((item.wrong || 0) + 1); // 적당히
+  }
+  function weightedSampleNoReplace(items, k, weightFn){
+    const src = items.map(it => ({ it, w: Math.max(0, Number(weightFn(it)) || 0) })).filter(x=>x.w>0);
+    const out = [];
+    const pickOne = ()=>{
+      let sum=0; for(const x of src) sum+=x.w;
+      if(sum<=0) return null;
+      let r=Math.random()*sum;
+      for(let i=0;i<src.length;i++){
+        r -= src[i].w;
+        if(r<=0){
+          const chosen = src[i].it;
+          src.splice(i,1);
+          return chosen;
+        }
+      }
+      const last = src.pop();
+      return last ? last.it : null;
+    };
+    const n = Math.min(k, src.length);
+    for(let t=0;t<n;t++){
+      const one = pickOne();
+      if(!one) break;
+      out.push(one);
+    }
+    return out;
+  }
+
+  // ---------------- UI: day dropdown ----------------
+  function refreshDayList(){
+    const all = loadWordsAll();
+    const days = Object.keys(all).sort((a,b)=>{
+      const na = parseInt(a.replace(/\D/g,"")) || 0;
+      const nb = parseInt(b.replace(/\D/g,"")) || 0;
+      return na-nb;
+    });
+
+    daySelect.innerHTML = "";
+    listDaySelect.innerHTML = "";
+    for(const d of days){
+      const opt1 = document.createElement("option");
+      opt1.value = d;
+      opt1.textContent = `${d} (${(all[d]||[]).length})`;
+      daySelect.appendChild(opt1);
+
+      const opt2 = opt1.cloneNode(true);
+      listDaySelect.appendChild(opt2);
+    }
+
+    dayCountEl.textContent = String(days.length);
+    if(days.length){
+      listDaySelect.value = daySelect.value;
+    }
+    updateActiveCount();
+  }
+
+  // ---------------- Bottom sheet & tabs ----------------
+  function openSheet(){
+    overlay.classList.remove("hidden");
+    overlay.setAttribute("aria-hidden", "false");
+    const body = overlay.querySelector(".sheetBody");
+    if(body) body.scrollTop = 0; // ✅ 스크롤 초기화
+    renderWordsList();
+    renderWrongList();
+    renderHistory();
+  }
+  function closeSheet(){
+    overlay.classList.add("hidden");
+    overlay.setAttribute("aria-hidden", "true");
+  }
+
+  function setTab(which){
+    tabWords.classList.toggle("active", which==="words");
+    tabWrong.classList.toggle("active", which==="wrong");
+    tabHistory.classList.toggle("active", which==="history");
+
+    paneWords.classList.toggle("hidden", which!=="words");
+    paneWrong.classList.toggle("hidden", which!=="wrong");
+    paneHistory.classList.toggle("hidden", which!=="history");
+
+    if(which==="words") renderWordsList();
+    if(which==="wrong") renderWrongList();
+    if(which==="history") renderHistory();
+  }
+
+  openSheetBtn.onclick = ()=>{ setTab("words"); openSheet(); };
+  closeSheetBtn.onclick = closeSheet;
+  overlay.addEventListener("click", (e)=>{ if(e.target === overlay) closeSheet(); });
+
+  tabWords.onclick = ()=>setTab("words");
+  tabWrong.onclick = ()=>setTab("wrong");
+  tabHistory.onclick = ()=>setTab("history");
+
+  // ---------------- Render: words list (cards) ----------------
+  function renderWordsList(){
+    const day = listDaySelect.value || daySelect.value;
+    let list = getDayList(day);
+
+    // filter selected interval
+    if(listFilter.value === "selected"){
+      const intervals = selectedIntervals();
+      if(intervals.length === 0) list = [];
+      else list = list.filter(x => inIntervals(x.n||0, intervals));
+    }
+
+    // search
+    const q = (listSearch.value || "").trim().toLowerCase();
+    if(q){
+      list = list.filter(x =>
+        String(x.w||"").toLowerCase().includes(q) ||
+        String(x.m||"").toLowerCase().includes(q)
+      );
+    }
+
+    // sort
+    if(listSort.value === "word"){
+      list.sort((a,b)=> String(a.w||"").localeCompare(String(b.w||""), "en"));
+    } else {
+      list.sort((a,b)=> (a.n||0) - (b.n||0));
+    }
+
+    listCount.textContent = String(list.length);
+    listWords.innerHTML = "";
+
+    for(const x of list){
+      const st = getStatForItem(x);
+      const badge = st.total ? `${st.rate}% (${st.wrong}/${st.total})` : "-";
+
+      const div = document.createElement("div");
+      div.className = "item";
+      div.innerHTML = `
+        <div class="itemTop">
+          <div>
+            <div class="itemWord">${esc(x.w)}</div>
+            <div class="muted" style="margin-top:2px">DAY ${esc(x.day)} · No ${esc(x.n||"")}</div>
+          </div>
+          <div class="itemMeta">
+            <span class="badge">오답률 ${esc(badge)}</span>
+          </div>
+        </div>
+        <div class="itemMeaning">${esc(x.m)}</div>
+      `;
+      listWords.appendChild(div);
+    }
+  }
+
+  // ---------------- Render: wrong list (cards) ----------------
+  function renderWrongList(){
+    const scope = wrongScope.value || "day";
+    const list = getWrongNoteList(scope);
+
+    wrongCount.textContent = String(list.length);
+    listWrong.innerHTML = "";
+
+    for(const x of list){
+      const st = getStatForItem(x);
+      const badge = st.total ? `${st.rate}% (${st.wrong}/${st.total})` : "-";
+
+      const div = document.createElement("div");
+      div.className = "item";
+      div.innerHTML = `
+        <div class="itemTop">
+          <div>
+            <div class="itemWord">${esc(x.w)}</div>
+            <div class="muted" style="margin-top:2px">DAY ${esc(x.day)} · No ${esc(x.n||"")}</div>
+          </div>
+          <div class="itemMeta">
+            <span class="badge">오답 ${esc(x.wrong)}회</span>
+            <span class="badge">오답률 ${esc(badge)}</span>
+          </div>
+        </div>
+        <div class="itemMeaning">${esc(x.m)}</div>
+      `;
+      listWrong.appendChild(div);
+    }
+  }
+
+  // ---------------- Render: history ----------------
+  function renderHistory(){
+    const sessions = loadSessions();
+    const sliced = sessions.slice(0, 40); // 표시 40개
+    historyCount.textContent = String(sliced.length);
+    listHistory.innerHTML = "";
+
+    for(const s of sliced){
+      const div = document.createElement("div");
+      div.className = "item";
+      const srcLabel = (s.source === "wrongnote") ? "오답노트" : "DAY";
+      div.innerHTML = `
+        <div class="itemTop">
+          <div>
+            <div class="itemWord">${esc(s.date)} · ${esc(srcLabel)} ${esc(s.day)}</div>
+            <div class="muted" style="margin-top:2px">${esc(s.mode==="mc"?"4지선다":"주관식")} · ${esc(s.dir==="en2ko"?"영→뜻":"뜻→영")} · ${esc(s.count)}문제</div>
+          </div>
+          <div class="itemMeta">
+            <span class="badge">점수 ${esc(s.score)}/${esc(s.count)}</span>
+            <span class="badge">정확도 ${esc(s.accuracy)}%</span>
+            <span class="badge">${esc(s.durationSec)}s</span>
+          </div>
+        </div>
+      `;
+      listHistory.appendChild(div);
+    }
+  }
+
+  // ---------------- events (sheet filters) ----------------
+  listDaySelect.addEventListener("change", ()=>{
+    daySelect.value = listDaySelect.value;
+    updateActiveCount();
+    renderWordsList();
+    renderWrongList();
+  });
+  listSearch.addEventListener("input", renderWordsList);
+  listFilter.addEventListener("change", renderWordsList);
+  listSort.addEventListener("change", renderWordsList);
+
+  wrongScope.addEventListener("change", renderWrongList);
+  wrongSort.addEventListener("change", renderWrongList);
+  wrongSearch.addEventListener("input", renderWrongList);
+
+  // ---------------- quiz logic ----------------
   let pool = [];
-  let quizAll = [];          // ✅ 퀴즈 시작 시 고정되는 보기 풀
+  let quizAll = [];
   let idx = 0;
   let score = 0;
   let wrong = [];
-  let lastWrong = [];        // ✅ window 오염 제거
-  let locked = false;        // ✅ 중복 클릭 방지
-  let timerId = null;        // ✅ 자동 이동 타이머 중복 방지
+  let lastWrong = [];
+
+  let locked = false;
+  let timerId = null;
+
+  let quizStartedAt = 0;
+  let quizSource = "day"; // "day" | "wrongnote"
+
+  function clearTimer(){
+    if(timerId){
+      clearTimeout(timerId);
+      timerId = null;
+    }
+  }
 
   function shuffle(arr){
     for(let i=arr.length-1;i>0;i--){
@@ -918,12 +1006,30 @@
     return arr;
   }
 
+  // ✅ 보기 후보 풀: quizAll → 현재DAY 전체 → 전체DAY 합치기
+  function getChoicePool(){
+    if(Array.isArray(quizAll) && quizAll.length >= 8) return quizAll;
+
+    const dayAll = getDayList(daySelect.value);
+    if(dayAll.length >= 8) return dayAll;
+
+    const all = loadWordsAll();
+    const merged = [];
+    for(const d of Object.keys(all)){
+      for(const it of (all[d] || [])){
+        merged.push({ ...it, day: d });
+      }
+    }
+    return merged.length ? merged : (quizAll || []);
+  }
+
   function pickChoices(correct, all, dir){
     const pick = [];
     const correctVal = dir==="en2ko" ? correct.m : correct.w;
     const seen = new Set([correctVal]);
 
-    while(pick.length < 3 && all.length > 3){
+    // ✅ all이 작아도 최대한 3개 뽑기 (fallback은 getChoicePool에서 해결)
+    while(pick.length < 3 && all.length >= 4){
       const cand = all[Math.floor(Math.random()*all.length)];
       const val = dir==="en2ko" ? cand.m : cand.w;
       if(!val || seen.has(val)) continue;
@@ -932,54 +1038,6 @@
     }
     const opts = shuffle([correctVal, ...pick]).slice(0,4);
     return { opts, correctVal };
-  }
-
-  function disableInteractions(){
-    locked = true;
-    choicesEl.querySelectorAll("button").forEach(b => b.disabled = true);
-    submitAnswerBtn.disabled = true;
-    showAnswerBtn.disabled = true;
-    answerInput.disabled = true;
-  }
-
-  function enableInteractions(){
-    locked = false;
-    submitAnswerBtn.disabled = false;
-    showAnswerBtn.disabled = false;
-    answerInput.disabled = false;
-  }
-
-  function finish(){
-    const total = pool.length;
-    feedback.innerHTML = `끝! 점수 <b>${score}</b> / ${total} (오답 ${wrong.length})`;
-    lastWrong = wrong;
-    if(wrong.length > 0) redoWrongBtn.classList.remove("hidden");
-    renderWordTable();
-  }
-
-  function goNext(){
-    nextBtn.classList.add("hidden");
-    idx++;
-    if(idx >= pool.length) finish();
-    else render();
-  }
-
-  function clearTimer(){
-    if(timerId){
-      clearTimeout(timerId);
-      timerId = null;
-    }
-  }
-
-  function scheduleNext(){
-    if(nextMode.value === "manual"){
-      nextBtn.classList.remove("hidden");
-      nextBtn.onclick = goNext;
-      return;
-    }
-    const ms = parseInt(autoDelay.value,10) || 1200;
-    clearTimer();
-    timerId = setTimeout(goNext, ms);
   }
 
   function normalize(s){
@@ -1006,9 +1064,34 @@
     return parts.some(p => p.includes(u) || u.includes(p));
   }
 
+  function disableInteractions(){
+    locked = true;
+    choicesEl.querySelectorAll("button").forEach(b => b.disabled = true);
+    submitAnswerBtn.disabled = true;
+    showAnswerBtn.disabled = true;
+    answerInput.disabled = true;
+  }
+  function enableInteractions(){
+    locked = false;
+    submitAnswerBtn.disabled = false;
+    showAnswerBtn.disabled = false;
+    answerInput.disabled = false;
+  }
+
+  function scheduleNext(){
+    if(nextMode.value === "manual"){
+      nextBtn.classList.remove("hidden");
+      nextBtn.onclick = goNext;
+      return;
+    }
+    const ms = parseInt(autoDelay.value,10) || 1200;
+    clearTimer();
+    timerId = setTimeout(goNext, ms);
+  }
+
   function judge(ok, item, dir){
-    if(locked) return;        // ✅ 중복 클릭/연타 방지
-    disableInteractions();    // ✅ 즉시 잠금
+    if(locked) return;
+    disableInteractions();
 
     const correctText = (dir==="en2ko") ? item.m : item.w;
 
@@ -1017,29 +1100,18 @@
       feedback.innerHTML = `<span class="ok">정답!</span>`;
     } else {
       wrong.push(item);
-      feedback.innerHTML = `<span class="bad">오답!</span> 정답: <b>${correctText}</b>`;
+      feedback.innerHTML = `<span class="bad">오답!</span> 정답: <b>${esc(correctText)}</b>`;
     }
 
     scoreEl.textContent = String(score);
     wrongNEl.textContent = String(wrong.length);
 
-    // ✅ (6) DAY 기록: 오답노트는 item.day 우선
-    const day = item.day || daySelect.value;
-
-    // --- 누적 stats 기록(닉네임별) ---
+    // stats update
     const stats = loadStats();
-    const k = makeWordKey(item, day);
+    const k = makeWordKey(item);
 
     if(!stats[k]){
-      stats[k] = {
-        day,
-        n: item.n || 0,
-        w: item.w,
-        m: item.m,
-        right: 0,
-        wrong: 0,
-        last: 0
-      };
+      stats[k] = { day:item.day, n:item.n||0, w:item.w, m:item.m, right:0, wrong:0, last:0 };
     }
     if(ok) stats[k].right += 1;
     else stats[k].wrong += 1;
@@ -1052,6 +1124,7 @@
   function render(){
     clearTimer();
     enableInteractions();
+    nextBtn.classList.add("hidden");
 
     progressPill.textContent = `${idx+1}/${pool.length}`;
     scoreEl.textContent = String(score);
@@ -1065,9 +1138,7 @@
 
     choicesEl.innerHTML = "";
     feedback.textContent = "";
-    nextBtn.classList.add("hidden");
 
-    // 모드 세팅
     if(mode === "sa"){
       choicesEl.classList.add("hidden");
       shortAnswer.classList.remove("hidden");
@@ -1081,43 +1152,86 @@
       shortAnswer.classList.add("hidden");
     }
 
-    // ✅ (3) 보기 풀은 quizAll 고정 사용
-    const all = quizAll;
+    // ✅ 보기 후보 풀 안정화
+    const all = getChoicePool();
 
     if(mode === "mc"){
       const { opts, correctVal } = pickChoices(item, all, dir);
-      opts.forEach((opt) => {
+      opts.forEach(opt=>{
         const b = document.createElement("button");
-        b.textContent = opt;
-        b.onclick = () => judge(opt === correctVal, item, dir);
+        b.textContent = opt; // 버튼은 textContent로 안전
+        b.onclick = ()=>judge(opt === correctVal, item, dir);
         choicesEl.appendChild(b);
       });
       return;
     }
 
-    // 주관식: 중복 제출 방지(locked + disableInteractions로 해결)
-    submitAnswerBtn.onclick = () => {
+    submitAnswerBtn.onclick = ()=>{
       if(locked) return;
       const user = (answerInput.value || "").trim();
       let ok = false;
-
       if(dir === "en2ko") ok = isMeaningCorrect(user, item.m);
       else ok = normalize(user) === normalize(item.w);
-
       judge(ok, item, dir);
     };
 
-    showAnswerBtn.onclick = () => {
-      const correctText = (dir==="en2ko") ? item.m : item.w;
-      feedback.innerHTML = `정답: <b>${correctText}</b>`;
+    showAnswerBtn.onclick = ()=>{
+      const correct = (dir==="en2ko") ? item.m : item.w;
+      feedback.innerHTML = `정답: <b>${esc(correct)}</b>`;
     };
 
-    answerInput.onkeydown = (e) => {
+    // onkeydown은 프로퍼티 방식이라 누적 없음
+    answerInput.onkeydown = (e)=>{
       if(e.key === "Enter"){
         e.preventDefault();
         submitAnswerBtn.click();
       }
     };
+  }
+
+  function goNext(){
+    nextBtn.classList.add("hidden");
+    idx++;
+    if(idx >= pool.length) finish();
+    else render();
+  }
+
+  function finish(){
+    const total = pool.length;
+    const durationSec = quizStartedAt ? Math.round((Date.now() - quizStartedAt)/1000) : 0;
+    const wrongCnt = wrong.length;
+    const acc = total ? Math.round((score/total)*100) : 0;
+
+    // save session log
+    const sessions = loadSessions();
+    sessions.unshift({
+      ts: Date.now(),
+      date: fmtDate(new Date()),
+      source: quizSource,
+      day: (quizSource==="day") ? daySelect.value : (pool[0]?.day || daySelect.value),
+      count: total,
+      dir: dirSelect.value,
+      mode: modeSelect.value,
+      score,
+      wrong: wrongCnt,
+      accuracy: acc,
+      durationSec
+    });
+    saveSessions(sessions.slice(0, 400)); // 저장 400개 유지
+
+    feedback.innerHTML = `끝! 점수 <b>${score}</b> / ${total} (오답 ${wrongCnt}) · 정확도 ${acc}% · ${durationSec}s`;
+    lastWrong = wrong;
+    if(wrong.length > 0) redoWrongBtn.classList.remove("hidden");
+
+    // ✅ finish 후 stop 버튼 UX
+    stopBtn.textContent = "닫기";
+
+    // refresh sheet lists if open
+    if(!overlay.classList.contains("hidden")){
+      renderWrongList();
+      renderHistory();
+      renderWordsList();
+    }
   }
 
   function start(withWrong=false){
@@ -1127,19 +1241,24 @@
       return;
     }
 
-    const n = Math.min(parseInt(countSelect.value,10), list.length);
-    idx = 0;
-    score = 0;
-    wrong = [];
-    locked = false;
-    clearTimer();
-
     const src = withWrong ? (lastWrong || []) : list;
+    if(src.length === 0){
+      alert("오답이 없어요. 먼저 한 번 틀려주세요 😼");
+      return;
+    }
 
-    // ✅ quizAll 고정
+    // ✅ n 계산을 src 기준으로 (명확)
+    const n = Math.min(parseInt(countSelect.value,10), src.length);
+
+    idx = 0; score = 0; wrong = []; locked=false;
+    clearTimer();
+    quizStartedAt = Date.now();
+    quizSource = "day";
+    stopBtn.textContent = "끝내기";
+
+    // 보기 풀은 "현재 DAY 활성 목록"을 기준으로 고정
     quizAll = list;
-
-    pool = shuffle([...src]).slice(0, Math.min(n, src.length));
+    pool = shuffle([...src]).slice(0, n);
 
     redoWrongBtn.classList.add("hidden");
     quiz.classList.remove("hidden");
@@ -1147,25 +1266,23 @@
   }
 
   function startWrongNoteQuiz(){
-    const scope = wrongScope.value || "day";
+    const scope = wrongScope ? (wrongScope.value || "day") : "day";
     const src = getWrongNoteList(scope);
-
     if(src.length === 0){
-      alert("오답노트에 단어가 없어요. (아직 틀린 문제가 없거나 범위를 확인!)");
+      alert("오답노트에 단어가 없어요. (아직 틀린 단어가 없거나 범위를 확인!)");
       return;
     }
 
     const n = Math.min(parseInt(countSelect.value,10), src.length);
-    idx = 0;
-    score = 0;
-    wrong = [];
-    locked = false;
+
+    idx = 0; score = 0; wrong = []; locked=false;
     clearTimer();
+    quizStartedAt = Date.now();
+    quizSource = "wrongnote";
+    stopBtn.textContent = "끝내기";
 
-    // ✅ 오답노트용 보기 풀도 고정(=오답노트 목록 자체로)
-    quizAll = src.map(x => ({...x}));
-
-    // ✅ 가중치 랜덤(중복 없음)
+    // 보기 풀은 오답노트로 좁히지 않음(보기 부족 방지) -> getChoicePool이 fallback 처리
+    quizAll = src.map(x=>({...x}));
     pool = weightedSampleNoReplace(src, n, getWrongWeight);
 
     redoWrongBtn.classList.add("hidden");
@@ -1173,17 +1290,62 @@
     render();
   }
 
-  startBtn.onclick = () => start(false);
-  redoWrongBtn.onclick = () => start(true);
-  stopBtn.onclick = () => { clearTimer(); quiz.classList.add("hidden"); };
+  // ---------------- button wiring ----------------
+  startBtn.onclick = ()=>start(false);
+  redoWrongBtn.onclick = ()=>start(true);
   startWrongBtn.onclick = startWrongNoteQuiz;
+  startWrongBtn2.onclick = startWrongNoteQuiz;
 
-  // init
-  userNick.value = getNick();
-  refreshDayList();
-  autoLoadFromRepoIfEmpty();
-  setTab("all");
-  renderWordTable();
+  stopBtn.onclick = ()=>{
+    clearTimer();
+    quiz.classList.add("hidden");
+    stopBtn.textContent = "끝내기";
+  };
+
+  [cbCore, cbBasic, cb800, cb900].forEach(cb => cb.addEventListener("change", ()=>{
+    updateActiveCount();
+    if(!overlay.classList.contains("hidden")) renderWordsList();
+  }));
+
+  daySelect.addEventListener("change", ()=>{
+    listDaySelect.value = daySelect.value;
+    updateActiveCount();
+    if(!overlay.classList.contains("hidden")){
+      renderWordsList();
+      renderWrongList();
+    }
+  });
+
+  selectAllBtn.onclick = ()=>{
+    cbCore.checked=cbBasic.checked=cb800.checked=cb900.checked=true;
+    updateActiveCount();
+    if(!overlay.classList.contains("hidden")) renderWordsList();
+  };
+  selectNoneBtn.onclick = ()=>{
+    cbCore.checked=cbBasic.checked=cb800.checked=cb900.checked=false;
+    updateActiveCount();
+    if(!overlay.classList.contains("hidden")) renderWordsList();
+  };
+
+  resetStatsBtn.onclick = ()=>{
+    if(confirm("이 기기에서 저장된 오답률/오답노트/기록을 전부 초기화할까요?")){
+      safeRemoveItem(STATS_KEY);
+      safeRemoveItem(SESSION_KEY);
+      alert("초기화 완료!");
+      if(!overlay.classList.contains("hidden")){
+        renderWrongList();
+        renderHistory();
+        renderWordsList();
+      }
+    }
+  };
+
+  // ---------------- init ----------------
+  (async function init(){
+    await ensureLoaded();
+    refreshDayList();
+    updateActiveCount();
+  })();
 </script>
 </body>
 </html>

@@ -312,38 +312,6 @@
   <div class="card" id="learnSettingsCard">
     <h2>1) 설정 & 시작</h2>
 
-    <!-- 시작/이어하기 -->
-    <div class="grid" style="margin-top:8px; margin-bottom:10px;">
-      <div class="field" style="grid-column: span 2;">
-        <button id="startBtn" class="btn" type="button" disabled>로딩 중...</button>
-      </div>
-      <div class="field" style="grid-column: span 2;">
-        <button id="resumeBtn" class="btn btn-soft hidden" type="button">이어하기</button>
-      </div>
-    </div>
-
-    <!-- 범위: 시작버튼 바로 아래에 붙임 -->
-    <div class="card" id="scopeCard" style="margin:0 0 12px;">
-      <div style="font-weight:900; font-size:14px; margin:0 0 8px;">범위 선택</div>
-
-      <div class="chips">
-        <label class="chip"><input id="cb_core" type="checkbox" checked /> 핵심빈출 (1~40)</label>
-        <label class="chip"><input id="cb_basic" type="checkbox" checked /> 토익기초 (41~68)</label>
-        <label class="chip"><input id="cb_800" type="checkbox" checked /> 800점 (69~136)</label>
-        <label class="chip"><input id="cb_900" type="checkbox" checked /> 900점 (137~)</label>
-      </div>
-
-      <div class="scope-meter" style="margin-top:10px;">
-        <div class="scope-meta">
-          <span id="scopeCoverageText">현재 학습 범위 0%</span>
-          <span id="scopeCoverageCount">0 / 0 단어</span>
-        </div>
-        <div class="progress-container" style="margin:0 0 10px">
-          <div id="scopeCoverageBar" class="progress-bar"></div>
-        </div>
-      </div>
-    </div>
-
     <!-- 선택/옵션 -->
     <div class="grid">
       <div class="field">
@@ -430,6 +398,38 @@
       <span class="pill" id="selectedDaysPill">선택 DAY: -</span>
       <span class="pill">오늘 학습: <b id="todayCountPill">0</b></span>
       <span class="pill">연속: <b id="streakPill">0</b>일</span>
+    </div>
+
+    <!-- 범위: 시작 버튼 바로 위 -->
+    <div class="card" id="scopeCard" style="margin:12px 0 10px;">
+      <div style="font-weight:900; font-size:14px; margin:0 0 8px;">범위 선택</div>
+
+      <div class="chips">
+        <label class="chip"><input id="cb_core" type="checkbox" checked /> 핵심빈출 (1~40)</label>
+        <label class="chip"><input id="cb_basic" type="checkbox" checked /> 토익기초 (41~68)</label>
+        <label class="chip"><input id="cb_800" type="checkbox" checked /> 800점 (69~136)</label>
+        <label class="chip"><input id="cb_900" type="checkbox" checked /> 900점 (137~)</label>
+      </div>
+
+      <div class="scope-meter" style="margin-top:10px;">
+        <div class="scope-meta">
+          <span id="scopeCoverageText">현재 학습 범위 0%</span>
+          <span id="scopeCoverageCount">0 / 0 단어</span>
+        </div>
+        <div class="progress-container" style="margin:0 0 10px">
+          <div id="scopeCoverageBar" class="progress-bar"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 시작/이어하기: 1섹터 하단 배치 -->
+    <div class="grid" style="margin-top:10px;">
+      <div class="field" style="grid-column: span 2;">
+        <button id="startBtn" class="btn" type="button" disabled>로딩 중...</button>
+      </div>
+      <div class="field" style="grid-column: span 2;">
+        <button id="resumeBtn" class="btn btn-soft" type="button" disabled>이어하기 (저장된 기록 없음)</button>
+      </div>
     </div>
   </div>
 
@@ -1986,7 +1986,9 @@
 
   function updateResumeButton(){
     const hasResume = !!load(RESUME_KEY, null);
-    el("resumeBtn").classList.toggle("hidden", !hasResume);
+    const resumeBtn = el("resumeBtn");
+    resumeBtn.disabled = !hasResume;
+    resumeBtn.textContent = hasResume ? "이어하기" : "이어하기 (저장된 기록 없음)";
   }
 
   function saveResumeState(){

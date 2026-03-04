@@ -7,6 +7,7 @@
   <style>
     body{font-family:system-ui,Segoe UI,Apple SD Gothic Neo,Malgun Gothic,sans-serif;margin:18px;line-height:1.35}
     .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+    .row.tight{gap:10px}
     select,input,button{padding:10px 12px;font-size:14px}
     button{cursor:pointer}
     .card{border:1px solid #ddd;border-radius:12px;padding:14px;margin:12px 0}
@@ -22,7 +23,7 @@
 
     /* ✅ Start 버튼 눈에 띄게 */
     #startBtn{
-      background:#1d4ed8; /* blue */
+      background:#1d4ed8;
       color:#fff;
       border:1px solid #1d4ed8;
       border-radius:14px;
@@ -33,6 +34,19 @@
     }
     #startBtn:hover{filter:brightness(0.95)}
     #startBtn:active{transform: translateY(1px)}
+
+    /* 체크박스 칩 스타일 */
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      border:1px solid #ddd;
+      border-radius:999px;
+      padding:8px 12px;
+      background:#fff;
+      user-select:none;
+    }
+    .chip input{transform:scale(1.05)}
   </style>
 </head>
 <body>
@@ -49,8 +63,7 @@
       <span id="status" class="muted"></span>
     </div>
     <div class="muted" style="margin-top:10px">
-      ✅ 기본은 자동 로드. (원하면 파일 업로드로 덮어쓰기 가능) <br/>
-      ✅ 데이터는 브라우저에 저장됩니다(LocalStorage).
+      ✅ 기본은 자동 로드. (원하면 업로드로 덮어쓰기 가능) · 데이터는 브라우저에 저장됩니다(LocalStorage).
     </div>
   </div>
 
@@ -58,14 +71,6 @@
     <div class="row">
       <label><b>시험 DAY</b></label>
       <select id="daySelect"></select>
-
-      <label><b>범위</b></label>
-      <select id="rangeSelect">
-        <option value="core" selected>1~40 핵심빈출</option>
-        <option value="core_basic">1~68 핵심+기초</option>
-        <option value="up800">1~136 핵심+기초+800</option>
-        <option value="all">전체(900 포함)</option>
-      </select>
 
       <label><b>문제수</b></label>
       <select id="countSelect">
@@ -97,13 +102,25 @@
         <option value="1200" selected>1.2초</option>
         <option value="1500">1.5초</option>
       </select>
+    </div>
+
+    <div class="row tight" style="margin-top:10px">
+      <label><b>단어 구간 선택</b></label>
+
+      <label class="chip"><input id="cb_core" type="checkbox" checked /> 핵심빈출 (1~40)</label>
+      <label class="chip"><input id="cb_basic" type="checkbox" checked /> 토익기초 (41~68)</label>
+      <label class="chip"><input id="cb_800" type="checkbox" checked /> 800점 (69~136)</label>
+      <label class="chip"><input id="cb_900" type="checkbox" checked /> 900점 (137~)</label>
+
+      <button id="selectAllBtn" type="button">전체</button>
+      <button id="selectNoneBtn" type="button">해제</button>
 
       <button id="startBtn">시험 시작</button>
       <button id="redoWrongBtn" class="hidden">오답만 다시</button>
     </div>
 
     <div class="muted" style="margin-top:10px">
-      저장된 DAY: <span id="dayCount">0</span>개 · 현재 범위 단어: <span id="activeCount">0</span>개
+      저장된 DAY: <span id="dayCount">0</span>개 · 선택 구간 단어: <span id="activeCount">0</span>개
     </div>
   </div>
 
@@ -125,9 +142,7 @@
         <button id="submitAnswerBtn">제출</button>
         <button id="showAnswerBtn" type="button">정답 보기</button>
       </div>
-      <div class="muted" style="margin-top:8px">
-        뜻(한글)은 일부만 입력해도 정답 처리(포함 인정)
-      </div>
+      <div class="muted" style="margin-top:8px">뜻(한글)은 일부만 입력해도 정답 처리(포함 인정)</div>
     </div>
 
     <div id="feedback" class="muted" style="margin-top:10px"></div>
@@ -135,7 +150,7 @@
   </div>
 
 <script>
-  const KEY = "toeic_words_csv_v4_ranges";
+  const KEY = "toeic_words_csv_v5_checkboxes";
 
   const el = (id)=>document.getElementById(id);
 
@@ -145,7 +160,6 @@
   const dayCountEl = el("dayCount");
   const activeCountEl = el("activeCount");
 
-  const rangeSelect = el("rangeSelect");
   const countSelect = el("countSelect");
   const dirSelect = el("dirSelect");
   const modeSelect = el("modeSelect");
@@ -168,6 +182,14 @@
   const submitAnswerBtn = el("submitAnswerBtn");
   const showAnswerBtn = el("showAnswerBtn");
   const nextBtn = el("nextBtn");
+
+  // 체크박스
+  const cbCore = el("cb_core");
+  const cbBasic = el("cb_basic");
+  const cb800 = el("cb_800");
+  const cb900 = el("cb_900");
+  const selectAllBtn = el("selectAllBtn");
+  const selectNoneBtn = el("selectNoneBtn");
 
   const loadAll = () => JSON.parse(localStorage.getItem(KEY) || "{}");
   const saveAll = (obj) => localStorage.setItem(KEY, JSON.stringify(obj));
@@ -195,12 +217,12 @@
 
     const header = parseCSVLine(lines[0]).map(x=>x.toLowerCase());
     const idxDay = header.indexOf("day");
-    const idxNo = header.indexOf("no");         // ✅ 범위 필터에 필요
+    const idxNo = header.indexOf("no");
     const idxWord = header.indexOf("word");
     const idxMeaning = header.indexOf("meaning");
 
     if(idxDay < 0 || idxWord < 0 || idxMeaning < 0){
-      throw new Error("CSV 헤더에 day,word,meaning이 있어야 해요 (day,no,word,meaning 추천)");
+      throw new Error("CSV 헤더에 day,word,meaning 필요 (day,no,word,meaning 추천)");
     }
 
     const data = {};
@@ -210,7 +232,6 @@
       const w = (cols[idxWord] || "").trim();
       const m = (cols[idxMeaning] || "").trim();
 
-      // no가 없으면 범위가 동작 못하니 0으로 넣어두고, range=all 권장
       const nRaw = idxNo >= 0 ? (cols[idxNo] || "") : "";
       const n = parseInt(String(nRaw).trim(), 10);
       const no = Number.isFinite(n) ? n : 0;
@@ -220,7 +241,6 @@
       data[day].push({ n: no, w, m });
     }
 
-    // De-dup per day (word+meaning)
     for(const d of Object.keys(data)){
       const seen = new Set();
       data[d] = data[d].filter(p=>{
@@ -229,7 +249,6 @@
         seen.add(k);
         return true;
       });
-      // no 기준 정렬
       data[d].sort((a,b)=> (a.n||0) - (b.n||0));
     }
     return data;
@@ -251,7 +270,6 @@
       daySelect.appendChild(opt);
     }
     dayCountEl.textContent = String(days.length);
-
     updateActiveCount();
   }
 
@@ -279,28 +297,36 @@
     return parts.some(p => p.includes(u) || u.includes(p));
   }
 
-  function filterByRange(list){
-    const r = rangeSelect.value;
+  function selectedIntervals(){
+    const intervals = [];
+    if(cbCore.checked) intervals.push([1,40]);
+    if(cbBasic.checked) intervals.push([41,68]);
+    if(cb800.checked) intervals.push([69,136]);
+    if(cb900.checked) intervals.push([137, Number.POSITIVE_INFINITY]);
+    return intervals;
+  }
 
-    // no가 0이면(없으면) 전체만 안정적
-    if(!list || list.length === 0) return [];
-    const hasNo = list.some(x => (x.n || 0) > 0);
-    if(!hasNo){
-      // no 정보 없으면 그냥 전체
-      return list;
+  function inIntervals(no, intervals){
+    for(const [a,b] of intervals){
+      if(no >= a && no <= b) return true;
     }
-
-    if(r === "core") return list.filter(x => x.n >= 1 && x.n <= 40);
-    if(r === "core_basic") return list.filter(x => x.n >= 1 && x.n <= 68);
-    if(r === "up800") return list.filter(x => x.n >= 1 && x.n <= 136);
-    return list; // all
+    return false;
   }
 
   function getActiveList(){
     const all = loadAll();
     const day = daySelect.value;
     const list = all[day] || [];
-    return filterByRange(list);
+    const intervals = selectedIntervals();
+
+    // 아무것도 체크 안 하면 빈 리스트
+    if(intervals.length === 0) return [];
+
+    // no가 없으면 전체로 (그래도 체크박스 의미가 없어서, CSV는 no가 있는 게 좋음)
+    const hasNo = list.some(x => (x.n || 0) > 0);
+    if(!hasNo) return list;
+
+    return list.filter(x => inIntervals(x.n || 0, intervals));
   }
 
   function updateActiveCount(){
@@ -356,9 +382,18 @@
     }
   };
 
-  // 범위/Day 바뀌면 카운트 갱신
+  // 체크 변경되면 카운트 갱신
+  [cbCore, cbBasic, cb800, cb900].forEach(cb => cb.addEventListener("change", updateActiveCount));
   daySelect.addEventListener("change", updateActiveCount);
-  rangeSelect.addEventListener("change", updateActiveCount);
+
+  selectAllBtn.onclick = () => {
+    cbCore.checked = cbBasic.checked = cb800.checked = cb900.checked = true;
+    updateActiveCount();
+  };
+  selectNoneBtn.onclick = () => {
+    cbCore.checked = cbBasic.checked = cb800.checked = cb900.checked = false;
+    updateActiveCount();
+  };
 
   // --------- Quiz ----------
   let pool = [];
@@ -457,7 +492,7 @@
       shortAnswer.classList.add("hidden");
     }
 
-    // ✅ 보기(오답 선택지)도 "선택한 범위" 안에서만 뽑기
+    // ✅ 보기(오답 선택지)도 "체크된 구간" 안에서만 뽑기
     const all = getActiveList();
 
     if(mode === "mc"){
@@ -495,7 +530,7 @@
   function start(withWrong=false){
     const list = getActiveList();
     if(list.length === 0){
-      alert("선택한 범위에 단어가 없어요. (CSV의 no 컬럼 또는 범위 설정 확인!)");
+      alert("선택한 구간에 단어가 없어요. (체크박스 선택/CSV의 no 컬럼 확인!)");
       return;
     }
 

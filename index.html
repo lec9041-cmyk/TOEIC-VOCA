@@ -270,11 +270,11 @@
       bottom:6px;
       left:50%;
       transform:translateX(-50%);
-      width:6px;
-      height:6px;
-      border-radius:999px;
-      background:#64748b;
-      opacity:.9;
+      width:14px;
+      height:4px;
+      border-radius:2px;
+      background:#2563eb;
+      opacity:.95;
     }
     .calL0{ background:#ffffff; }
     .calL1{ background:#ecfdf5; }
@@ -282,6 +282,7 @@
     .calL3{ background:#86efac; }
     .calL4{ background:#4ade80; }
     .calGoal{ outline:2px solid #60a5fa; outline-offset:-2px; }
+    .calToday{ box-shadow: inset 0 0 0 2px #111827; }
     @media (max-width: 420px){
       .calGrid{gap:6px;}
       .calDay{min-height:62px;border-radius:10px;}
@@ -1224,14 +1225,14 @@
     }, 0);
   }
 
-  function makeCalCell(dayNum, cnt, goal){
+  function makeCalCell(dayNum, cnt, goal, isToday=false){
     const c = Math.max(0, Number(cnt) || 0);
     const goalNum = Number(goal);
     const normalizedGoal = Math.max(1, (Number.isFinite(goalNum) && goalNum > 0) ? goalNum : DEFAULT_GOAL);
     const level = c === 0 ? 0 : (c <= 10 ? 1 : (c <= 20 ? 2 : (c <= 30 ? 3 : 4)));
     const isGoal = c >= normalizedGoal;
     return {
-      className: `calDay calL${level}${isGoal ? " calGoal" : ""}`,
+      className: `calDay calL${level}${isGoal ? " calGoal" : ""}${isToday ? " calToday" : ""}`,
       title: `${dayNum}일 · 학습: ${c}문제`,
       cnt: c,
       dot: c > 0
@@ -1262,7 +1263,8 @@
     for(let day=1; day<=lastDate; day++){
       const key = `${year}-${String(month0+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
       const cnt = daily[key] || 0;
-      const info = makeCalCell(day, cnt, goal);
+      const isToday = key === todayKey();
+      const info = makeCalCell(day, cnt, goal, isToday);
       const cell = document.createElement("div");
       cell.className = info.className;
       cell.title = info.title;
@@ -1413,6 +1415,11 @@
       const label = v === poolSize ? `${v} (전체)` : String(v);
       sel.add(new Option(label, String(v)));
     });
+
+    if(isLearnTab()){
+      sel.value = String(poolSize);
+      return;
+    }
 
     let next = options.includes(prev) ? prev : null;
     if(next === null) next = options.includes(30) ? 30 : options[0];

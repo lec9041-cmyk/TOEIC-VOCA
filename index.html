@@ -116,6 +116,7 @@
     .btn-ghost{background:#fff}
     .btn-soft{background:#f8fafc}
     .btn-danger{border-color:#fecaca;color:#991b1b;background:#fff}
+    .btn-primary{background:var(--blue);border-color:var(--blue);color:#fff;}
 
     #startBtn{
       background:var(--blue);
@@ -280,6 +281,70 @@
     #bottomToolsCard .actions button{min-height:44px; border-radius:16px; font-size:13px;}
     #bottomToolsCard summary{user-select:none;}
 
+    /* ====== 설정 패널 ====== */
+    #settingsOverlay {
+      position: fixed; inset: 0; background: rgba(17,24,39,.48);
+      display: flex; align-items: flex-end; justify-content: center;
+      padding: 14px; padding-bottom: calc(14px + env(safe-area-inset-bottom));
+      z-index: 90;
+    }
+    #settingsSheet {
+      width: min(980px, 100%); max-height: 88dvh; background: #fff;
+      border: 1px solid var(--bd); border-radius: 24px; box-shadow: var(--shadow);
+      overflow: hidden; display: flex; flex-direction: column;
+    }
+    #settingsHead {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 16px; border-bottom: 1px solid var(--bd);
+    }
+    #settingsBody { padding: 14px 16px; overflow: auto; display: flex; flex-direction: column; gap: 18px; }
+    .settingsSection { display: flex; flex-direction: column; gap: 10px; }
+    .settingsSectionTitle {
+      font-size: 12px; font-weight: 900; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .06em; padding-bottom: 4px;
+      border-bottom: 1px solid var(--bd);
+    }
+    .settingRow {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; padding: 4px 0;
+    }
+    .settingLabel { font-size: 14px; font-weight: 700; flex: 1; }
+    .settingDesc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .settingControl { flex-shrink: 0; }
+    .settingControl select { min-height: 40px; padding: 8px 10px; border-radius: 12px; font-size: 13px; }
+    .settingControl input[type=number] { min-height: 40px; padding: 8px 10px; border-radius: 12px; font-size: 13px; width: 80px; }
+    .toggle-switch {
+      position: relative; display: inline-block; width: 48px; height: 26px;
+    }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute; cursor: pointer; inset: 0; background: #d1d5db;
+      border-radius: 999px; transition: .25s;
+    }
+    .toggle-slider:before {
+      content: ""; position: absolute; width: 20px; height: 20px;
+      left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: .25s;
+      box-shadow: 0 1px 4px rgba(0,0,0,.18);
+    }
+    .toggle-switch input:checked + .toggle-slider { background: var(--blue); }
+    .toggle-switch input:checked + .toggle-slider:before { transform: translateX(22px); }
+    .settings-save-btn {
+      width: 100%; padding: 14px; border-radius: 18px; font-size: 16px;
+      font-weight: 900; background: var(--blue); color: #fff; border-color: var(--blue);
+      margin-top: 4px;
+    }
+    /* 설정 열기 버튼 (헤더 옆) */
+    #settingsOpenBtn {
+      position: fixed; bottom: 20px; right: 16px;
+      width: 52px; height: 52px; border-radius: 50%;
+      background: var(--blue); color: #fff; font-size: 22px;
+      border: none; box-shadow: 0 4px 16px rgba(29,78,216,.35);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; z-index: 40;
+      transition: transform .15s;
+    }
+    #settingsOpenBtn:active { transform: scale(.92); }
+
     @media (min-width: 760px){
       body{margin:16px}
       .grid{grid-template-columns: repeat(12, 1fr);}
@@ -400,7 +465,7 @@
       <span class="pill">연속: <b id="streakPill">0</b>일</span>
     </div>
 
-    <!-- 범위: 시작 버튼 바로 위 -->
+    <!-- 범위(커버리지) -->
     <div class="card" id="scopeCard" style="margin:12px 0 10px;">
       <div style="font-weight:900; font-size:14px; margin:0 0 8px;">범위 선택</div>
 
@@ -422,7 +487,7 @@
       </div>
     </div>
 
-    <!-- 시작/이어하기: 1섹터 하단 배치 -->
+    <!-- 시작/이어하기 -->
     <div class="grid" style="margin-top:10px;">
       <div class="field" style="grid-column: span 2;">
         <button id="startBtn" class="btn" type="button" disabled>로딩 중...</button>
@@ -433,7 +498,7 @@
     </div>
   </div>
 
-  <!-- 섹션 2: 아래로 다 뺌 -->
+  <!-- 섹션 2: 기록 & 관리 -->
   <div class="card" id="bottomToolsCard">
     <h2>2) 기록 & 관리</h2>
 
@@ -448,7 +513,7 @@
     </details>
 
     <div class="muted" style="margin-top:10px;">
-      팁: “오답·기록 보기”에서 오답노트/즐겨찾기/기록을 확인하고, “진행도”는 DAY별 기록%로 봅니다.
+      팁: "오답·기록 보기"에서 오답노트/즐겨찾기/기록을 확인하고, "진행도"는 DAY별 기록%로 봅니다.
     </div>
   </div>
 
@@ -584,7 +649,7 @@
     </div>
   </div>
 
-  <!-- Bottom Sheet -->
+  <!-- Bottom Sheet (단어/오답/기록) -->
   <div id="overlay" class="overlay hidden">
     <div class="sheet">
       <div class="sheetHead">
@@ -607,31 +672,205 @@
     </div>
   </div>
 
+  <!-- ====== 설정 패널 ====== -->
+  <div id="settingsOverlay" class="hidden">
+    <div id="settingsSheet">
+      <div id="settingsHead">
+        <span style="font-weight:900;font-size:16px;">⚙️ 퀴즈 세부 설정</span>
+        <button id="settingsCloseBtn" class="btn btn-ghost" type="button">닫기</button>
+      </div>
+      <div id="settingsBody">
+
+        <!-- 문제 순서 -->
+        <div class="settingsSection">
+          <div class="settingsSectionTitle">📋 문제 순서</div>
+
+          <div class="settingRow">
+            <div>
+              <div class="settingLabel">문제 출제 순서</div>
+              <div class="settingDesc">순서대로: DAY 번호 순 / 랜덤: 뒤섞어서 출제</div>
+            </div>
+            <div class="settingControl">
+              <select id="cfg_orderMode">
+                <option value="random">랜덤 🔀</option>
+                <option value="sequential">순서대로 📖</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="settingRow" id="cfg_shuffleChoicesRow">
+            <div>
+              <div class="settingLabel">4지선다 보기 뒤섞기</div>
+              <div class="settingDesc">보기 4개의 순서를 매번 랜덤으로 배치</div>
+            </div>
+            <div class="settingControl">
+              <label class="toggle-switch">
+                <input type="checkbox" id="cfg_shuffleChoices" checked />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- 타이밍 -->
+        <div class="settingsSection">
+          <div class="settingsSectionTitle">⏱ 타이밍</div>
+
+          <div class="settingRow">
+            <div>
+              <div class="settingLabel">자동 다음 문제 타이머</div>
+              <div class="settingDesc">정답/오답 확인 후 자동으로 넘어가는 시간 (ms)</div>
+            </div>
+            <div class="settingControl">
+              <select id="cfg_autoNextMs">
+                <option value="0">사용 안 함</option>
+                <option value="800">빠름 (0.8초)</option>
+                <option value="1200" selected>보통 (1.2초)</option>
+                <option value="2000">느림 (2.0초)</option>
+                <option value="3000">아주 느림 (3.0초)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="settingRow">
+            <div>
+              <div class="settingLabel">Flash 정답 공개 딜레이</div>
+              <div class="settingDesc">플래시 카드에서 정답 텍스트가 나타나는 딜레이 (ms, 0=즉시)</div>
+            </div>
+            <div class="settingControl">
+              <select id="cfg_flashRevealDelay">
+                <option value="0" selected>없음 (즉시)</option>
+                <option value="300">0.3초</option>
+                <option value="600">0.6초</option>
+                <option value="1000">1.0초</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- 오답 처리 -->
+        <div class="settingsSection">
+          <div class="settingsSectionTitle">🔁 오답 재출제</div>
+
+          <div class="settingRow">
+            <div>
+              <div class="settingLabel">오답 재삽입 횟수 상한</div>
+              <div class="settingDesc">Flash 모드에서 "몰라요" 누를 때 재삽입 최대 횟수</div>
+            </div>
+            <div class="settingControl">
+              <select id="cfg_reinsertLimit">
+                <option value="0">사용 안 함 (0회)</option>
+                <option value="1">1회</option>
+                <option value="2" selected>2회</option>
+                <option value="3">3회</option>
+                <option value="5">5회</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="settingRow">
+            <div>
+              <div class="settingLabel">MC/주관식 오답 재출제</div>
+              <div class="settingDesc">MC·주관식에서 틀린 문제를 남은 문제 뒤에 한 번 재삽입</div>
+            </div>
+            <div class="settingControl">
+              <label class="toggle-switch">
+                <input type="checkbox" id="cfg_mcReinsert" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- 표시 -->
+        <div class="settingsSection">
+          <div class="settingsSectionTitle">👁 표시</div>
+
+          <div class="settingRow">
+            <div>
+              <div class="settingLabel">정답 공개 시 발음 자동 재생</div>
+              <div class="settingDesc">Flash 정답 공개(탭) 시 영단어 발음 자동 재생</div>
+            </div>
+            <div class="settingControl">
+              <label class="toggle-switch">
+                <input type="checkbox" id="cfg_speakOnReveal" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="settingRow">
+            <div>
+              <div class="settingLabel">오답 단어 표시 강조</div>
+              <div class="settingDesc">이전에 틀린 적 있는 단어 앞에 🟥 표시</div>
+            </div>
+            <div class="settingControl">
+              <label class="toggle-switch">
+                <input type="checkbox" id="cfg_wrongMark" checked />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <button class="settings-save-btn btn" id="settingsSaveBtn" type="button">✅ 설정 저장</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 설정 열기 버튼 (FAB) -->
+  <button id="settingsOpenBtn" title="퀴즈 세부 설정" type="button">⚙️</button>
+
 <script>
-  // ---------------- 데이터 관리 ----------------
-  const WORDS_KEY = "toeic_words_v1";
-  const STATS_KEY = "toeic_stats_v2";
-  const SESSION_KEY = "toeic_sessions_v1";
-  const DAILY_KEY = "toeic_daily_v1";
-  const MULTI_DAY_KEY = "toeic_multi_days_v1";
-  const RANDOM_DAY_ON_KEY = "toeic_random_day_on_v1";
+  // ===================================================================
+  // 데이터 / 스토리지 키
+  // ===================================================================
+  const WORDS_KEY          = "toeic_words_v1";
+  const STATS_KEY          = "toeic_stats_v2";
+  const SESSION_KEY        = "toeic_sessions_v1";
+  const DAILY_KEY          = "toeic_daily_v1";
+  const MULTI_DAY_KEY      = "toeic_multi_days_v1";
+  const RANDOM_DAY_ON_KEY  = "toeic_random_day_on_v1";
   const RANDOM_DAY_COUNT_KEY = "toeic_random_day_count_v1";
-  const RANDOM_DAY_AUTO_KEY = "toeic_random_day_auto_v1";
-  const LAST_MANUAL_DAY_KEY = "toeic_last_manual_day_v1";
-  const WRONG_FIRST_KEY = "toeic_wrong_first_on_v1";
-  const FAVORITES_KEY = "toeic_favorites_v1";
-  const GOAL_KEY = "toeic_goal_v1";
-  const GOAL_DONE_KEY = "toeic_goal_done_v1";
-  const RESUME_KEY = "toeic_resume_v1";
-  const FLASH_OFF_KEY = "toeic_flash_off_v1";
+  const RANDOM_DAY_AUTO_KEY  = "toeic_random_day_auto_v1";
+  const LAST_MANUAL_DAY_KEY  = "toeic_last_manual_day_v1";
+  const WRONG_FIRST_KEY    = "toeic_wrong_first_on_v1";
+  const FAVORITES_KEY      = "toeic_favorites_v1";
+  const GOAL_KEY           = "toeic_goal_v1";
+  const GOAL_DONE_KEY      = "toeic_goal_done_v1";
+  const RESUME_KEY         = "toeic_resume_v1";
+  const FLASH_OFF_KEY      = "toeic_flash_off_v1";
+  const QUIZ_CFG_KEY       = "toeic_quiz_cfg_v1";  // ← 새 설정 키
   const DEFAULT_GOAL = 30;
 
-  // Flash 재삽입 상한
-  const REINSERT_LIMIT = 2;
-  // 자동 진행 타이머 중복 방지
-  let autoNextTimer = null;
+  // ── 설정 기본값 ──────────────────────────────────────────────────────
+  const CFG_DEFAULTS = {
+    orderMode       : "random",   // "random" | "sequential"
+    shuffleChoices  : true,
+    autoNextMs      : 1200,
+    flashRevealDelay: 0,
+    reinsertLimit   : 2,
+    mcReinsert      : false,
+    speakOnReveal   : false,
+    wrongMark       : true,
+  };
 
-  const el = (id) => document.getElementById(id);
+  function loadCfg() {
+    const raw = load(QUIZ_CFG_KEY, {});
+    return { ...CFG_DEFAULTS, ...(raw && typeof raw === "object" ? raw : {}) };
+  }
+  function saveCfg(cfg) { save(QUIZ_CFG_KEY, cfg); }
+
+  // ── 자동 진행 타이머 ──────────────────────────────────────────────────
+  let autoNextTimer = null;
+  function clearAutoNext(){
+    if(autoNextTimer){ clearTimeout(autoNextTimer); autoNextTimer = null; }
+  }
+
+  // ===================================================================
+  // 유틸
+  // ===================================================================
+  const el  = (id) => document.getElementById(id);
   const esc = (s) => String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 
   function save(key, val) {
@@ -642,1825 +881,1036 @@
     try {
       const v = localStorage.getItem(key);
       return v ? JSON.parse(v) : def;
-    } catch (e) {
-      console.warn("localStorage load 실패", e);
-      return def;
-    }
-  }
-  function clearAutoNext(){
-    if(autoNextTimer){
-      clearTimeout(autoNextTimer);
-      autoNextTimer = null;
-    }
+    } catch (e) { return def; }
   }
 
-  // ---------------- DAY 주제 라벨 ----------------
+  // ── DAY 주제 라벨 ────────────────────────────────────────────────────
   const DAY_TOPICS = {
-    1:"채용", 2:"규칙,법률",
-    3:"일반사무", 4:"일반사무", 5:"일반사무",
-    6:"여가,공동체",
-    7:"마케팅", 8:"마케팅",
-    9:"경제",
-    10:"쇼핑",
-    11:"제품개발",
-    12:"생산",
-    13:"고객서비스",
-    14:"여행,공항",
-    15:"계약",
-    16:"상거래",
-    17:"무역,배송",
-    18:"숙박,식당",
-    19:"수익",
-    20:"회계",
-    21:"회사동향",
-    22:"미팅",
-    23:"사원복지",
-    24:"인사이동",
-    25:"교통",
-    26:"은행",
-    27:"투자",
-    28:"건물,주택",
-    29:"환경",
-    30:"건강"
+    1:"채용",2:"규칙,법률",3:"일반사무",4:"일반사무",5:"일반사무",
+    6:"여가,공동체",7:"마케팅",8:"마케팅",9:"경제",10:"쇼핑",
+    11:"제품개발",12:"생산",13:"고객서비스",14:"여행,공항",15:"계약",
+    16:"상거래",17:"무역,배송",18:"숙박,식당",19:"수익",20:"회계",
+    21:"회사동향",22:"미팅",23:"사원복지",24:"인사이동",25:"교통",
+    26:"은행",27:"투자",28:"건물,주택",29:"환경",30:"건강"
   };
-  function dayNumFromKey(dayKey){
-    const m = String(dayKey || "").match(/\d+/);
-    return m ? parseInt(m[0], 10) : NaN;
-  }
-  function topicForDayKey(dayKey){
-    const n = dayNumFromKey(dayKey);
-    return DAY_TOPICS[n] || "";
-  }
-  function dayLabel(dayKey){
-    const t = topicForDayKey(dayKey);
-    return t ? `${dayKey} · ${t}` : dayKey;
-  }
+  function dayNumFromKey(k){ const m=String(k||"").match(/\d+/); return m?parseInt(m[0],10):NaN; }
+  function topicForDayKey(k){ return DAY_TOPICS[dayNumFromKey(k)]||""; }
+  function dayLabel(k){ const t=topicForDayKey(k); return t?`${k} · ${t}`:k; }
 
-  // ---------------- 날짜/시간 유틸 ----------------
+  // ── 날짜 유틸 ─────────────────────────────────────────────────────────
   const todayKey = () => {
-    const d = new Date();
-    const y = d.getFullYear();
-    const m = String(d.getMonth()+1).padStart(2,"0");
-    const dd = String(d.getDate()).padStart(2,"0");
-    return `${y}-${m}-${dd}`;
+    const d=new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
   };
   const fmtTime = (ts) => {
     try {
-      const d = new Date(ts);
-      const y = d.getFullYear();
-      const m = String(d.getMonth()+1).padStart(2,"0");
-      const dd = String(d.getDate()).padStart(2,"0");
-      const hh = String(d.getHours()).padStart(2,"0");
-      const mm = String(d.getMinutes()).padStart(2,"0");
-      return `${y}-${m}-${dd} ${hh}:${mm}`;
+      const d=new Date(ts);
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
     } catch { return ""; }
   };
 
-  // ---------------- 목표/컨페티 ----------------
-  function getGoal(){
-    const g = parseInt(load(GOAL_KEY, DEFAULT_GOAL), 10);
-    return Number.isFinite(g) && g > 0 ? g : DEFAULT_GOAL;
-  }
-  function goalDoneMap(){ return load(GOAL_DONE_KEY, {}); }
-  function setGoalDone(today){
-    const m = goalDoneMap();
-    m[today] = true;
-    save(GOAL_DONE_KEY, m);
-  }
-  function isGoalDone(today){
-    const m = goalDoneMap();
-    return !!m[today];
-  }
+  // ── 목표 / 컨페티 ─────────────────────────────────────────────────────
+  function getGoal(){ const g=parseInt(load(GOAL_KEY,DEFAULT_GOAL),10); return Number.isFinite(g)&&g>0?g:DEFAULT_GOAL; }
+  function goalDoneMap(){ return load(GOAL_DONE_KEY,{}); }
+  function setGoalDone(today){ const m=goalDoneMap(); m[today]=true; save(GOAL_DONE_KEY,m); }
+  function isGoalDone(today){ return !!goalDoneMap()[today]; }
 
   function fireConfetti(){
-    const c = el("confettiCanvas");
-    if(!c) return;
-
+    const c=el("confettiCanvas"); if(!c) return;
     c.classList.remove("hidden");
-    const ctx = c.getContext("2d");
-    const dpr = window.devicePixelRatio || 1;
-    const w = Math.floor(window.innerWidth * dpr);
-    const h = Math.floor(window.innerHeight * dpr);
-    c.width = w; c.height = h;
-    c.style.width = window.innerWidth + "px";
-    c.style.height = window.innerHeight + "px";
-
-    const N = 120;
-    const parts = Array.from({length:N}, () => ({
-      x: Math.random()*w,
-      y: -Math.random()*h*0.2,
-      vx: (Math.random()*2-1)*2.2*dpr,
-      vy: (Math.random()*3+2)*2.6*dpr,
-      r: (Math.random()*6+3)*dpr,
-      rot: Math.random()*Math.PI*2,
-      vr: (Math.random()*2-1)*0.18,
-      life: 60 + Math.floor(Math.random()*20),
+    const ctx=c.getContext("2d");
+    const dpr=window.devicePixelRatio||1;
+    const w=Math.floor(window.innerWidth*dpr), h=Math.floor(window.innerHeight*dpr);
+    c.width=w; c.height=h; c.style.width=window.innerWidth+"px"; c.style.height=window.innerHeight+"px";
+    const N=120;
+    const parts=Array.from({length:N},()=>({
+      x:Math.random()*w, y:-Math.random()*h*0.2,
+      vx:(Math.random()*2-1)*2.2*dpr, vy:(Math.random()*3+2)*2.6*dpr,
+      r:(Math.random()*6+3)*dpr, rot:Math.random()*Math.PI*2,
+      vr:(Math.random()*2-1)*0.18, life:60+Math.floor(Math.random()*20),
     }));
-
-    let t = 0;
+    let t=0;
     function step(){
       t++;
       ctx.clearRect(0,0,w,h);
       for(const p of parts){
-        p.x += p.vx;
-        p.y += p.vy;
-        p.vy += 0.08*dpr;
-        p.rot += p.vr;
-        p.life--;
-
-        ctx.save();
-        ctx.translate(p.x, p.y);
-        ctx.rotate(p.rot);
-        ctx.fillStyle = `hsl(${(p.x/w)*360}, 85%, 55%)`;
-        ctx.fillRect(-p.r, -p.r, p.r*2, p.r*2);
-        ctx.restore();
+        p.x+=p.vx; p.y+=p.vy; p.vy+=0.08*dpr; p.rot+=p.vr; p.life--;
+        ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot);
+        ctx.fillStyle=`hsl(${(p.x/w)*360},85%,55%)`; ctx.fillRect(-p.r,-p.r,p.r*2,p.r*2); ctx.restore();
       }
-      if(t < 75 && parts.some(p => p.life > 0 && p.y < h+50*dpr)) requestAnimationFrame(step);
+      if(t<75&&parts.some(p=>p.life>0&&p.y<h+50*dpr)) requestAnimationFrame(step);
       else c.classList.add("hidden");
     }
     requestAnimationFrame(step);
   }
-
   function checkGoalAndCelebrate(){
-    const today = todayKey();
-    const daily = load(DAILY_KEY, {});
-    const todayCount = daily[today] || 0;
-    const goal = getGoal();
-
-    if(todayCount >= goal && !isGoalDone(today)){
-      setGoalDone(today);
-      fireConfetti();
-    }
+    const today=todayKey(), daily=load(DAILY_KEY,{}), todayCount=daily[today]||0, goal=getGoal();
+    if(todayCount>=goal&&!isGoalDone(today)){ setGoalDone(today); fireConfetti(); }
   }
-
-  // (목표 변경 UI는 Stats 탭의 숫자 눌러서 바꾸는 방식 유지)
   function bindGoalSetter(){
-    const pill = el("statsGoalPill");
-    if(!pill) return;
-    pill.style.cursor = "pointer";
-    pill.onclick = () => {
-      const cur = getGoal();
-      const v = prompt("오늘 목표(문제 수)를 입력하세요", String(cur));
-      if(v === null) return;
-      const n = parseInt(String(v).trim(), 10);
-      if(!Number.isFinite(n) || n <= 0) return alert("숫자를 올바르게 입력해줘!");
-      save(GOAL_KEY, n);
-      updateScopeBar();
-      checkGoalAndCelebrate();
-      alert(`목표를 ${n}문제로 설정했어요!`);
+    const pill=el("statsGoalPill"); if(!pill) return;
+    pill.style.cursor="pointer";
+    pill.onclick=()=>{
+      const v=prompt("오늘 목표(문제 수)를 입력하세요",String(getGoal())); if(v===null) return;
+      const n=parseInt(String(v).trim(),10);
+      if(!Number.isFinite(n)||n<=0) return alert("숫자를 올바르게 입력해줘!");
+      save(GOAL_KEY,n); updateScopeBar(); checkGoalAndCelebrate(); alert(`목표를 ${n}문제로 설정했어요!`);
     };
   }
 
-  // ---------------- 즐겨찾기/통계 스키마 ----------------
+  // ===================================================================
+  // 스키마 / 통계
+  // ===================================================================
   function keyOf(item){ return `${item.day}||${item.n}||${item.w}`; }
-
   function parseKeyToItemParts(key){
-    const [dayRaw="", nRaw="", wRaw=""] = String(key || "").split("||");
-    const n = parseInt(nRaw, 10);
-    return { day: dayRaw || "", n: Number.isFinite(n) ? n : 0, w: wRaw || "" };
+    const [dayRaw="",nRaw="",wRaw=""]=String(key||"").split("||");
+    const n=parseInt(nRaw,10);
+    return {day:dayRaw||"",n:Number.isFinite(n)?n:0,w:wRaw||""};
   }
-
   function numFromAny(...vals){
-    for(const v of vals){
-      const n = Number(v);
-      if(Number.isFinite(n)) return Math.max(0, n);
-    }
-    return 0;
+    for(const v of vals){ const n=Number(v); if(Number.isFinite(n)) return Math.max(0,n); } return 0;
   }
-
-  function normalizeStatsEntry(rawKey, rawEntry){
-    const fromKey = parseKeyToItemParts(rawKey);
-    const src = rawEntry && typeof rawEntry === "object" ? rawEntry : {};
-    const day = String(src.day || fromKey.day || "");
-    const n = Number.isFinite(Number(src.n)) ? Number(src.n) : fromKey.n;
-    const w = String(src.w || fromKey.w || "");
-    const m = String(src.m || src.meaning || src.def || "");
-
-    const correctCount = numFromAny(src.correctCount, src.correct, src.okCount, src.rightCount, src.hit);
-    const wrongCount = numFromAny(src.wrongCount, src.wrong, src.errors, src.errorCount, src.fail, src.miss, src.missed);
-    const lastTs = numFromAny(src.lastTs, src.last, src.ts, src.updatedAt, src.time, Date.now());
-
-    return { day, n, w, m, correctCount, wrongCount, lastTs };
+  function normalizeStatsEntry(rawKey,rawEntry){
+    const fromKey=parseKeyToItemParts(rawKey);
+    const src=rawEntry&&typeof rawEntry==="object"?rawEntry:{};
+    const day=String(src.day||fromKey.day||"");
+    const n=Number.isFinite(Number(src.n))?Number(src.n):fromKey.n;
+    const w=String(src.w||fromKey.w||"");
+    const m=String(src.m||src.meaning||src.def||"");
+    const correctCount=numFromAny(src.correctCount,src.correct,src.okCount,src.rightCount,src.hit);
+    const wrongCount=numFromAny(src.wrongCount,src.wrong,src.errors,src.errorCount,src.fail,src.miss,src.missed);
+    const lastTs=numFromAny(src.lastTs,src.last,src.ts,src.updatedAt,src.time,Date.now());
+    return {day,n,w,m,correctCount,wrongCount,lastTs};
   }
-
   function migrateStatsSchema(){
-    const stats = load(STATS_KEY, {});
-    if(!stats || typeof stats !== "object") return;
-    const next = {};
-    for(const [k, v] of Object.entries(stats)){
-      const norm = normalizeStatsEntry(k, v);
-      if(!norm.day || !norm.w) continue;
-      const nk = keyOf(norm);
-      const prev = next[nk];
+    const stats=load(STATS_KEY,{});
+    if(!stats||typeof stats!=="object") return;
+    const next={};
+    for(const [k,v] of Object.entries(stats)){
+      const norm=normalizeStatsEntry(k,v); if(!norm.day||!norm.w) continue;
+      const nk=keyOf(norm); const prev=next[nk];
       if(prev){
-        prev.correctCount += norm.correctCount;
-        prev.wrongCount += norm.wrongCount;
-        prev.lastTs = Math.max(prev.lastTs || 0, norm.lastTs || 0);
-        if(!prev.m && norm.m) prev.m = norm.m;
-      } else {
-        next[nk] = norm;
-      }
+        prev.correctCount+=norm.correctCount; prev.wrongCount+=norm.wrongCount;
+        prev.lastTs=Math.max(prev.lastTs||0,norm.lastTs||0);
+        if(!prev.m&&norm.m) prev.m=norm.m;
+      } else { next[nk]=norm; }
     }
-    save(STATS_KEY, next);
+    save(STATS_KEY,next);
   }
-
-  function statsMap(){ return load(STATS_KEY, {}); }
-
-  function favMap(){ return load(FAVORITES_KEY, {}); }
-  function isFav(item){ const m = favMap(); return !!m[keyOf(item)]; }
+  function statsMap(){ return load(STATS_KEY,{}); }
+  function favMap(){ return load(FAVORITES_KEY,{}); }
+  function isFav(item){ return !!favMap()[keyOf(item)]; }
   function toggleFav(item){
-    const m = favMap();
-    const k = keyOf(item);
-    if(m[k]) delete m[k];
-    else m[k] = {...item, ts: Date.now()};
-    save(FAVORITES_KEY, m);
+    const m=favMap(); const k=keyOf(item);
+    if(m[k]) delete m[k]; else m[k]={...item,ts:Date.now()};
+    save(FAVORITES_KEY,m);
   }
-  function favList(){
-    return Object.values(favMap()).sort((a,b)=> (b.ts||0)-(a.ts||0));
-  }
+  function favList(){ return Object.values(favMap()).sort((a,b)=>(b.ts||0)-(a.ts||0)); }
 
-  // ---------------- 네이버 사전 ----------------
-  function openNaverDict(word){
-    const url = `https://en.dict.naver.com/#/search?query=${encodeURIComponent(word)}`;
-    window.open(url, "_blank");
-  }
-
-  // ---------------- 발음(TTS) ----------------
-  function getVoiceByLangPrefix(prefix) {
-    const voices = window.speechSynthesis?.getVoices?.() || [];
-    const v = voices.find(x => (x.lang || "").startsWith(prefix));
-    return v || null;
-  }
-  function speak(text) {
-    if (!text) return;
-    if (!("speechSynthesis" in window)) return;
+  // ===================================================================
+  // 네이버 사전 / 발음
+  // ===================================================================
+  function openNaverDict(word){ window.open(`https://en.dict.naver.com/#/search?query=${encodeURIComponent(word)}`,"_blank"); }
+  function getVoiceByLangPrefix(prefix){ return (window.speechSynthesis?.getVoices?.()||[]).find(x=>(x.lang||"").startsWith(prefix))||null; }
+  function speak(text){
+    if(!text||!("speechSynthesis" in window)) return;
     window.speechSynthesis.cancel();
-    const msg = new SpeechSynthesisUtterance(text);
-    const selectedType = el("voiceSelect").value;
-
-    let targetLang = selectedType;
-    if (selectedType === 'random') {
-      const types = ['en-US', 'en-GB', 'en-AU'];
-      targetLang = types[Math.floor(Math.random() * types.length)];
-    }
-
-    const v = getVoiceByLangPrefix(targetLang);
-    if (v) msg.voice = v;
-    msg.rate = 0.85;
-    window.speechSynthesis.speak(msg);
+    const msg=new SpeechSynthesisUtterance(text);
+    let lang=el("voiceSelect").value;
+    if(lang==="random") lang=["en-US","en-GB","en-AU"][Math.floor(Math.random()*3)];
+    const v=getVoiceByLangPrefix(lang); if(v) msg.voice=v;
+    msg.rate=0.85; window.speechSynthesis.speak(msg);
   }
-  if ("speechSynthesis" in window){
-    window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
-  }
+  if("speechSynthesis" in window) window.speechSynthesis.onvoiceschanged=()=>window.speechSynthesis.getVoices();
 
-  // ---------------- 탭 전환 ----------------
+  // ===================================================================
+  // 탭 전환
+  // ===================================================================
   const mainTabLearn = el("mainTabLearn");
-  const mainTabTest = el("mainTabTest");
+  const mainTabTest  = el("mainTabTest");
   const mainTabStats = el("mainTabStats");
-  const modeField = el("modeField");
-  const startBtn = el("startBtn");
+  const modeField    = el("modeField");
+  const startBtn     = el("startBtn");
   const learnSettingsCard = el("learnSettingsCard");
-  const scopeCard = el("scopeCard");
-  const bottomToolsCard = el("bottomToolsCard");
-  const statsCard = el("statsCard");
+  const bottomToolsCard   = el("bottomToolsCard");
+  const statsCard         = el("statsCard");
   let statsViewY = new Date().getFullYear();
   let statsViewM = new Date().getMonth();
   let calClickBound = false;
 
-  function isLearnTab() { return mainTabLearn.classList.contains("active"); }
+  function isLearnTab(){ return mainTabLearn.classList.contains("active"); }
 
   function showMainPanel(panel){
-    const isStats = panel === "stats";
-    mainTabLearn.classList.toggle("active", panel === "learn");
-    mainTabTest.classList.toggle("active", panel === "test");
-    mainTabStats.classList.toggle("active", isStats);
-
-    learnSettingsCard.classList.toggle("hidden", isStats);
-    bottomToolsCard.classList.toggle("hidden", isStats);
-    statsCard.classList.toggle("hidden", !isStats);
-
-    if(panel === "learn"){
-      el("modeSelect").value = "flash";
-      modeField.classList.add("hidden");
-      if(!startBtn.disabled) setStartButtonState(false);
-    }
-    if(panel === "test"){
-      modeField.classList.remove("hidden");
-      if (el("modeSelect").value === "flash") el("modeSelect").value = "mc";
-      if(!startBtn.disabled) setStartButtonState(false);
-    }
-    if(panel === "stats"){
-      renderMainCalendarSummary(statsViewY, statsViewM);
-    }
-
-    updateFlashOffToggleState();
-    updateScopeBar();
+    const isStats = panel==="stats";
+    mainTabLearn.classList.toggle("active",panel==="learn");
+    mainTabTest.classList.toggle("active",panel==="test");
+    mainTabStats.classList.toggle("active",isStats);
+    learnSettingsCard.classList.toggle("hidden",isStats);
+    bottomToolsCard.classList.toggle("hidden",isStats);
+    statsCard.classList.toggle("hidden",!isStats);
+    if(panel==="learn"){ el("modeSelect").value="flash"; modeField.classList.add("hidden"); if(!startBtn.disabled) setStartButtonState(false); }
+    if(panel==="test"){ modeField.classList.remove("hidden"); if(el("modeSelect").value==="flash") el("modeSelect").value="mc"; if(!startBtn.disabled) setStartButtonState(false); }
+    if(panel==="stats") renderMainCalendarSummary(statsViewY,statsViewM);
+    updateFlashOffToggleState(); updateScopeBar();
   }
-
   function setStartButtonState(locked){
-    startBtn.disabled = !!locked;
-    if(locked){
-      startBtn.textContent = "로딩 중...";
-      return;
-    }
-    startBtn.textContent = isLearnTab() ? "암기 시작 🚀" : "시험 시작 ✍️";
+    startBtn.disabled=!!locked;
+    if(locked){ startBtn.textContent="로딩 중..."; return; }
+    startBtn.textContent=isLearnTab()?"암기 시작 🚀":"시험 시작 ✍️";
   }
-
-  mainTabLearn.onclick = () => showMainPanel("learn");
-  mainTabTest.onclick = () => showMainPanel("test");
-  mainTabStats.onclick = () => showMainPanel("stats");
+  mainTabLearn.onclick=()=>showMainPanel("learn");
+  mainTabTest.onclick=()=>showMainPanel("test");
+  mainTabStats.onclick=()=>showMainPanel("stats");
 
   function bindStatsCalNav(){
-    const prevBtn = el("mainCalPrevBtn");
-    const nextBtn = el("mainCalNextBtn");
-    const todayBtn = el("mainCalTodayBtn");
-    if(!prevBtn || !nextBtn || !todayBtn) return;
-
-    prevBtn.onclick = () => {
-      statsViewM--;
-      if(statsViewM < 0){ statsViewM = 11; statsViewY--; }
-      renderMainCalendarSummary(statsViewY, statsViewM);
-    };
-    nextBtn.onclick = () => {
-      statsViewM++;
-      if(statsViewM > 11){ statsViewM = 0; statsViewY++; }
-      renderMainCalendarSummary(statsViewY, statsViewM);
-    };
-    todayBtn.onclick = () => {
-      const now = new Date();
-      statsViewY = now.getFullYear();
-      statsViewM = now.getMonth();
-      renderMainCalendarSummary(statsViewY, statsViewM);
-    };
+    el("mainCalPrevBtn").onclick=()=>{ statsViewM--; if(statsViewM<0){statsViewM=11;statsViewY--;} renderMainCalendarSummary(statsViewY,statsViewM); };
+    el("mainCalNextBtn").onclick=()=>{ statsViewM++; if(statsViewM>11){statsViewM=0;statsViewY++;} renderMainCalendarSummary(statsViewY,statsViewM); };
+    el("mainCalTodayBtn").onclick=()=>{ const now=new Date(); statsViewY=now.getFullYear(); statsViewM=now.getMonth(); renderMainCalendarSummary(statsViewY,statsViewM); };
   }
-
   function bindMainCalendarClick(){
     if(calClickBound) return;
-    const grid = el("mainCalGrid");
-    if(!grid) return;
-    grid.addEventListener("click", (e) => {
-      const cell = e.target.closest(".calDay");
-      if(!cell || !grid.contains(cell)) return;
-      if(typeof cell.dataset?.cnt === "undefined") return;
+    const grid=el("mainCalGrid"); if(!grid) return;
+    grid.addEventListener("click",(e)=>{
+      const cell=e.target.closest(".calDay"); if(!cell||!grid.contains(cell)) return;
+      if(typeof cell.dataset?.cnt==="undefined") return;
       alert(`학습: ${cell.dataset.cnt}문제`);
     });
-    calClickBound = true;
+    calClickBound=true;
   }
 
-  // ---------------- CSV 파싱 ----------------
-  function parseCSVSafe(text) {
-    const rows = [];
-    let i = 0, field = "", row = [], inQuotes = false;
-
-    const pushField = () => { row.push(field); field = ""; };
-    const pushRow = () => {
-      const hasAny = row.some(x => String(x).trim() !== "");
-      if (hasAny) rows.push(row);
-      row = [];
-    };
-
-    while (i < text.length) {
-      const ch = text[i];
-
-      if (ch === '"') {
-        if (inQuotes && text[i+1] === '"') { field += '"'; i += 2; continue; }
-        inQuotes = !inQuotes; i++; continue;
-      }
-      if (!inQuotes && ch === ",") { pushField(); i++; continue; }
-      if (!inQuotes && (ch === "\n" || ch === "\r")) {
-        if (ch === "\r" && text[i+1] === "\n") i++;
-        pushField(); pushRow(); i++; continue;
-      }
-      field += ch; i++;
+  // ===================================================================
+  // CSV 파싱
+  // ===================================================================
+  function parseCSVSafe(text){
+    const rows=[]; let i=0,field="",row=[],inQuotes=false;
+    const pushField=()=>{row.push(field);field=""};
+    const pushRow=()=>{ if(row.some(x=>String(x).trim()!=="")) rows.push(row); row=[]; };
+    while(i<text.length){
+      const ch=text[i];
+      if(ch==='"'){ if(inQuotes&&text[i+1]==='"'){field+='"';i+=2;continue;} inQuotes=!inQuotes;i++;continue; }
+      if(!inQuotes&&ch===","){ pushField();i++;continue; }
+      if(!inQuotes&&(ch==="\n"||ch==="\r")){ if(ch==="\r"&&text[i+1]==="\n") i++; pushField();pushRow();i++;continue; }
+      field+=ch;i++;
     }
-    pushField(); pushRow();
+    pushField();pushRow();
     return rows;
   }
-
-  function parseCSVToData(text) {
-    const rows = parseCSVSafe(text);
-    if (!rows.length) return {};
-    const header = rows[0].map(h => String(h).trim().toLowerCase());
-    const idxDay = header.indexOf("day");
-    const idxNo = header.indexOf("no");
-    const idxWord = header.indexOf("word");
-    const idxMeaning = header.indexOf("meaning");
-
-    const data = {};
-    for (let i = 1; i < rows.length; i++) {
-      const cols = rows[i].map(c => String(c ?? "").trim());
-      const day = (cols[idxDay] || "").toUpperCase();
-      if (!day) continue;
-
-      const n = parseInt(cols[idxNo], 10);
-      const w = (cols[idxWord] || "").replace(/^"|"$/g,"");
-      const m = (cols[idxMeaning] || "").replace(/^"|"$/g,"");
-
-      if (!data[day]) data[day] = [];
-      data[day].push({ day, n: Number.isFinite(n) ? n : (i), w, m });
+  function parseCSVToData(text){
+    const rows=parseCSVSafe(text); if(!rows.length) return {};
+    const header=rows[0].map(h=>String(h).trim().toLowerCase());
+    const idxDay=header.indexOf("day"),idxNo=header.indexOf("no"),idxWord=header.indexOf("word"),idxMeaning=header.indexOf("meaning");
+    const data={};
+    for(let i=1;i<rows.length;i++){
+      const cols=rows[i].map(c=>String(c??"").trim());
+      const day=(cols[idxDay]||"").toUpperCase(); if(!day) continue;
+      const n=parseInt(cols[idxNo],10);
+      const w=(cols[idxWord]||"").replace(/^"|"$/g,"");
+      const m=(cols[idxMeaning]||"").replace(/^"|"$/g,"");
+      if(!data[day]) data[day]=[];
+      data[day].push({day,n:Number.isFinite(n)?n:i,w,m});
     }
     return data;
   }
-
-  async function ensureLoaded() {
-    el("dataStatus").textContent = "· 데이터 로딩 중...";
+  async function ensureLoaded(){
+    el("dataStatus").textContent="· 데이터 로딩 중...";
     setStartButtonState(true);
-
-    let data = load(WORDS_KEY, {});
-    if (Object.keys(data).length === 0) {
-      try {
-        const res = await fetch("/toeic_words_day1_30.csv", { cache: "no-store" });
+    let data=load(WORDS_KEY,{});
+    if(Object.keys(data).length===0){
+      try{
+        const res=await fetch("/toeic_words_day1_30.csv",{cache:"no-store"});
         if(!res.ok) throw new Error(`HTTP ${res.status}`);
-        const text = await res.text();
-        data = parseCSVToData(text);
-        save(WORDS_KEY, data);
-      } catch (e) {
-        console.error("CSV 로드 실패", e);
-        el("dataStatus").textContent = "· ❌ 로드 실패";
-        alert(
-          "CSV 로드 실패!\n\n" +
-          "1) /toeic_words_day1_30.csv 가 실제로 열리는지 확인\n" +
-          "2) Vite/Vercel이면 CSV는 public/ 폴더에 있어야 합니다\n\n" +
-          "에러: " + (e?.message || e)
-        );
+        data=parseCSVToData(await res.text());
+        save(WORDS_KEY,data);
+      } catch(e){
+        console.error("CSV 로드 실패",e);
+        el("dataStatus").textContent="· ❌ 로드 실패";
+        alert("CSV 로드 실패!\n\n1) /toeic_words_day1_30.csv 가 실제로 열리는지 확인\n2) public/ 폴더에 있어야 합니다\n\n에러: "+(e?.message||e));
       }
     }
-
     migrateStatsSchema();
     renderDaySelect(data);
     initRandomDayControls(data);
-    updateActiveCount();
-    updateDailyUI();
-    updateScopeBar();
-    checkGoalAndCelebrate();
-    bindStatsCalNav();
-    bindMainCalendarClick();
-    updateResumeButton();
-    bindGoalSetter();
+    updateActiveCount(); updateDailyUI(); updateScopeBar(); checkGoalAndCelebrate();
+    bindStatsCalNav(); bindMainCalendarClick(); updateResumeButton(); bindGoalSetter();
+    applySettingsToUI();
 
-    const dayCount = Object.keys(data).length;
-    el("dataStatus").textContent = dayCount ? `· ✅ ${dayCount}개 DAY 로드됨` : "· ⚠️ 데이터 없음";
-
-    if(dayCount > 0) setStartButtonState(false);
-    else { startBtn.disabled = true; startBtn.textContent = "데이터 없음"; }
-
+    const dayCount=Object.keys(data).length;
+    el("dataStatus").textContent=dayCount?`· ✅ ${dayCount}개 DAY 로드됨`:"· ⚠️ 데이터 없음";
+    if(dayCount>0) setStartButtonState(false);
+    else { startBtn.disabled=true; startBtn.textContent="데이터 없음"; }
     updateFlashOffToggleState();
   }
 
-  function getAllDays(data=null) {
-    const src = data && typeof data === "object" ? data : load(WORDS_KEY, {});
-    return Object.keys(src || {}).sort((a,b) => a.localeCompare(b, undefined, {numeric: true}));
+  function getAllDays(data=null){
+    const src=data&&typeof data==="object"?data:load(WORDS_KEY,{});
+    return Object.keys(src||{}).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
   }
-
-  function renderDaySelect(data) {
-    const days = Object.keys(data).sort((a,b) => a.localeCompare(b, undefined, {numeric: true}));
-    const ds = el("daySelect");
-    const mds = el("multiDayAddSelect");
-    ds.innerHTML = "";
-    mds.innerHTML = '<option value="">DAY 추가하기...</option>';
-
-    days.forEach(d => {
-      const label = dayLabel(d);
-      ds.add(new Option(label, d));
-      mds.add(new Option(label, d));
+  function renderDaySelect(data){
+    const days=Object.keys(data).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
+    const ds=el("daySelect"), mds=el("multiDayAddSelect");
+    ds.innerHTML=""; mds.innerHTML='<option value="">DAY 추가하기...</option>';
+    days.forEach(d=>{
+      ds.add(new Option(dayLabel(d),d));
+      mds.add(new Option(dayLabel(d),d));
     });
-
-    if (!ds.value && days.length) ds.value = days[0];
+    if(!ds.value&&days.length) ds.value=days[0];
     updateRandomDayCountOptions(days.length);
   }
-
-  function updateRandomDayCountOptions(dayCount) {
-    const countSel = el("randomDayCountSelect");
-    const max = Math.max(1, Math.min(10, dayCount || 1));
-    const saved = parseInt(load(RANDOM_DAY_COUNT_KEY, 1), 10);
-    const nextVal = String(Math.min(Math.max(Number.isFinite(saved) ? saved : 1, 1), max));
-    countSel.innerHTML = "";
-    for(let i=1; i<=max; i++) countSel.add(new Option(String(i), String(i)));
-    countSel.value = nextVal;
-    save(RANDOM_DAY_COUNT_KEY, Number(nextVal));
+  function updateRandomDayCountOptions(dayCount){
+    const countSel=el("randomDayCountSelect");
+    const max=Math.max(1,Math.min(10,dayCount||1));
+    const saved=parseInt(load(RANDOM_DAY_COUNT_KEY,1),10);
+    const nextVal=String(Math.min(Math.max(Number.isFinite(saved)?saved:1,1),max));
+    countSel.innerHTML="";
+    for(let i=1;i<=max;i++) countSel.add(new Option(String(i),String(i)));
+    countSel.value=nextVal;
+    save(RANDOM_DAY_COUNT_KEY,Number(nextVal));
   }
-
   function setRandomDayUiState(){
-    const on = !!el("randomDayToggle").checked;
-    el("daySelect").disabled = on;
-    el("multiDayAddSelect").disabled = on;
-    el("multiDayClearBtn").disabled = on;
-    el("randomDayPickBtn").disabled = !on;
+    const on=!!el("randomDayToggle").checked;
+    el("daySelect").disabled=on; el("multiDayAddSelect").disabled=on;
+    el("multiDayClearBtn").disabled=on; el("randomDayPickBtn").disabled=!on;
   }
-
-  function pickRandomDays(days, n){
-    const list = (days || []).slice();
-    for(let i=list.length-1; i>0; i--){
-      const j = Math.floor(Math.random() * (i + 1));
-      [list[i], list[j]] = [list[j], list[i]];
-    }
-    const take = Math.max(0, Math.min(list.length, parseInt(n, 10) || 1));
-    return list.slice(0, take);
+  function pickRandomDays(days,n){
+    const list=(days||[]).slice();
+    for(let i=list.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [list[i],list[j]]=[list[j],list[i]]; }
+    return list.slice(0,Math.max(0,Math.min(list.length,parseInt(n,10)||1)));
   }
-
   function applyRandomDays(data=null){
     if(!el("randomDayToggle").checked) return;
-    const allDays = getAllDays(data);
-    if(allDays.length === 0) return;
-    const n = parseInt(el("randomDayCountSelect").value, 10) || 1;
-    const picked = pickRandomDays(allDays, n);
-    save(MULTI_DAY_KEY, picked);
-    if(picked[0]) el("daySelect").value = picked[0];
-    updateActiveCount();
-    updateScopeBar();
+    const allDays=getAllDays(data); if(allDays.length===0) return;
+    const picked=pickRandomDays(allDays,parseInt(el("randomDayCountSelect").value,10)||1);
+    save(MULTI_DAY_KEY,picked);
+    if(picked[0]) el("daySelect").value=picked[0];
+    updateActiveCount(); updateScopeBar();
   }
-
   function initRandomDayControls(data){
-    const on = !!load(RANDOM_DAY_ON_KEY, false);
-    const auto = !!load(RANDOM_DAY_AUTO_KEY, false);
-    el("randomDayToggle").checked = on;
-    el("randomDayAutoToggle").checked = auto;
-
-    const daySel = el("daySelect");
-    const allDays = getAllDays(data);
-    if(!load(LAST_MANUAL_DAY_KEY, "") && daySel.value){
-      save(LAST_MANUAL_DAY_KEY, daySel.value);
-    }
-    const manualDay = load(LAST_MANUAL_DAY_KEY, "");
-    if(!on && manualDay && allDays.includes(manualDay)) daySel.value = manualDay;
-
+    const on=!!load(RANDOM_DAY_ON_KEY,false), auto=!!load(RANDOM_DAY_AUTO_KEY,false);
+    el("randomDayToggle").checked=on; el("randomDayAutoToggle").checked=auto;
+    const daySel=el("daySelect"), allDays=getAllDays(data);
+    if(!load(LAST_MANUAL_DAY_KEY,"")&&daySel.value) save(LAST_MANUAL_DAY_KEY,daySel.value);
+    const manualDay=load(LAST_MANUAL_DAY_KEY,"");
+    if(!on&&manualDay&&allDays.includes(manualDay)) daySel.value=manualDay;
     setRandomDayUiState();
     if(on) applyRandomDays(data);
   }
 
-  // ---------------- 선택 DAY 관리 ----------------
-  function updateActiveCount() {
-    const multi = load(MULTI_DAY_KEY, []);
-    const base = el("daySelect").value;
-    const days = multi.length > 0 ? multi : (base ? [base] : []);
-    const randomBadge = el("randomDayToggle")?.checked ? " (랜덤)" : "";
-    el("selectedDaysPill").textContent = `선택 DAY: ${days.length ? days.map(dayLabel).join(", ") : "-"}${randomBadge}`;
-
-    const chips = el("multiDayChips");
-    chips.innerHTML = "";
-    multi.forEach(d => {
-      const safe = String(d).replace(/'/g,"\\'");
-      const c = document.createElement("span");
-      c.className = "daychip";
-      const disabled = el("randomDayToggle")?.checked ? "disabled" : "";
-      c.innerHTML = `${esc(dayLabel(d))} <button type="button" ${disabled} onclick="removeMultiDay('${safe}')">✕</button>`;
+  // ── 선택 DAY 관리 ───────────────────────────────────────────────────
+  function updateActiveCount(){
+    const multi=load(MULTI_DAY_KEY,[]), base=el("daySelect").value;
+    const days=multi.length>0?multi:(base?[base]:[]);
+    const randomBadge=el("randomDayToggle")?.checked?" (랜덤)":"";
+    el("selectedDaysPill").textContent=`선택 DAY: ${days.length?days.map(dayLabel).join(", "):"-"}${randomBadge}`;
+    const chips=el("multiDayChips"); chips.innerHTML="";
+    multi.forEach(d=>{
+      const safe=String(d).replace(/'/g,"\\'");
+      const c=document.createElement("span"); c.className="daychip";
+      const disabled=el("randomDayToggle")?.checked?"disabled":"";
+      c.innerHTML=`${esc(dayLabel(d))} <button type="button" ${disabled} onclick="removeMultiDay('${safe}')">✕</button>`;
       chips.appendChild(c);
     });
-
     updateScopeBar();
   }
-  el("daySelect").onchange = () => {
-    if(!el("randomDayToggle").checked){
-      save(LAST_MANUAL_DAY_KEY, el("daySelect").value);
-    }
-    updateActiveCount();
+  el("daySelect").onchange=()=>{ if(!el("randomDayToggle").checked) save(LAST_MANUAL_DAY_KEY,el("daySelect").value); updateActiveCount(); };
+  el("multiDayAddSelect").onchange=(e)=>{
+    if(!e.target.value) return;
+    const multi=load(MULTI_DAY_KEY,[]); if(!multi.includes(e.target.value)) multi.push(e.target.value);
+    save(MULTI_DAY_KEY,multi); updateActiveCount(); e.target.value="";
   };
-
-  el("multiDayAddSelect").onchange = (e) => {
-    if (!e.target.value) return;
-    const multi = load(MULTI_DAY_KEY, []);
-    if (!multi.includes(e.target.value)) multi.push(e.target.value);
-    save(MULTI_DAY_KEY, multi);
-    updateActiveCount();
-    e.target.value = "";
-  };
-
-  window.removeMultiDay = (d) => {
+  window.removeMultiDay=(d)=>{
     if(el("randomDayToggle")?.checked) return;
-    let multi = load(MULTI_DAY_KEY, []);
-    multi = multi.filter(x => x !== d);
-    save(MULTI_DAY_KEY, multi);
+    save(MULTI_DAY_KEY,load(MULTI_DAY_KEY,[]).filter(x=>x!==d)); updateActiveCount();
+  };
+  el("multiDayClearBtn").onclick=()=>{ save(MULTI_DAY_KEY,[]); updateActiveCount(); };
+  el("randomDayToggle").onchange=(e)=>{
+    const on=!!e.target.checked; save(RANDOM_DAY_ON_KEY,on);
+    const allDays=getAllDays(), daySel=el("daySelect");
+    if(on){ if(daySel.value) save(LAST_MANUAL_DAY_KEY,daySel.value); setRandomDayUiState(); applyRandomDays(); return; }
+    setRandomDayUiState(); save(MULTI_DAY_KEY,[]);
+    const savedManual=load(LAST_MANUAL_DAY_KEY,"");
+    if(savedManual&&allDays.includes(savedManual)) daySel.value=savedManual;
+    else if(allDays[0]) daySel.value=allDays[0];
     updateActiveCount();
   };
-
-  el("multiDayClearBtn").onclick = () => { save(MULTI_DAY_KEY, []); updateActiveCount(); };
-
-  el("randomDayToggle").onchange = (e) => {
-    const on = !!e.target.checked;
-    save(RANDOM_DAY_ON_KEY, on);
-    const allDays = getAllDays();
-    const daySel = el("daySelect");
-
-    if(on){
-      if(daySel.value) save(LAST_MANUAL_DAY_KEY, daySel.value);
-      setRandomDayUiState();
-      applyRandomDays();
-      return;
-    }
-
-    setRandomDayUiState();
-    save(MULTI_DAY_KEY, []);
-    const savedManual = load(LAST_MANUAL_DAY_KEY, "");
-    if(savedManual && allDays.includes(savedManual)) daySel.value = savedManual;
-    else if(allDays[0]) daySel.value = allDays[0];
-    updateActiveCount();
-  };
-
-  el("randomDayCountSelect").onchange = (e) => {
-    const v = parseInt(e.target.value, 10) || 1;
-    save(RANDOM_DAY_COUNT_KEY, v);
-    if(el("randomDayToggle").checked) applyRandomDays();
-  };
-
-  el("randomDayPickBtn").onclick = () => {
-    if(el("randomDayToggle").checked) applyRandomDays();
-  };
-
-  el("randomDayAutoToggle").onchange = (e) => {
-    save(RANDOM_DAY_AUTO_KEY, !!e.target.checked);
-  };
-
-  el("wrongFirstToggle").checked = !!load(WRONG_FIRST_KEY, false);
-  el("wrongFirstToggle").onchange = (e) => {
-    save(WRONG_FIRST_KEY, !!e.target.checked);
-  };
+  el("randomDayCountSelect").onchange=(e)=>{ save(RANDOM_DAY_COUNT_KEY,parseInt(e.target.value,10)||1); if(el("randomDayToggle").checked) applyRandomDays(); };
+  el("randomDayPickBtn").onclick=()=>{ if(el("randomDayToggle").checked) applyRandomDays(); };
+  el("randomDayAutoToggle").onchange=(e)=>{ save(RANDOM_DAY_AUTO_KEY,!!e.target.checked); };
+  el("wrongFirstToggle").checked=!!load(WRONG_FIRST_KEY,false);
+  el("wrongFirstToggle").onchange=(e)=>{ save(WRONG_FIRST_KEY,!!e.target.checked); };
 
   function updateFlashOffToggleState(){
-    const mode = isLearnTab() ? "flash" : el("modeSelect").value;
-    const enabled = (mode === "flash");
-    el("flashOffToggle").disabled = !enabled;
-    el("flashOffHint").classList.toggle("hidden", enabled);
+    const mode=isLearnTab()?"flash":el("modeSelect").value;
+    el("flashOffToggle").disabled=mode!=="flash";
+    el("flashOffHint").classList.toggle("hidden",mode==="flash");
   }
-  el("modeSelect").addEventListener("change", () => {
-    updateFlashOffToggleState();
-    updateScopeBar();
-  });
+  el("modeSelect").addEventListener("change",()=>{ updateFlashOffToggleState(); updateScopeBar(); });
+  el("flashOffToggle").checked=!!load(FLASH_OFF_KEY,false);
+  el("flashOffToggle").onchange=(e)=>{ save(FLASH_OFF_KEY,!!e.target.checked); };
 
-  el("flashOffToggle").checked = !!load(FLASH_OFF_KEY, false);
-  el("flashOffToggle").onchange = (e) => {
-    save(FLASH_OFF_KEY, !!e.target.checked);
-  };
-
-  // ---------------- 통계/기록 ----------------
-  function bumpDaily(countAdd=1){
-    const key = todayKey();
-    const daily = load(DAILY_KEY, {});
-    daily[key] = (daily[key] || 0) + countAdd;
-    save(DAILY_KEY, daily);
-  }
-
-  function calcStreak(){
-    const daily = load(DAILY_KEY, {});
-    let streak = 0;
-    let d = new Date();
-    for(;;){
-      const y = d.getFullYear();
-      const m = String(d.getMonth()+1).padStart(2,"0");
-      const dd = String(d.getDate()).padStart(2,"0");
-      const key = `${y}-${m}-${dd}`;
-      if (daily[key] && daily[key] > 0) { streak++; d.setDate(d.getDate()-1); }
-      else break;
-    }
-    return streak;
+  // ===================================================================
+  // ⚙️ 설정 패널 로직
+  // ===================================================================
+  function applySettingsToUI(){
+    const cfg=loadCfg();
+    el("cfg_orderMode").value         = cfg.orderMode;
+    el("cfg_shuffleChoices").checked  = cfg.shuffleChoices;
+    el("cfg_autoNextMs").value        = String(cfg.autoNextMs);
+    el("cfg_flashRevealDelay").value  = String(cfg.flashRevealDelay);
+    el("cfg_reinsertLimit").value     = String(cfg.reinsertLimit);
+    el("cfg_mcReinsert").checked      = cfg.mcReinsert;
+    el("cfg_speakOnReveal").checked   = cfg.speakOnReveal;
+    el("cfg_wrongMark").checked       = cfg.wrongMark;
   }
 
-  function countMonthStudyDays(daily, year, month0){
-    const prefix = `${year}-${String(month0+1).padStart(2,"0")}-`;
-    return Object.entries(daily).reduce((acc, [k, v]) => {
-      if(k.startsWith(prefix) && (v || 0) > 0) return acc + 1;
-      return acc;
-    }, 0);
-  }
-
-  function makeCalCell(dayNum, cnt, goal, isToday=false){
-    const c = Math.max(0, Number(cnt) || 0);
-    const goalNum = Number(goal);
-    const normalizedGoal = Math.max(1, (Number.isFinite(goalNum) && goalNum > 0) ? goalNum : DEFAULT_GOAL);
-    const level = c === 0 ? 0 : (c <= 10 ? 1 : (c <= 20 ? 2 : (c <= 30 ? 3 : 4)));
-    const isGoal = c >= normalizedGoal;
+  function readSettingsFromUI(){
     return {
-      className: `calDay calL${level}${isGoal ? " calGoal" : ""}${isToday ? " calToday" : ""}`,
-      title: `${dayNum}일 · 학습: ${c}문제`,
-      cnt: c,
-      dot: c > 0
+      orderMode       : el("cfg_orderMode").value,
+      shuffleChoices  : el("cfg_shuffleChoices").checked,
+      autoNextMs      : parseInt(el("cfg_autoNextMs").value,10)||0,
+      flashRevealDelay: parseInt(el("cfg_flashRevealDelay").value,10)||0,
+      reinsertLimit   : parseInt(el("cfg_reinsertLimit").value,10)||0,
+      mcReinsert      : el("cfg_mcReinsert").checked,
+      speakOnReveal   : el("cfg_speakOnReveal").checked,
+      wrongMark       : el("cfg_wrongMark").checked,
     };
   }
 
-  function drawCalendarGrid(gridEl, {year, month0, daily, goal}){
-    gridEl.innerHTML = "";
-    const dows = ["일","월","화","수","목","금","토"];
-    dows.forEach(x=>{
-      const t = document.createElement("div");
-      t.className = "calDow";
-      t.textContent = x;
-      gridEl.appendChild(t);
-    });
+  el("settingsOpenBtn").onclick  = ()=>{ applySettingsToUI(); el("settingsOverlay").classList.remove("hidden"); };
+  el("settingsCloseBtn").onclick = ()=>{ el("settingsOverlay").classList.add("hidden"); };
+  el("settingsOverlay").addEventListener("click",(e)=>{ if(e.target===el("settingsOverlay")) el("settingsOverlay").classList.add("hidden"); });
 
-    const first = new Date(year, month0, 1);
-    const startDow = first.getDay();
-    const lastDate = new Date(year, month0+1, 0).getDate();
+  el("settingsSaveBtn").onclick = ()=>{
+    saveCfg(readSettingsFromUI());
+    el("settingsOverlay").classList.add("hidden");
+    // 저장 확인 피드백
+    const btn=el("settingsSaveBtn");
+    const orig=btn.textContent;
+    btn.textContent="✅ 저장됨!";
+    setTimeout(()=>btn.textContent=orig, 1200);
+  };
 
-    for(let i=0;i<startDow;i++){
-      const b = document.createElement("div");
-      b.style.opacity = "0";
-      b.className = "calDay";
-      gridEl.appendChild(b);
-    }
-
-    for(let day=1; day<=lastDate; day++){
-      const key = `${year}-${String(month0+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
-      const cnt = daily[key] || 0;
-      const isToday = key === todayKey();
-      const info = makeCalCell(day, cnt, goal, isToday);
-      const cell = document.createElement("div");
-      cell.className = info.className;
-      cell.title = info.title;
-      cell.dataset.cnt = String(info.cnt);
-      cell.innerHTML = `<div class="calNum">${day}</div>${info.dot ? '<span class="calDot" aria-hidden="true"></span>' : ''}`;
+  // ===================================================================
+  // 통계 / 기록
+  // ===================================================================
+  function bumpDaily(n=1){ const key=todayKey(); const d=load(DAILY_KEY,{}); d[key]=(d[key]||0)+n; save(DAILY_KEY,d); }
+  function calcStreak(){
+    const daily=load(DAILY_KEY,{}); let streak=0; const d=new Date();
+    for(;;){ const key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; if(daily[key]&&daily[key]>0){streak++;d.setDate(d.getDate()-1);}else break; }
+    return streak;
+  }
+  function countMonthStudyDays(daily,year,month0){
+    const prefix=`${year}-${String(month0+1).padStart(2,"0")}-`;
+    return Object.entries(daily).reduce((acc,[k,v])=>k.startsWith(prefix)&&(v||0)>0?acc+1:acc,0);
+  }
+  function makeCalCell(dayNum,cnt,goal,isToday=false){
+    const c=Math.max(0,Number(cnt)||0);
+    const g=Math.max(1,Number.isFinite(Number(goal))&&Number(goal)>0?Number(goal):DEFAULT_GOAL);
+    const level=c===0?0:(c<=10?1:(c<=20?2:(c<=30?3:4)));
+    return {className:`calDay calL${level}${c>=g?" calGoal":""}${isToday?" calToday":""}`,title:`${dayNum}일 · 학습: ${c}문제`,cnt:c,dot:c>0};
+  }
+  function drawCalendarGrid(gridEl,{year,month0,daily,goal}){
+    gridEl.innerHTML="";
+    ["일","월","화","수","목","금","토"].forEach(x=>{ const t=document.createElement("div"); t.className="calDow"; t.textContent=x; gridEl.appendChild(t); });
+    const first=new Date(year,month0,1), startDow=first.getDay(), lastDate=new Date(year,month0+1,0).getDate();
+    for(let i=0;i<startDow;i++){ const b=document.createElement("div"); b.style.opacity="0"; b.className="calDay"; gridEl.appendChild(b); }
+    for(let day=1;day<=lastDate;day++){
+      const key=`${year}-${String(month0+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+      const info=makeCalCell(day,daily[key]||0,goal,key===todayKey());
+      const cell=document.createElement("div"); cell.className=info.className; cell.title=info.title; cell.dataset.cnt=String(info.cnt);
+      cell.innerHTML=`<div class="calNum">${day}</div>${info.dot?'<span class="calDot" aria-hidden="true"></span>':''}`;
       gridEl.appendChild(cell);
     }
   }
-
-  function renderMainCalendarSummary(viewY = statsViewY, viewM = statsViewM){
-    if (!el("mainCalGrid")) return;
-    statsViewY = viewY;
-    statsViewM = viewM;
-
-    const daily = load(DAILY_KEY, {});
-    const todayCount = daily[todayKey()] || 0;
-    const streak = calcStreak();
-    const goal = getGoal();
-    const sessions = load(SESSION_KEY, []);
-    const totalSolved = sessions.reduce((acc, x) => acc + (x.total || 0), 0);
-    const totalWrong = sessions.reduce((acc, x) => acc + (x.wrongCount || 0), 0);
-    const favCount = Object.keys(load(FAVORITES_KEY, {})).length;
-    const goalPct = Math.max(0, Math.min(100, Math.round((todayCount / goal) * 100)));
-
-    el("mainCalTodayCount").textContent = todayCount;
-    el("mainCalStreak").textContent = `${streak}일`;
-    el("mainCalMonthDays").textContent = `${countMonthStudyDays(daily, statsViewY, statsViewM)}일`;
-    el("mainCalMonthLabel").textContent = `${statsViewY}년 ${statsViewM+1}월`;
-
-    el("statsTodayLine").textContent = `${todayCount}문제`;
-    el("statsStreakLine").textContent = `${streak}일`;
-    el("statsGoalPill").textContent = goal;
-    el("statsGoalProgress").textContent = `${todayCount} / ${goal}`;
-    el("statsGoalBar").style.width = `${goalPct}%`;
-    el("statsTotalSolved").textContent = totalSolved;
-    el("statsTotalWrong").textContent = totalWrong;
-    el("statsFavCount").textContent = favCount;
-
-    drawCalendarGrid(el("mainCalGrid"), {
-      year: statsViewY,
-      month0: statsViewM,
-      daily,
-      goal
-    });
+  function renderMainCalendarSummary(viewY=statsViewY,viewM=statsViewM){
+    if(!el("mainCalGrid")) return;
+    statsViewY=viewY; statsViewM=viewM;
+    const daily=load(DAILY_KEY,{}), todayCount=daily[todayKey()]||0, streak=calcStreak(), goal=getGoal();
+    const sessions=load(SESSION_KEY,[]);
+    const totalSolved=sessions.reduce((acc,x)=>acc+(x.total||0),0);
+    const totalWrong=sessions.reduce((acc,x)=>acc+(x.wrongCount||0),0);
+    const favCount=Object.keys(load(FAVORITES_KEY,{})).length;
+    const goalPct=Math.max(0,Math.min(100,Math.round((todayCount/goal)*100)));
+    el("mainCalTodayCount").textContent=todayCount;
+    el("mainCalStreak").textContent=`${streak}일`;
+    el("mainCalMonthDays").textContent=`${countMonthStudyDays(daily,statsViewY,statsViewM)}일`;
+    el("mainCalMonthLabel").textContent=`${statsViewY}년 ${statsViewM+1}월`;
+    el("statsTodayLine").textContent=`${todayCount}문제`;
+    el("statsStreakLine").textContent=`${streak}일`;
+    el("statsGoalPill").textContent=goal;
+    el("statsGoalProgress").textContent=`${todayCount} / ${goal}`;
+    el("statsGoalBar").style.width=`${goalPct}%`;
+    el("statsTotalSolved").textContent=totalSolved;
+    el("statsTotalWrong").textContent=totalWrong;
+    el("statsFavCount").textContent=favCount;
+    drawCalendarGrid(el("mainCalGrid"),{year:statsViewY,month0:statsViewM,daily,goal});
   }
-
   function renderLearnDayProgress(){
-    const wrap = el("learnDayProgress");
-    if(!wrap) return;
-
-    const data = load(WORDS_KEY, {});
-    const stats = statsMap();
-    const allDays = getAllDays(data);
-    wrap.innerHTML = "";
-
-    if(allDays.length === 0){
-      wrap.innerHTML = `<div class="item"><div class="muted">DAY 데이터가 없어요.</div></div>`;
-      return;
-    }
-
-    const pct = (a,b) => b ? Math.round((a/b)*100) : 0;
-
-    allDays.forEach(day => {
-      const words = data[day] || [];
-      const total = words.length;
-
-      const keys = words.map(keyOf);
-      const logged = keys.reduce((acc, k) => {
-        const st = stats[k];
-        return acc + (((st?.correctCount || 0) + (st?.wrongCount || 0) > 0) ? 1 : 0);
-      }, 0);
-
-      const wrongN = keys.reduce((acc, k) => acc + ((stats[k]?.wrongCount || 0) > 0 ? 1 : 0), 0);
-
-      const loggedPct = pct(logged, total);
-      const wrongPct = pct(wrongN, total);
-
-      const row = document.createElement("div");
-      row.className = "item";
-      row.innerHTML = `
-        <div class="itemTop" style="margin-bottom:0; align-items:center;">
-          <div class="itemWord">${esc(dayLabel(day))}</div>
-          <span class="badge">${total}개 · 기록 ${logged}개(${loggedPct}%) · 오답 ${wrongN}개(${wrongPct}%)</span>
-        </div>
-      `;
+    const wrap=el("learnDayProgress"); if(!wrap) return;
+    const data=load(WORDS_KEY,{}), stats=statsMap(), allDays=getAllDays(data);
+    wrap.innerHTML="";
+    if(allDays.length===0){ wrap.innerHTML=`<div class="item"><div class="muted">DAY 데이터가 없어요.</div></div>`; return; }
+    const pct=(a,b)=>b?Math.round((a/b)*100):0;
+    allDays.forEach(day=>{
+      const words=data[day]||[], total=words.length, keys=words.map(keyOf);
+      const logged=keys.reduce((acc,k)=>acc+(((stats[k]?.correctCount||0)+(stats[k]?.wrongCount||0)>0)?1:0),0);
+      const wrongN=keys.reduce((acc,k)=>acc+((stats[k]?.wrongCount||0)>0?1:0),0);
+      const row=document.createElement("div"); row.className="item";
+      row.innerHTML=`<div class="itemTop" style="margin-bottom:0; align-items:center;"><div class="itemWord">${esc(dayLabel(day))}</div><span class="badge">${total}개 · 기록 ${logged}개(${pct(logged,total)}%) · 오답 ${wrongN}개(${pct(wrongN,total)}%)</span></div>`;
       wrap.appendChild(row);
     });
   }
-
   function updateDailyUI(){
-    const daily = load(DAILY_KEY, {});
-    el("todayCountPill").textContent = daily[todayKey()] || 0;
-    el("streakPill").textContent = calcStreak();
-    renderMainCalendarSummary(statsViewY, statsViewM);
-
-    const details = el("learnProgressDetails");
-    if(details && details.open) renderLearnDayProgress();
-
+    const daily=load(DAILY_KEY,{});
+    el("todayCountPill").textContent=daily[todayKey()]||0;
+    el("streakPill").textContent=calcStreak();
+    renderMainCalendarSummary(statsViewY,statsViewM);
+    if(el("learnProgressDetails")?.open) renderLearnDayProgress();
     checkGoalAndCelebrate();
   }
-
-  function recordSession({mode, dir, total, score, wrongCount, days, ranges}){
-    const sessions = load(SESSION_KEY, []);
-    sessions.unshift({ ts: Date.now(), mode, dir, total, score, wrongCount, days, ranges });
-    if (sessions.length > 200) sessions.length = 200;
-    save(SESSION_KEY, sessions);
+  function recordSession({mode,dir,total,score,wrongCount,days,ranges}){
+    const sessions=load(SESSION_KEY,[]);
+    sessions.unshift({ts:Date.now(),mode,dir,total,score,wrongCount,days,ranges});
+    if(sessions.length>200) sessions.length=200;
+    save(SESSION_KEY,sessions);
   }
-
-  function normalizeAnswer(s){
-    return String(s ?? "")
-      .trim()
-      .toLowerCase()
-      .replace(/\s+/g, " ");
-  }
-
+  function normalizeAnswer(s){ return String(s??"").trim().toLowerCase().replace(/\s+/g," "); }
   function rangeLabel(){
-    const parts = [];
+    const parts=[];
     if(el("cb_core").checked) parts.push("핵심(1~40)");
     if(el("cb_basic").checked) parts.push("기초(41~68)");
     if(el("cb_800").checked) parts.push("800(69~136)");
     if(el("cb_900").checked) parts.push("900(137~)");
-    return parts.length ? parts.join(", ") : "선택없음";
+    return parts.length?parts.join(", "):"선택없음";
   }
 
-  // ---------------- 범위/카운트 ----------------
-  function selectedDaysForPool(){
-    const multi = load(MULTI_DAY_KEY, []);
-    const base = el("daySelect").value;
-    return (multi.length > 0 ? multi : [base]).filter(Boolean);
-  }
-
+  // ===================================================================
+  // 범위 / 카운트
+  // ===================================================================
+  function selectedDaysForPool(){ const multi=load(MULTI_DAY_KEY,[]), base=el("daySelect").value; return (multi.length>0?multi:[base]).filter(Boolean); }
   function selectedRanges(){
-    const arr = [];
+    const arr=[];
     if(el("cb_core").checked) arr.push([1,40]);
     if(el("cb_basic").checked) arr.push([41,68]);
     if(el("cb_800").checked) arr.push([69,136]);
-    if(el("cb_900").checked) arr.push([137, 999999]);
+    if(el("cb_900").checked) arr.push([137,999999]);
     return arr;
   }
-  function inRanges(n, ranges){ return ranges.some(([s,e]) => n >= s && n <= e); }
-
-  function buildPoolFromSelection() {
-    const data = load(WORDS_KEY, {});
-    const targetDays = selectedDaysForPool();
-
-    let combined = [];
-    targetDays.forEach(d => { combined = combined.concat(data[d] || []); });
-
-    const intervals = selectedRanges();
-    const filtered = combined.filter(item => inRanges(item.n, intervals));
-    return { targetDays, intervals, filtered };
+  function inRanges(n,ranges){ return ranges.some(([s,e])=>n>=s&&n<=e); }
+  function buildPoolFromSelection(){
+    const data=load(WORDS_KEY,{}), targetDays=selectedDaysForPool();
+    let combined=[]; targetDays.forEach(d=>{ combined=combined.concat(data[d]||[]); });
+    const intervals=selectedRanges();
+    return {targetDays,intervals,filtered:combined.filter(item=>inRanges(item.n,intervals))};
   }
-
-  function getCurrentPoolSize(){
-    const { filtered } = buildPoolFromSelection();
-    return filtered.length;
-  }
-
+  function getCurrentPoolSize(){ return buildPoolFromSelection().filtered.length; }
   function refreshCountSelectOptions(){
-    const sel = el("countSelect");
-    const poolSize = getCurrentPoolSize();
-    const prev = parseInt(sel.value, 10);
-
-    if(poolSize <= 0){
-      sel.innerHTML = "";
-      sel.add(new Option("0", "0"));
-      sel.value = "0";
-      return;
-    }
-
-    const base = [10,20,30,50,100].filter(v => v < poolSize);
-    const options = [...base, poolSize];
-
-    sel.innerHTML = "";
-    options.forEach(v => {
-      const label = v === poolSize ? `${v} (전체)` : String(v);
-      sel.add(new Option(label, String(v)));
-    });
-
-    if(isLearnTab()){
-      sel.value = String(poolSize);
-      return;
-    }
-
-    let next = options.includes(prev) ? prev : null;
-    if(next === null) next = options.includes(30) ? 30 : options[0];
-    sel.value = String(next);
+    const sel=el("countSelect"), poolSize=getCurrentPoolSize(), prev=parseInt(sel.value,10);
+    if(poolSize<=0){ sel.innerHTML=""; sel.add(new Option("0","0")); sel.value="0"; return; }
+    const base=[10,20,30,50,100].filter(v=>v<poolSize);
+    const options=[...base,poolSize]; sel.innerHTML="";
+    options.forEach(v=>sel.add(new Option(v===poolSize?`${v} (전체)`:String(v),String(v))));
+    if(isLearnTab()){ sel.value=String(poolSize); return; }
+    let next=options.includes(prev)?prev:null;
+    if(next===null) next=options.includes(30)?30:options[0];
+    sel.value=String(next);
   }
-
   function updateScopeCoverage(){
-    const data = load(WORDS_KEY, {});
-    const days = selectedDaysForPool();
-    const ranges = selectedRanges();
-    let all = [];
-    days.forEach(d => { all = all.concat(data[d] || []); });
-    const picked = all.filter(x => inRanges(x.n, ranges)).length;
-    const total = all.length;
-    const percent = total ? Math.round((picked/total)*100) : 0;
-    el("scopeCoverageText").textContent = `현재 학습 범위 ${percent}%`;
-    el("scopeCoverageCount").textContent = `${picked} / ${total} 단어`;
-    el("scopeCoverageBar").style.width = `${percent}%`;
+    const data=load(WORDS_KEY,{}), days=selectedDaysForPool(), ranges=selectedRanges();
+    let all=[]; days.forEach(d=>{ all=all.concat(data[d]||[]); });
+    const picked=all.filter(x=>inRanges(x.n,ranges)).length, total=all.length;
+    const percent=total?Math.round((picked/total)*100):0;
+    el("scopeCoverageText").textContent=`현재 학습 범위 ${percent}%`;
+    el("scopeCoverageCount").textContent=`${picked} / ${total} 단어`;
+    el("scopeCoverageBar").style.width=`${percent}%`;
   }
+  function updateScopeBar(){ updateScopeCoverage(); refreshCountSelectOptions(); }
+  ["dirSelect","countSelect","voiceSelect"].forEach(id=>el(id).addEventListener("change",updateScopeBar));
+  ["cb_core","cb_basic","cb_800","cb_900"].forEach(id=>el(id).addEventListener("change",updateScopeBar));
 
-  function updateScopeBar(){
-    updateScopeCoverage();
-    refreshCountSelectOptions();
-  }
-
-  ["dirSelect","countSelect","voiceSelect"].forEach(id=>{
-    el(id).addEventListener("change", updateScopeBar);
-  });
-  ["cb_core","cb_basic","cb_800","cb_900"].forEach(id=>{
-    el(id).addEventListener("change", updateScopeBar);
-  });
-
-  // ---------------- Bottom Sheet ----------------
-  const overlay = el("overlay");
-  const paneWords = el("paneWords");
-  const paneWrong = el("paneWrong");
-  const paneFav = el("paneFav");
-  const paneHistory = el("paneHistory");
-
-  function openSheet(tab="words"){
-    overlay.classList.remove("hidden");
-    switchTab(tab);
-    renderSheet(tab);
-  }
+  // ===================================================================
+  // Bottom Sheet
+  // ===================================================================
+  const overlay=el("overlay");
+  function openSheet(tab="words"){ overlay.classList.remove("hidden"); switchTab(tab); renderSheet(tab); }
   function closeSheet(){ overlay.classList.add("hidden"); }
-
-  function setTabActive(activeId){
-    ["tabWords","tabWrong","tabFav","tabHistory"].forEach(id => el(id).classList.remove("active"));
-    el(activeId).classList.add("active");
-  }
-
+  function setTabActive(id){ ["tabWords","tabWrong","tabFav","tabHistory"].forEach(x=>el(x).classList.remove("active")); el(id).classList.add("active"); }
   function switchTab(tab){
-    paneWords.classList.add("hidden");
-    paneWrong.classList.add("hidden");
-    paneFav.classList.add("hidden");
-    paneHistory.classList.add("hidden");
-
-    if(tab==="words"){ paneWords.classList.remove("hidden"); setTabActive("tabWords"); }
-    if(tab==="wrong"){ paneWrong.classList.remove("hidden"); setTabActive("tabWrong"); }
-    if(tab==="fav"){ paneFav.classList.remove("hidden"); setTabActive("tabFav"); }
-    if(tab==="history"){ paneHistory.classList.remove("hidden"); setTabActive("tabHistory"); }
+    ["paneWords","paneWrong","paneFav","paneHistory"].forEach(id=>el(id).classList.add("hidden"));
+    if(tab==="words"){el("paneWords").classList.remove("hidden");setTabActive("tabWords");}
+    if(tab==="wrong"){el("paneWrong").classList.remove("hidden");setTabActive("tabWrong");}
+    if(tab==="fav"){el("paneFav").classList.remove("hidden");setTabActive("tabFav");}
+    if(tab==="history"){el("paneHistory").classList.remove("hidden");setTabActive("tabHistory");}
   }
-
   function renderSheet(tab){
     if(tab==="words") renderWordsList();
     if(tab==="wrong") renderWrongList();
-    if(tab==="fav") renderFavList();
+    if(tab==="fav")   renderFavList();
     if(tab==="history") renderHistoryList();
   }
-
-  el("openSheetBtn").onclick = () => openSheet("words");
-  el("closeSheetBtn").onclick = closeSheet;
-  overlay.addEventListener("click", (e) => { if(e.target === overlay) closeSheet(); });
-
-  el("tabWords").onclick = () => { switchTab("words"); renderWordsList(); };
-  el("tabWrong").onclick = () => { switchTab("wrong"); renderWrongList(); };
-  el("tabFav").onclick = () => { switchTab("fav"); renderFavList(); };
-  el("tabHistory").onclick = () => { switchTab("history"); renderHistoryList(); };
-
-  const learnProgressDetails = el("learnProgressDetails");
-  if(learnProgressDetails){
-    learnProgressDetails.addEventListener("toggle", () => {
-      if(learnProgressDetails.open) renderLearnDayProgress();
-    });
-  }
+  el("openSheetBtn").onclick=()=>openSheet("words");
+  el("closeSheetBtn").onclick=closeSheet;
+  overlay.addEventListener("click",(e)=>{ if(e.target===overlay) closeSheet(); });
+  el("tabWords").onclick=()=>{switchTab("words");renderWordsList();};
+  el("tabWrong").onclick=()=>{switchTab("wrong");renderWrongList();};
+  el("tabFav").onclick=()=>{switchTab("fav");renderFavList();};
+  el("tabHistory").onclick=()=>{switchTab("history");renderHistoryList();};
+  el("learnProgressDetails")?.addEventListener("toggle",()=>{ if(el("learnProgressDetails").open) renderLearnDayProgress(); });
 
   // 전체 초기화
-  el("resetStatsBtn").onclick = () => {
-    if(!confirm("전체 초기화할까요? (단어 데이터 제외)\n- 오답노트/기록/일일학습/선택DAY/즐겨찾기/목표달성 기록이 초기화됩니다.")) return;
-    save(STATS_KEY, {});
-    save(SESSION_KEY, []);
-    save(DAILY_KEY, {});
-    save(MULTI_DAY_KEY, []);
-    save(RANDOM_DAY_ON_KEY, false);
-    save(RANDOM_DAY_COUNT_KEY, 1);
-    save(RANDOM_DAY_AUTO_KEY, false);
-    save(LAST_MANUAL_DAY_KEY, "");
-    save(WRONG_FIRST_KEY, false);
-    save(FAVORITES_KEY, {});
-    save(GOAL_DONE_KEY, {});
-    localStorage.removeItem(RESUME_KEY);
-    updateResumeButton();
-    updateActiveCount();
-    updateDailyUI();
-    alert("초기화 완료!");
+  el("resetStatsBtn").onclick=()=>{
+    if(!confirm("전체 초기화할까요? (단어 데이터 제외)")) return;
+    [STATS_KEY,SESSION_KEY,DAILY_KEY,MULTI_DAY_KEY,GOAL_DONE_KEY].forEach(k=>save(k,k.includes("STATS")||k.includes("SESSION")||k.includes("GOAL")?{}:[]));
+    save(MULTI_DAY_KEY,[]); save(RANDOM_DAY_ON_KEY,false); save(RANDOM_DAY_COUNT_KEY,1); save(RANDOM_DAY_AUTO_KEY,false);
+    save(LAST_MANUAL_DAY_KEY,""); save(WRONG_FIRST_KEY,false); save(FAVORITES_KEY,{}); save(GOAL_DONE_KEY,{});
+    save(STATS_KEY,{}); save(SESSION_KEY,[]); save(DAILY_KEY,{});
+    localStorage.removeItem(RESUME_KEY); updateResumeButton(); updateActiveCount(); updateDailyUI(); alert("초기화 완료!");
   };
 
-  // ---------------- 단어 리스트 ----------------
+  // ── 단어 리스트 ─────────────────────────────────────────────────────
   function renderWordsList(){
-    const data = load(WORDS_KEY, {});
-    const days = selectedDaysForPool();
-    const ranges = selectedRanges();
-
-    let list = [];
-    days.forEach(d => list = list.concat(data[d] || []));
-    list = list.filter(x => inRanges(x.n, ranges));
-    list.sort((a,b) => (a.day.localeCompare(b.day, undefined, {numeric:true}) || (a.n-b.n)));
-
-    paneWords.innerHTML = "";
-
-    const head = document.createElement("div");
-    head.className = "item";
-    head.innerHTML = `
-      <div class="itemTop">
-        <div>
-          <div class="itemWord">현재 선택 범위 단어</div>
-          <div class="muted">DAY: <b>${esc(days.map(dayLabel).join(", "))}</b> · 범위: <b>${esc(rangeLabel())}</b> · 총 <b id="wordsCountLabel">${list.length}</b>개</div>
-        </div>
-        <span class="badge">LIST</span>
-      </div>
-
-      <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
-        <input id="wordSearchInput" placeholder="검색 (영단어/뜻)" style="flex:1; min-width: 200px;" />
+    const data=load(WORDS_KEY,{}), days=selectedDaysForPool(), ranges=selectedRanges();
+    let list=[]; days.forEach(d=>list=list.concat(data[d]||[]));
+    list=list.filter(x=>inRanges(x.n,ranges)).sort((a,b)=>a.day.localeCompare(b.day,undefined,{numeric:true})||(a.n-b.n));
+    const paneWords=el("paneWords"); paneWords.innerHTML="";
+    const head=document.createElement("div"); head.className="item";
+    head.innerHTML=`
+      <div class="itemTop"><div><div class="itemWord">현재 선택 범위 단어</div>
+        <div class="muted">DAY: <b>${esc(days.map(dayLabel).join(", "))}</b> · 범위: <b>${esc(rangeLabel())}</b> · 총 <b id="wordsCountLabel">${list.length}</b>개</div></div>
+        <span class="badge">LIST</span></div>
+      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+        <input id="wordSearchInput" placeholder="검색 (영단어/뜻)" style="flex:1;min-width:200px;" />
         <button class="btn btn-ghost" type="button" id="clearSearchBtn">지우기</button>
       </div>
-
       <div class="miniBtns">
         <button class="btn btn-soft" type="button" id="speakFirstBtn">첫 단어 발음</button>
         <button class="btn btn-ghost" type="button" id="copyListBtn">복사</button>
       </div>
-
-      <div class="muted" style="margin-top:8px">팁: ☆/★ 즐겨찾기, 사전으로 확장 학습</div>
-    `;
+      <div class="muted" style="margin-top:8px">팁: ☆/★ 즐겨찾기, 사전으로 확장 학습</div>`;
     paneWords.appendChild(head);
-
-    const listWrap = document.createElement("div");
-    listWrap.id = "wordsListWrap";
-    listWrap.className = "list";
-    paneWords.appendChild(listWrap);
-
-    const renderItems = (arr) => {
-      listWrap.innerHTML = "";
-      arr.slice(0,300).forEach(x => {
-        const it = document.createElement("div");
-        it.className = "item";
-        it.innerHTML = `
-          <div class="itemTop">
-            <div>
-              <div class="itemWord"><a href="https://en.dict.naver.com/#/search?query=${encodeURIComponent(x.w)}" target="_blank" rel="noopener">${esc(x.w)}</a> <span class="muted">(${esc(dayLabel(x.day))} · #${esc(x.n)})</span></div>
-              <div class="muted">${esc(x.m)}</div>
-            </div>
-            <span class="badge">WORD</span>
-          </div>
-          <div class="miniBtns">
-            <button class="btn btn-soft" type="button">발음</button>
-            <button class="btn btn-ghost" type="button">사전</button>
-            <button class="btn btn-ghost" type="button">${isFav(x) ? "★" : "☆"}</button>
-          </div>
-        `;
-        const [b1,b2,b3] = it.querySelectorAll("button");
-        b1.onclick = () => speak(x.w);
-        b2.onclick = () => openNaverDict(x.w);
-        b3.onclick = () => { toggleFav(x); b3.textContent = isFav(x) ? "★" : "☆"; };
+    const listWrap=document.createElement("div"); listWrap.id="wordsListWrap"; listWrap.className="list"; paneWords.appendChild(listWrap);
+    const renderItems=(arr)=>{
+      listWrap.innerHTML="";
+      arr.slice(0,300).forEach(x=>{
+        const it=document.createElement("div"); it.className="item";
+        it.innerHTML=`<div class="itemTop"><div>
+          <div class="itemWord"><a href="https://en.dict.naver.com/#/search?query=${encodeURIComponent(x.w)}" target="_blank" rel="noopener">${esc(x.w)}</a> <span class="muted">(${esc(dayLabel(x.day))} · #${esc(x.n)})</span></div>
+          <div class="muted">${esc(x.m)}</div></div><span class="badge">WORD</span></div>
+          <div class="miniBtns"><button class="btn btn-soft" type="button">발음</button><button class="btn btn-ghost" type="button">사전</button><button class="btn btn-ghost" type="button">${isFav(x)?"★":"☆"}</button></div>`;
+        const [b1,b2,b3]=it.querySelectorAll("button");
+        b1.onclick=()=>speak(x.w); b2.onclick=()=>openNaverDict(x.w);
+        b3.onclick=()=>{ toggleFav(x); b3.textContent=isFav(x)?"★":"☆"; };
         listWrap.appendChild(it);
       });
-
-      if(arr.length > 300){
-        const more = document.createElement("div");
-        more.className = "muted";
-        more.style.margin = "10px 2px";
-        more.textContent = `표시는 300개까지만! (총 ${arr.length}개)`;
-        listWrap.appendChild(more);
-      }
+      if(arr.length>300){ const more=document.createElement("div"); more.className="muted"; more.style.margin="10px 2px"; more.textContent=`표시는 300개까지만! (총 ${arr.length}개)`; listWrap.appendChild(more); }
     };
-
-    const applyFilter = () => {
-      const q = normalizeAnswer(el("wordSearchInput").value);
-      const filteredList = !q ? list : list.filter(x =>
-        normalizeAnswer(x.w).includes(q) || normalizeAnswer(x.m).includes(q)
-      );
-      paneWords.querySelector("#wordsCountLabel").textContent = filteredList.length;
-      renderItems(filteredList);
+    const applyFilter=()=>{
+      const q=normalizeAnswer(el("wordSearchInput").value);
+      const fl=!q?list:list.filter(x=>normalizeAnswer(x.w).includes(q)||normalizeAnswer(x.m).includes(q));
+      paneWords.querySelector("#wordsCountLabel").textContent=fl.length; renderItems(fl);
     };
-
-    el("speakFirstBtn").onclick = () => { if(list[0]?.w) speak(list[0].w); };
-
-    el("copyListBtn").onclick = async () => {
-      const text = list.map(x => `${x.day} #${x.n}  ${x.w} = ${x.m}`).join("\n");
-      try { await navigator.clipboard.writeText(text); alert("복사 완료!"); }
-      catch { alert("복사 실패(브라우저 권한)."); }
-    };
-
-    el("clearSearchBtn").onclick = () => { el("wordSearchInput").value = ""; applyFilter(); };
-    el("wordSearchInput").addEventListener("input", applyFilter);
-
+    el("speakFirstBtn").onclick=()=>{ if(list[0]?.w) speak(list[0].w); };
+    el("copyListBtn").onclick=async()=>{ try{ await navigator.clipboard.writeText(list.map(x=>`${x.day} #${x.n}  ${x.w} = ${x.m}`).join("\n")); alert("복사 완료!"); }catch{ alert("복사 실패(브라우저 권한)."); } };
+    el("clearSearchBtn").onclick=()=>{ el("wordSearchInput").value=""; applyFilter(); };
+    el("wordSearchInput").addEventListener("input",applyFilter);
     renderItems(list);
   }
 
-  // ---------------- 오답노트 ----------------
+  // ── 오답노트 ────────────────────────────────────────────────────────
   function ensureStatsEntry(item){
-    const k = keyOf(item);
-    const stats = statsMap();
-    const base = normalizeStatsEntry(k, stats[k] || item || {});
-    stats[k] = base;
-    return { stats, k };
+    const k=keyOf(item), stats=statsMap();
+    stats[k]=normalizeStatsEntry(k,stats[k]||item||{});
+    return {stats,k};
   }
-
-  function saveWrongStat(item){
-    const { stats, k } = ensureStatsEntry(item);
-    stats[k].wrongCount = (stats[k].wrongCount || 0) + 1;
-    stats[k].lastTs = Date.now();
-    save(STATS_KEY, stats);
-  }
-
-  function saveCorrectStat(item){
-    const { stats, k } = ensureStatsEntry(item);
-    stats[k].correctCount = (stats[k].correctCount || 0) + 1;
-    stats[k].lastTs = Date.now();
-    save(STATS_KEY, stats);
-  }
+  function saveWrongStat(item){ const {stats,k}=ensureStatsEntry(item); stats[k].wrongCount=(stats[k].wrongCount||0)+1; stats[k].lastTs=Date.now(); save(STATS_KEY,stats); }
+  function saveCorrectStat(item){ const {stats,k}=ensureStatsEntry(item); stats[k].correctCount=(stats[k].correctCount||0)+1; stats[k].lastTs=Date.now(); save(STATS_KEY,stats); }
 
   function renderWrongList(){
-    const stats = statsMap();
-    const entries = Object.values(stats)
-      .filter(x => (x?.wrongCount || 0) > 0)
-      .sort((a,b) => (b.wrongCount - a.wrongCount) || ((b.lastTs||0) - (a.lastTs||0)));
-
-    paneWrong.innerHTML = "";
-    const head = document.createElement("div");
-    head.className = "item";
-    head.innerHTML = `
-      <div class="itemTop">
-        <div>
-          <div class="itemWord">오답노트</div>
-          <div class="muted">총 <b>${entries.length}</b>개 · 많이 틀린 순</div>
-        </div>
-        <span class="badge">WRONG</span>
-      </div>
-      <div class="miniBtns">
-        <button class="btn btn-soft" type="button" id="startWrongQuizBtn">오답만 퀴즈</button>
-        <button class="btn btn-danger" type="button" id="clearWrongBtn">오답 초기화</button>
-      </div>
-    `;
+    const stats=statsMap();
+    const entries=Object.values(stats).filter(x=>(x?.wrongCount||0)>0).sort((a,b)=>(b.wrongCount-a.wrongCount)||((b.lastTs||0)-(a.lastTs||0)));
+    const paneWrong=el("paneWrong"); paneWrong.innerHTML="";
+    const head=document.createElement("div"); head.className="item";
+    head.innerHTML=`<div class="itemTop"><div><div class="itemWord">오답노트</div><div class="muted">총 <b>${entries.length}</b>개 · 많이 틀린 순</div></div><span class="badge">WRONG</span></div>
+      <div class="miniBtns"><button class="btn btn-soft" type="button" id="startWrongQuizBtn">오답만 퀴즈</button>
+      <button class="btn btn-danger" type="button" id="clearWrongBtn">오답 기록 초기화</button></div>`;
     paneWrong.appendChild(head);
-
-    el("startWrongQuizBtn").onclick = () => startWrongOnlyQuiz();
-    el("clearWrongBtn").onclick = () => {
-      if(confirm("오답노트를 전부 삭제할까요?")) {
-        save(STATS_KEY, {});
-        renderWrongList();
-      }
+    el("startWrongQuizBtn").onclick=()=>startWrongOnlyQuiz();
+    // ✅ BUG FIX: 오답 초기화는 wrongCount만 0으로 리셋 (correctCount 보존)
+    el("clearWrongBtn").onclick=()=>{
+      if(!confirm("오답 기록만 초기화할까요?\n(정답 기록은 유지됩니다)")) return;
+      const s=load(STATS_KEY,{});
+      for(const k of Object.keys(s)) if(s[k]) s[k].wrongCount=0;
+      save(STATS_KEY,s); renderWrongList();
     };
-
-    if(entries.length === 0){
-      const empty = document.createElement("div");
-      empty.className = "item";
-      empty.innerHTML = `<div class="muted">아직 오답이 없어요. 아주 좋아요 😼</div>`;
-      paneWrong.appendChild(empty);
-      return;
-    }
-
-    entries.slice(0, 300).forEach(x => {
-      const it = document.createElement("div");
-      it.className = "item";
-      it.innerHTML = `
-        <div class="itemTop">
-          <div>
-            <div class="itemWord"><a href="https://en.dict.naver.com/#/search?query=${encodeURIComponent(x.w)}" target="_blank" rel="noopener">${esc(x.w)}</a> <span class="muted">(${esc(dayLabel(x.day))} · #${esc(x.n)})</span></div>
-            <div class="muted">${esc(x.m)}</div>
-            <div class="muted">틀림: <b>${esc(x.wrongCount || 0)}</b> · 맞힘: <b>${esc(x.correctCount || 0)}</b> · 최근: <b>${esc(x.lastTs ? fmtTime(x.lastTs) : "-")}</b></div>
-          </div>
-          <span class="badge">×${esc(x.wrongCount || 0)}</span>
-        </div>
-        <div class="miniBtns">
-          <button class="btn btn-soft" type="button">발음</button>
-          <button class="btn btn-ghost" type="button">사전</button>
-          <button class="btn btn-ghost" type="button">${isFav(x) ? "★" : "☆"}</button>
-          <button class="btn btn-ghost" type="button">삭제</button>
-        </div>
-      `;
-      const [btnSpeak, btnDict, btnFav, btnDel] = it.querySelectorAll("button");
-      btnSpeak.onclick = () => speak(x.w);
-      btnDict.onclick = () => openNaverDict(x.w);
-      btnFav.onclick = () => { toggleFav(x); btnFav.textContent = isFav(x) ? "★" : "☆"; };
-      btnDel.onclick = () => {
-        const k = `${x.day}||${x.n}||${x.w}`;
-        const s = load(STATS_KEY, {});
-        delete s[k];
-        save(STATS_KEY, s);
-        renderWrongList();
+    if(entries.length===0){ const empty=document.createElement("div"); empty.className="item"; empty.innerHTML=`<div class="muted">아직 오답이 없어요. 아주 좋아요 😼</div>`; paneWrong.appendChild(empty); return; }
+    entries.slice(0,300).forEach(x=>{
+      const it=document.createElement("div"); it.className="item";
+      it.innerHTML=`<div class="itemTop"><div>
+        <div class="itemWord"><a href="https://en.dict.naver.com/#/search?query=${encodeURIComponent(x.w)}" target="_blank" rel="noopener">${esc(x.w)}</a> <span class="muted">(${esc(dayLabel(x.day))} · #${esc(x.n)})</span></div>
+        <div class="muted">${esc(x.m)}</div>
+        <div class="muted">틀림: <b>${esc(x.wrongCount||0)}</b> · 맞힘: <b>${esc(x.correctCount||0)}</b> · 최근: <b>${esc(x.lastTs?fmtTime(x.lastTs):"-")}</b></div>
+        </div><span class="badge">×${esc(x.wrongCount||0)}</span></div>
+        <div class="miniBtns"><button class="btn btn-soft" type="button">발음</button><button class="btn btn-ghost" type="button">사전</button>
+        <button class="btn btn-ghost" type="button">${isFav(x)?"★":"☆"}</button><button class="btn btn-ghost" type="button">이 단어만 삭제</button></div>`;
+      const [b1,b2,b3,b4]=it.querySelectorAll("button");
+      b1.onclick=()=>speak(x.w); b2.onclick=()=>openNaverDict(x.w);
+      b3.onclick=()=>{ toggleFav(x); b3.textContent=isFav(x)?"★":"☆"; };
+      b4.onclick=()=>{
+        // ✅ BUG FIX: 삭제는 해당 단어의 wrongCount만 0으로 (전체 통계 삭제 X)
+        const s=load(STATS_KEY,{}); const k=keyOf(x);
+        if(s[k]) s[k].wrongCount=0;
+        save(STATS_KEY,s); renderWrongList();
       };
       paneWrong.appendChild(it);
     });
   }
 
-  // ---------------- 즐겨찾기 ----------------
+  // ── 즐겨찾기 ────────────────────────────────────────────────────────
   function renderFavList(){
-    const list = favList();
-    paneFav.innerHTML = "";
-
-    const head = document.createElement("div");
-    head.className = "item";
-    head.innerHTML = `
-      <div class="itemTop">
-        <div>
-          <div class="itemWord">즐겨찾기</div>
-          <div class="muted">총 <b>${list.length}</b>개</div>
-        </div>
-        <span class="badge">FAV</span>
-      </div>
-      <div class="miniBtns">
-        <button class="btn btn-soft" type="button" id="startFavQuizBtn">즐겨찾기 퀴즈</button>
-        <button class="btn btn-danger" type="button" id="clearFavBtn">전체 삭제</button>
-      </div>
-    `;
+    const list=favList(), paneFav=el("paneFav"); paneFav.innerHTML="";
+    const head=document.createElement("div"); head.className="item";
+    head.innerHTML=`<div class="itemTop"><div><div class="itemWord">즐겨찾기</div><div class="muted">총 <b>${list.length}</b>개</div></div><span class="badge">FAV</span></div>
+      <div class="miniBtns"><button class="btn btn-soft" type="button" id="startFavQuizBtn">즐겨찾기 퀴즈</button><button class="btn btn-danger" type="button" id="clearFavBtn">전체 삭제</button></div>`;
     paneFav.appendChild(head);
-
-    el("startFavQuizBtn").onclick = () => {
-      if(list.length===0) return alert("즐겨찾기가 비어있어요!");
-      closeSheet();
-      startQuiz(list, quizState?.mode || (isLearnTab() ? "flash" : el("modeSelect").value));
-    };
-
-    el("clearFavBtn").onclick = () => {
-      if(confirm("즐겨찾기를 전부 삭제할까요?")){
-        save(FAVORITES_KEY, {});
-        renderFavList();
-      }
-    };
-
-    if(list.length===0){
-      const empty = document.createElement("div");
-      empty.className="item";
-      empty.innerHTML = `<div class="muted">☆/★ 눌러서 어려운 단어를 모아보세요.</div>`;
-      paneFav.appendChild(empty);
-      return;
-    }
-
+    el("startFavQuizBtn").onclick=()=>{ if(list.length===0) return alert("즐겨찾기가 비어있어요!"); closeSheet(); startQuiz(list,quizState?.mode||(isLearnTab()?"flash":el("modeSelect").value)); };
+    el("clearFavBtn").onclick=()=>{ if(confirm("즐겨찾기를 전부 삭제할까요?")){ save(FAVORITES_KEY,{}); renderFavList(); } };
+    if(list.length===0){ const empty=document.createElement("div"); empty.className="item"; empty.innerHTML=`<div class="muted">☆/★ 눌러서 어려운 단어를 모아보세요.</div>`; paneFav.appendChild(empty); return; }
     list.slice(0,300).forEach(x=>{
-      const it = document.createElement("div");
-      it.className="item";
-      it.innerHTML = `
-        <div class="itemTop">
-          <div>
-            <div class="itemWord"><a href="https://en.dict.naver.com/#/search?query=${encodeURIComponent(x.w)}" target="_blank" rel="noopener">${esc(x.w)}</a> <span class="muted">(${esc(dayLabel(x.day))} · #${esc(x.n)})</span></div>
-            <div class="muted">${esc(x.m)}</div>
-          </div>
-          <span class="badge">★</span>
-        </div>
-        <div class="miniBtns">
-          <button class="btn btn-soft" type="button">발음</button>
-          <button class="btn btn-ghost" type="button">사전</button>
-          <button class="btn btn-ghost" type="button">삭제</button>
-        </div>
-      `;
-      const [b1,b2,b3] = it.querySelectorAll("button");
-      b1.onclick = ()=> speak(x.w);
-      b2.onclick = ()=> openNaverDict(x.w);
-      b3.onclick = ()=>{
-        const m = favMap();
-        delete m[keyOf(x)];
-        save(FAVORITES_KEY, m);
-        renderFavList();
-      };
+      const it=document.createElement("div"); it.className="item";
+      it.innerHTML=`<div class="itemTop"><div>
+        <div class="itemWord"><a href="https://en.dict.naver.com/#/search?query=${encodeURIComponent(x.w)}" target="_blank" rel="noopener">${esc(x.w)}</a> <span class="muted">(${esc(dayLabel(x.day))} · #${esc(x.n)})</span></div>
+        <div class="muted">${esc(x.m)}</div></div><span class="badge">★</span></div>
+        <div class="miniBtns"><button class="btn btn-soft" type="button">발음</button><button class="btn btn-ghost" type="button">사전</button><button class="btn btn-ghost" type="button">삭제</button></div>`;
+      const [b1,b2,b3]=it.querySelectorAll("button");
+      b1.onclick=()=>speak(x.w); b2.onclick=()=>openNaverDict(x.w);
+      b3.onclick=()=>{ const m=favMap(); delete m[keyOf(x)]; save(FAVORITES_KEY,m); renderFavList(); };
       paneFav.appendChild(it);
     });
   }
 
-  // ---------------- 기록 ----------------
+  // ── 기록 ─────────────────────────────────────────────────────────
   function renderHistoryList(){
-    const sessions = load(SESSION_KEY, []);
-    paneHistory.innerHTML = "";
-
-    const head = document.createElement("div");
-    head.className = "item";
-    head.innerHTML = `
-      <div class="itemTop">
-        <div>
-          <div class="itemWord">기록</div>
-          <div class="muted">최근 ${Math.min(200, sessions.length)}개까지 저장</div>
-        </div>
-        <span class="badge">HISTORY</span>
-      </div>
-      <div class="miniBtns">
-        <button class="btn btn-danger" type="button" id="clearHistoryBtn">기록 삭제</button>
-      </div>
-    `;
+    const sessions=load(SESSION_KEY,[]), paneHistory=el("paneHistory"); paneHistory.innerHTML="";
+    const head=document.createElement("div"); head.className="item";
+    head.innerHTML=`<div class="itemTop"><div><div class="itemWord">기록</div><div class="muted">최근 ${Math.min(200,sessions.length)}개까지 저장</div></div><span class="badge">HISTORY</span></div>
+      <div class="miniBtns"><button class="btn btn-danger" type="button" id="clearHistoryBtn">기록 삭제</button></div>`;
     paneHistory.appendChild(head);
-
-    el("clearHistoryBtn").onclick = () => {
-      if(confirm("기록을 전부 삭제할까요?")) {
-        save(SESSION_KEY, []);
-        renderHistoryList();
-      }
-    };
-
-    if(sessions.length === 0){
-      const empty = document.createElement("div");
-      empty.className = "item";
-      empty.innerHTML = `<div class="muted">아직 기록이 없어요. 첫 스타트 끊어볼까요? 🚀</div>`;
-      paneHistory.appendChild(empty);
-      return;
-    }
-
-    sessions.forEach(s => {
-      const it = document.createElement("div");
-      it.className = "item";
-      const modeName = (s.mode === "flash" ? "암기(Flash)" : (s.mode === "mc" ? "4지선다" : "주관식"));
-      const dirName = (s.dir === "en2ko" ? "영→뜻" : "뜻→영");
-      it.innerHTML = `
-        <div class="itemTop">
-          <div>
-            <div class="itemWord">${esc(modeName)} · ${esc(dirName)}</div>
-            <div class="muted">${esc(fmtTime(s.ts))}</div>
-            <div class="muted">DAY: <b>${esc((s.days||[]).map(dayLabel).join(", "))}</b> · 범위: <b>${esc(s.ranges || "-")}</b></div>
-            <div class="muted">점수: <b>${esc(s.score)}</b> / ${esc(s.total)} · 오답: <b>${esc(s.wrongCount)}</b></div>
-          </div>
-          <span class="badge">${esc(s.total)}Q</span>
-        </div>
-      `;
+    el("clearHistoryBtn").onclick=()=>{ if(confirm("기록을 전부 삭제할까요?")){ save(SESSION_KEY,[]); renderHistoryList(); } };
+    if(sessions.length===0){ const empty=document.createElement("div"); empty.className="item"; empty.innerHTML=`<div class="muted">아직 기록이 없어요. 첫 스타트 끊어볼까요? 🚀</div>`; paneHistory.appendChild(empty); return; }
+    sessions.forEach(s=>{
+      const it=document.createElement("div"); it.className="item";
+      const modeName=s.mode==="flash"?"암기(Flash)":(s.mode==="mc"?"4지선다":"주관식");
+      it.innerHTML=`<div class="itemTop"><div>
+        <div class="itemWord">${esc(modeName)} · ${esc(s.dir==="en2ko"?"영→뜻":"뜻→영")}</div>
+        <div class="muted">${esc(fmtTime(s.ts))}</div>
+        <div class="muted">DAY: <b>${esc((s.days||[]).map(dayLabel).join(", "))}</b> · 범위: <b>${esc(s.ranges||"-")}</b></div>
+        <div class="muted">점수: <b>${esc(s.score)}</b> / ${esc(s.total)} · 오답: <b>${esc(s.wrongCount)}</b></div>
+        </div><span class="badge">${esc(s.total)}Q</span></div>`;
       paneHistory.appendChild(it);
     });
   }
 
-  // ---------------- 퀴즈 로직 ----------------
-  let pool = [], idx = 0, score = 0, wrong = [], locked = false;
-  let quizState = null; // mode/dir/days/ranges 고정
-  let reinsertCount = {}; // flash 재삽입 카운트
+  // ===================================================================
+  // 퀴즈 로직
+  // ===================================================================
+  let pool=[], idx=0, score=0, wrong=[], locked=false;
+  let quizState=null;
+  let reinsertCount={};
+  // ✅ BUG FIX: mcReinserted 추가 (MC/SA 재삽입 중복 방지)
+  let mcReinserted=new Set();
 
   function updateResumeButton(){
-    const hasResume = !!load(RESUME_KEY, null);
-    const resumeBtn = el("resumeBtn");
-    resumeBtn.disabled = !hasResume;
-    resumeBtn.textContent = hasResume ? "이어하기" : "이어하기 (저장된 기록 없음)";
+    const hasResume=!!load(RESUME_KEY,null), resumeBtn=el("resumeBtn");
+    resumeBtn.disabled=!hasResume;
+    resumeBtn.textContent=hasResume?"이어하기":"이어하기 (저장된 기록 없음)";
   }
-
   function saveResumeState(){
     if(el("quizOverlay").classList.contains("hidden")) return;
-    if(!quizState || !Array.isArray(pool) || pool.length===0) return;
-
-    const payload = {
-      poolKeys: pool.map(keyOf),
-      idx,
-      score,
-      wrongKeys: wrong.map(keyOf),
-      quizState,
-      reinsertCount,
-      timestamp: Date.now()
-    };
-
-    try {
-      localStorage.setItem(RESUME_KEY, JSON.stringify(payload));
+    if(!quizState||!Array.isArray(pool)||pool.length===0) return;
+    try{
+      localStorage.setItem(RESUME_KEY,JSON.stringify({poolKeys:pool.map(keyOf),idx,score,wrongKeys:wrong.map(keyOf),quizState,reinsertCount,timestamp:Date.now()}));
       updateResumeButton();
-    } catch (e) {
-      console.warn("resume save 실패", e);
-    }
+    }catch(e){ console.warn("resume save 실패",e); }
   }
-
-  function clearResumeState(){
-    localStorage.removeItem(RESUME_KEY);
-    updateResumeButton();
-  }
-
+  function clearResumeState(){ localStorage.removeItem(RESUME_KEY); updateResumeButton(); }
   function resumeQuiz(){
-    const r = load(RESUME_KEY, null);
-    if(!r || !Array.isArray(r.poolKeys) || !r.quizState) return alert("이어할 퀴즈가 없어요.");
-
-    const allWords = Object.values(load(WORDS_KEY, {})).flat();
-    const wordMap = new Map(allWords.map(it => [keyOf(it), it]));
-
-    pool = r.poolKeys.map(k => wordMap.get(k)).filter(Boolean);
-    if(pool.length === 0){
-      clearResumeState();
-      return alert("이어할 문제를 복원하지 못했어요. (데이터가 바뀌었을 수 있어요)");
-    }
-
-    const wrongKeys = Array.isArray(r.wrongKeys) ? r.wrongKeys : [];
-    wrong = wrongKeys.map(k => wordMap.get(k)).filter(Boolean);
-
-    idx = Number.isFinite(r.idx) ? r.idx : 0;
-    score = Number.isFinite(r.score) ? r.score : 0;
-    quizState = r.quizState;
-    reinsertCount = r.reinsertCount && typeof r.reinsertCount === "object" ? r.reinsertCount : {};
-    locked = false;
-
-    if(idx >= pool.length) idx = Math.max(0, pool.length - 1);
-    if(idx < 0) idx = 0;
-
-    el("retestBox").classList.add("hidden");
-    el("quizOverlay").classList.remove("hidden");
-    renderQuiz();
+    const r=load(RESUME_KEY,null);
+    if(!r||!Array.isArray(r.poolKeys)||!r.quizState) return alert("이어할 퀴즈가 없어요.");
+    const allWords=Object.values(load(WORDS_KEY,{})).flat();
+    const wordMap=new Map(allWords.map(it=>[keyOf(it),it]));
+    pool=r.poolKeys.map(k=>wordMap.get(k)).filter(Boolean);
+    if(pool.length===0){ clearResumeState(); return alert("이어할 문제를 복원하지 못했어요."); }
+    wrong=(r.wrongKeys||[]).map(k=>wordMap.get(k)).filter(Boolean);
+    idx=Number.isFinite(r.idx)?r.idx:0; score=Number.isFinite(r.score)?r.score:0;
+    quizState=r.quizState; reinsertCount=r.reinsertCount||{}; locked=false; mcReinserted=new Set();
+    if(idx>=pool.length) idx=Math.max(0,pool.length-1);
+    el("retestBox").classList.add("hidden"); el("quizOverlay").classList.remove("hidden"); renderQuiz();
   }
-
-  function markAttempt(){
-    bumpDaily(1);
-    updateDailyUI();
-    checkGoalAndCelebrate();
-  }
-
-  function wrongWeightForItem(item){
-    const stats = statsMap();
-    const k = keyOf(item);
-    const wrongCount = Number(stats[k]?.wrongCount || 0);
-    return 1 + Math.min(5, Math.max(0, wrongCount));
-  }
-
-  function weightedSampleWithoutReplacement(items, takeN, weightFn){
-    const src = (items || []).slice();
-    const out = [];
-    const n = Math.min(Math.max(0, takeN), src.length);
-    for(let c=0; c<n; c++){
-      let total = 0;
-      for(const it of src) total += Math.max(0.000001, Number(weightFn(it)) || 1);
-      let r = Math.random() * total;
-      let pickIdx = 0;
-      for(let i=0;i<src.length;i++){
-        r -= Math.max(0.000001, Number(weightFn(src[i])) || 1);
-        if(r <= 0){ pickIdx = i; break; }
-      }
-      out.push(src.splice(pickIdx, 1)[0]);
+  function markAttempt(){ bumpDaily(1); updateDailyUI(); checkGoalAndCelebrate(); }
+  function wrongWeightForItem(item){ const wc=Number(statsMap()[keyOf(item)]?.wrongCount||0); return 1+Math.min(5,Math.max(0,wc)); }
+  function weightedSampleWithoutReplacement(items,takeN,weightFn){
+    const src=(items||[]).slice(), out=[], n=Math.min(Math.max(0,takeN),src.length);
+    for(let c=0;c<n;c++){
+      let total=0; for(const it of src) total+=Math.max(0.000001,Number(weightFn(it))||1);
+      let r=Math.random()*total, pickIdx=0;
+      for(let i=0;i<src.length;i++){ r-=Math.max(0.000001,Number(weightFn(src[i]))||1); if(r<=0){pickIdx=i;break;} }
+      out.push(src.splice(pickIdx,1)[0]);
     }
     return out;
   }
 
-  function pickQuizItems(source, count){
-    const n = Math.min(count, source.length);
-    if(!el("wrongFirstToggle").checked){
-      return source.slice().sort(() => Math.random() - 0.5).slice(0, n);
+  function pickQuizItems(source,count){
+    const cfg=loadCfg();
+    const n=Math.min(count,source.length);
+
+    // ✅ 설정: 순서대로 vs 랜덤
+    if(cfg.orderMode==="sequential"){
+      const sorted=[...source].sort((a,b)=>a.day.localeCompare(b.day,undefined,{numeric:true})||(a.n-b.n));
+      return sorted.slice(0,n);
     }
-    return weightedSampleWithoutReplacement(source, n, wrongWeightForItem);
+    // 랜덤
+    if(!el("wrongFirstToggle").checked) return source.slice().sort(()=>Math.random()-0.5).slice(0,n);
+    return weightedSampleWithoutReplacement(source,n,wrongWeightForItem);
   }
 
-  function startQuiz(customPool=null, forceMode=null) {
-    clearAutoNext();
-    reinsertCount = {};
-
-    const dataNow = load(WORDS_KEY, {});
-    if (!dataNow || Object.keys(dataNow).length === 0) {
-      alert("단어 데이터가 없어요!\nCSV 로딩이 실패했거나 아직 로딩 중일 수 있어요.\n\n/ toeic_words_day1_30.csv 가 열리는지 확인해 주세요.");
-      return;
-    }
-
-    if (!el("cb_core").checked && !el("cb_basic").checked && !el("cb_800").checked && !el("cb_900").checked) {
-      alert("범위를 최소 1개 이상 선택해야 시작돼요! (핵심/기초/800/900)");
-      return;
-    }
-
-    const { targetDays, filtered } = buildPoolFromSelection();
-    const usePool = customPool || filtered;
-    if (usePool.length === 0) return alert("선택한 범위에 단어가 없습니다!");
-
-    const fixedMode = forceMode || (isLearnTab() ? "flash" : el("modeSelect").value);
-    const fixedDir = el("dirSelect").value;
-
-    const count = parseInt(el("countSelect").value, 10);
-    pool = pickQuizItems(usePool, Number.isFinite(count) ? count : usePool.length);
-
-    idx = 0; score = 0; wrong = []; locked = false;
-    quizState = { mode: fixedMode, dir: fixedDir, days: targetDays, ranges: rangeLabel(), count: pool.length };
-
-    el("retestBox").classList.add("hidden");
-    el("quizOverlay").classList.remove("hidden");
-    renderQuiz();
+  function startQuiz(customPool=null,forceMode=null){
+    clearAutoNext(); reinsertCount={}; mcReinserted=new Set();
+    const dataNow=load(WORDS_KEY,{});
+    if(!dataNow||Object.keys(dataNow).length===0) return alert("단어 데이터가 없어요!");
+    if(!el("cb_core").checked&&!el("cb_basic").checked&&!el("cb_800").checked&&!el("cb_900").checked) return alert("범위를 최소 1개 이상 선택해야 시작돼요!");
+    const {targetDays,filtered}=buildPoolFromSelection();
+    const usePool=customPool||filtered;
+    if(usePool.length===0) return alert("선택한 범위에 단어가 없습니다!");
+    const fixedMode=forceMode||(isLearnTab()?"flash":el("modeSelect").value);
+    const fixedDir=el("dirSelect").value;
+    const count=parseInt(el("countSelect").value,10);
+    pool=pickQuizItems(usePool,Number.isFinite(count)?count:usePool.length);
+    idx=0; score=0; wrong=[]; locked=false;
+    quizState={mode:fixedMode,dir:fixedDir,days:targetDays,ranges:rangeLabel(),count:pool.length};
+    el("retestBox").classList.add("hidden"); el("quizOverlay").classList.remove("hidden"); renderQuiz();
   }
 
-  startBtn.onclick = () => {
-    if(load(RANDOM_DAY_AUTO_KEY, false) && el("randomDayToggle").checked) applyRandomDays();
-    startQuiz();
-  };
-  el("resumeBtn").onclick = resumeQuiz;
-
-  el("question").onclick = () => {
-    const word = pool[idx]?.w;
-    if(word) openNaverDict(word);
-  };
+  startBtn.onclick=()=>{ if(load(RANDOM_DAY_AUTO_KEY,false)&&el("randomDayToggle").checked) applyRandomDays(); startQuiz(); };
+  el("resumeBtn").onclick=resumeQuiz;
+  el("question").onclick=()=>{ const word=pool[idx]?.w; if(word) openNaverDict(word); };
 
   function setQuizHeaderScope(){
-    const daysText = (quizState?.days || []).map(dayLabel).join(", ") || "-";
-    const rangeText = quizState?.ranges || "-";
-    const cnt = quizState?.count ?? pool.length;
-    el("quizScopeLine").textContent = `DAY: ${daysText} · 범위: ${rangeText} · 문제수: ${cnt}`;
+    const daysText=(quizState?.days||[]).map(dayLabel).join(", ")||"-";
+    el("quizScopeLine").textContent=`DAY: ${daysText} · 범위: ${quizState?.ranges||"-"} · 문제수: ${quizState?.count??pool.length}`;
   }
-
-  function getSpeakTextForCurrentQuestion(){
-    const item = pool?.[idx];
-    if(!item) return "";
-    return item.w || "";
-  }
-
+  function getSpeakTextForCurrentQuestion(){ return pool?.[idx]?.w||""; }
   function isWrongMarked(item){
-    if(!item) return false;
-    const k = keyOf(item);
-    if((wrong || []).some(w => keyOf(w) === k)) return true;
-    const stats = statsMap();
-    const wc = Number(stats[k]?.wrongCount ?? 0);
-    return Number.isFinite(wc) && wc > 0;
+    if(!item||!loadCfg().wrongMark) return false;  // ✅ 설정 반영
+    if((wrong||[]).some(w=>keyOf(w)===keyOf(item))) return true;
+    return Number(statsMap()[keyOf(item)]?.wrongCount??0)>0;
   }
 
-  el("quizSpeakBtn").onclick = () => {
-    const t = getSpeakTextForCurrentQuestion();
-    if(t) speak(t);
-  };
-
+  el("quizSpeakBtn").onclick=()=>{ const t=getSpeakTextForCurrentQuestion(); if(t) speak(t); };
   function updateQuizQuickButtons(item){
-    const word = item?.w || "";
-    el("quizDictBtn").onclick = () => word && openNaverDict(word);
-
-    const favBtn = el("quizFavBtn");
-    favBtn.textContent = item && isFav(item) ? "★" : "☆";
-    favBtn.onclick = () => {
-      if(!item) return;
-      toggleFav(item);
-      favBtn.textContent = isFav(item) ? "★" : "☆";
-    };
+    const word=item?.w||"";
+    el("quizDictBtn").onclick=()=>word&&openNaverDict(word);
+    const favBtn=el("quizFavBtn");
+    favBtn.textContent=item&&isFav(item)?"★":"☆";
+    favBtn.onclick=()=>{ if(!item) return; toggleFav(item); favBtn.textContent=isFav(item)?"★":"☆"; };
   }
 
-  function renderQuiz() {
-    clearAutoNext();
+  function renderQuiz(){
+    clearAutoNext(); locked=false;
+    const item=pool[idx]; if(!item){finishQuiz();return;}
+    const {mode,dir}=quizState;
+    const cfg=loadCfg();
 
-    locked = false;
-    const item = pool[idx];
-    if(!item){ finishQuiz(); return; }
+    el("quizMeta").textContent=`(${mode==="flash"?"Flash":(mode==="mc"?"MC":"SA")} · ${dir==="en2ko"?"영→뜻":"뜻→영"})`;
+    setQuizHeaderScope(); updateQuizQuickButtons(item);
+    el("progressPill").textContent=`${idx+1}/${pool.length}`;
+    el("progressBar").style.width=`${((idx+1)/pool.length)*100}%`;
+    el("score").textContent=score; el("wrongN").textContent=wrong.length;
+    el("feedback").textContent=""; el("oxMark").textContent=""; el("nextBtn").classList.add("hidden");
 
-    const mode = quizState.mode;
-    const dir = quizState.dir;
+    const qText=dir==="en2ko"?item.w:item.m;
+    const wrongPrefix=isWrongMarked(item)?"🟥 ":"";
+    el("question").textContent=`${wrongPrefix}${qText}`;
+    if(dir==="en2ko") speak(item.w);
 
-    el("quizMeta").textContent = `(${mode === "flash" ? "Flash" : (mode === "mc" ? "MC" : "SA")} · ${dir === "en2ko" ? "영→뜻" : "뜻→영"})`;
-    setQuizHeaderScope();
-    updateQuizQuickButtons(item);
+    ["choices","shortAnswer","flashAnswerBox","flashModeActions"].forEach(id=>el(id).classList.add("hidden"));
+    el("flashAnswerText").classList.add("hidden"); el("flashTapHint").classList.remove("hidden");
 
-    el("progressPill").textContent = `${idx + 1}/${pool.length}`;
-    el("progressBar").style.width = `${((idx + 1) / pool.length) * 100}%`;
-    el("score").textContent = score;
-    el("wrongN").textContent = wrong.length;
-    el("feedback").textContent = "";
-    el("oxMark").textContent = "";
-    el("nextBtn").classList.add("hidden");
-
-    const qText = (dir === "en2ko") ? item.w : item.m;
-    const wrongPrefix = isWrongMarked(item) ? "🟥 오답 " : "";
-    el("question").textContent = `${wrongPrefix}${qText}`;
-
-    if (dir === "en2ko") speak(item.w);
-
-    el("choices").classList.add("hidden");
-    el("shortAnswer").classList.add("hidden");
-    el("flashAnswerBox").classList.add("hidden");
-    el("flashModeActions").classList.add("hidden");
-    el("flashAnswerText").classList.add("hidden");
-    el("flashTapHint").classList.remove("hidden");
-
-    if (mode === "mc") {
-      el("choices").classList.remove("hidden");
-      renderMC(item, dir);
-    } else if (mode === "sa") {
-      el("shortAnswer").classList.remove("hidden");
-      el("answerInput").value = "";
-      el("answerInput").focus();
+    if(mode==="mc"){
+      el("choices").classList.remove("hidden"); renderMC(item,dir);
+    } else if(mode==="sa"){
+      el("shortAnswer").classList.remove("hidden"); el("answerInput").value=""; el("answerInput").focus();
     } else {
-      const flashOff = !!load(FLASH_OFF_KEY, false);
+      const flashOff=!!load(FLASH_OFF_KEY,false);
       el("flashAnswerBox").classList.remove("hidden");
-      el("flashAnswerText").textContent = (dir === "en2ko") ? item.m : item.w;
+      el("flashAnswerText").textContent=dir==="en2ko"?item.m:item.w;
       if(flashOff){
+        // ✅ BUG FIX: flashOff 시 정답 즉시 표시 + 버튼도 즉시 표시
         el("flashAnswerText").classList.remove("hidden");
         el("flashTapHint").classList.add("hidden");
+        el("flashModeActions").classList.remove("hidden");  // ← 버튼도 바로 보여줌
       }
     }
     saveResumeState();
   }
 
-  function renderMC(item, dir){
-    const data = load(WORDS_KEY, {});
-    const all = Object.values(data).flat();
-    const correct = (dir === "en2ko" ? item.m : item.w);
-
-    const candidates = Array.from(new Set(
-      all.map(x => (dir === "en2ko" ? x.m : x.w))
-         .map(v => String(v ?? "").trim())
-         .filter(v => v && v !== correct)
-    ));
-
-    for(let i=candidates.length-1;i>0;i--){
-      const j = Math.floor(Math.random()*(i+1));
-      [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+  function renderMC(item,dir){
+    const data=load(WORDS_KEY,{}), all=Object.values(data).flat();
+    const correct=dir==="en2ko"?item.m:item.w;
+    const cfg=loadCfg();
+    const candidates=Array.from(new Set(all.map(x=>(dir==="en2ko"?x.m:x.w)).map(v=>String(v??"").trim()).filter(v=>v&&v!==correct)));
+    for(let i=candidates.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [candidates[i],candidates[j]]=[candidates[j],candidates[i]]; }
+    const choices=[correct,...candidates.slice(0,3)];
+    while(choices.length<4) choices.push("—");
+    // ✅ 설정: 보기 뒤섞기 여부
+    if(cfg.shuffleChoices){
+      for(let i=choices.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [choices[i],choices[j]]=[choices[j],choices[i]]; }
     }
-
-    const picks = candidates.slice(0, 3);
-    const choices = [correct, ...picks];
-    while(choices.length < 4) choices.push("—");
-
-    for(let i=choices.length-1;i>0;i--){
-      const j = Math.floor(Math.random()*(i+1));
-      [choices[i], choices[j]] = [choices[j], choices[i]];
-    }
-
-    el("choices").innerHTML = "";
-    choices.forEach(c => {
-      const b = document.createElement("button");
-      b.type="button";
-      b.textContent = c;
-      b.onclick = () => judge(c === correct);
+    el("choices").innerHTML="";
+    choices.forEach(c=>{
+      const b=document.createElement("button"); b.type="button"; b.textContent=c;
+      b.onclick=()=>judge(c===correct);
       el("choices").appendChild(b);
     });
   }
 
-  function judge(isCorrect) {
-    if (locked) return;
-    locked = true;
-
-    clearAutoNext();
-
-    const item = pool[idx];
-    const modal = el("quizModal");
-
+  function judge(isCorrect){
+    if(locked) return;
+    locked=true; clearAutoNext();
+    const item=pool[idx], modal=el("quizModal"), cfg=loadCfg();
     markAttempt();
-
-    if (isCorrect) {
-      score++;
-      saveCorrectStat(item);
-      modal.classList.add("flash-ok");
-      setTimeout(() => modal.classList.remove("flash-ok"), 400);
-      el("oxMark").innerHTML = "<span class='ok'>O</span>";
-      el("feedback").innerHTML = "<span class='ok'>정답입니다!</span>";
+    if(isCorrect){
+      score++; saveCorrectStat(item);
+      modal.classList.add("flash-ok"); setTimeout(()=>modal.classList.remove("flash-ok"),400);
+      el("oxMark").innerHTML="<span class='ok'>O</span>"; el("feedback").innerHTML="<span class='ok'>정답입니다!</span>";
     } else {
-      wrong.push(item);
+      // ✅ BUG FIX: wrong 중복 push 방지 (keyOf 기준)
+      const k=keyOf(item);
+      if(!(wrong||[]).some(w=>keyOf(w)===k)) wrong.push(item);
       saveWrongStat(item);
+      modal.classList.add("flash-bad"); setTimeout(()=>modal.classList.remove("flash-bad"),400);
+      const ans=quizState.dir==="en2ko"?item.m:item.w;
+      el("oxMark").innerHTML="<span class='bad'>X</span>";
+      el("feedback").innerHTML=`<span class='bad'>오답!</span> 정답: <b>${esc(ans)}</b>`;
 
-      modal.classList.add("flash-bad");
-      setTimeout(() => modal.classList.remove("flash-bad"), 400);
-
-      const ans = (quizState.dir === "en2ko" ? item.m : item.w);
-      el("oxMark").innerHTML = "<span class='bad'>X</span>";
-      el("feedback").innerHTML = `<span class='bad'>오답!</span> 정답: <b>${esc(ans)}</b>`;
+      // ✅ 설정: MC/SA 오답 재삽입
+      if(cfg.mcReinsert&&(quizState.mode==="mc"||quizState.mode==="sa")&&!mcReinserted.has(k)){
+        mcReinserted.add(k);
+        const remaining=pool.length-(idx+1);
+        const offset=remaining>0?(Math.floor(Math.random()*remaining)+1):1;
+        pool.splice(idx+offset,0,item);
+      }
     }
-
     el("nextBtn").classList.remove("hidden");
     saveResumeState();
 
-    autoNextTimer = setTimeout(() => {
-      autoNextTimer = null;
-      goNext();
-    }, 1200);
+    // ✅ 설정: autoNextMs
+    const delay=cfg.autoNextMs;
+    if(delay>0){
+      autoNextTimer=setTimeout(()=>{ autoNextTimer=null; goNext(); },delay);
+    }
   }
 
   function finishQuiz(){
     clearAutoNext();
-
-    el("question").textContent = "학습 완료! 🎉";
-    el("oxMark").textContent = "";
-    el("feedback").innerHTML = `최종 점수: <b>${score}</b> / ${pool.length}`;
-    el("progressBar").style.width = "100%";
-    el("choices").classList.add("hidden");
-    el("shortAnswer").classList.add("hidden");
-    el("flashAnswerBox").classList.add("hidden");
-    el("flashModeActions").classList.add("hidden");
-    el("nextBtn").classList.add("hidden");
-    locked = true;
-
-    if (wrong.length > 0) el("retestBox").classList.remove("hidden");
-
-    recordSession({
-      mode: quizState.mode,
-      dir: quizState.dir,
-      total: pool.length,
-      score,
-      wrongCount: wrong.length,
-      days: quizState.days || [],
-      ranges: quizState.ranges || "-"
-    });
-
+    el("question").textContent="학습 완료! 🎉"; el("oxMark").textContent="";
+    el("feedback").innerHTML=`최종 점수: <b>${score}</b> / ${pool.length}`;
+    el("progressBar").style.width="100%";
+    ["choices","shortAnswer","flashAnswerBox","flashModeActions","nextBtn"].forEach(id=>el(id).classList.add("hidden"));
+    locked=true;
+    if(wrong.length>0) el("retestBox").classList.remove("hidden");
+    recordSession({mode:quizState.mode,dir:quizState.dir,total:pool.length,score,wrongCount:wrong.length,days:quizState.days||[],ranges:quizState.ranges||"-"});
     clearResumeState();
   }
 
-  function goNext() {
+  function goNext(){
     clearAutoNext();
-    if(idx >= pool.length - 1){
-      idx = pool.length;
-      finishQuiz();
-      return;
-    }
-    idx++;
-    renderQuiz();
+    if(idx>=pool.length-1){ idx=pool.length; finishQuiz(); return; }
+    idx++; renderQuiz();
   }
 
-  el("nextBtn").onclick = () => {
+  el("nextBtn").onclick=()=>{ clearAutoNext(); if(locked) goNext(); };
+
+  // Flash 전용 ─────────────────────────────────────────────────────────
+  el("flashAnswerBox").onclick=()=>{
+    const cfg=loadCfg();
+    const delay=cfg.flashRevealDelay||0;
+    const reveal=()=>{
+      el("flashAnswerText").classList.remove("hidden");
+      el("flashTapHint").classList.add("hidden");
+      el("flashModeActions").classList.remove("hidden");
+      // ✅ 설정: 정답 공개 시 발음 자동 재생
+      if(cfg.speakOnReveal){ const t=getSpeakTextForCurrentQuestion(); if(t) speak(t); }
+    };
+    if(delay>0) setTimeout(reveal,delay); else reveal();
+  };
+
+  el("knowBtn").onclick=()=>{ markAttempt(); const item=pool[idx]; score++; if(item) saveCorrectStat(item); saveResumeState(); goNext(); };
+  el("dontKnowBtn").onclick=()=>{
     clearAutoNext();
-    if (locked) goNext();
-  };
+    const item=pool[idx], cfg=loadCfg();
+    // ✅ BUG FIX: wrong 중복 push 방지
+    const k=keyOf(item);
+    if(!(wrong||[]).some(w=>keyOf(w)===k)) wrong.push(item);
+    saveWrongStat(item); markAttempt();
+    el("wrongN").textContent=wrong.length;
 
-  // Flash 전용
-  el("flashAnswerBox").onclick = () => {
-    el("flashAnswerText").classList.remove("hidden");
-    el("flashTapHint").classList.add("hidden");
-    el("flashModeActions").classList.remove("hidden");
-  };
-
-  el("knowBtn").onclick = () => {
-    markAttempt();
-    const item = pool[idx];
-    score++;
-    if(item) saveCorrectStat(item);
-    saveResumeState();
-    goNext();
-  };
-
-  el("dontKnowBtn").onclick = () => {
-    clearAutoNext();
-
-    const item = pool[idx];
-    wrong.push(item);
-    saveWrongStat(item);
-    markAttempt();
-
-    const k = keyOf(item);
-    reinsertCount[k] = (reinsertCount[k] || 0) + 1;
-
-    if(reinsertCount[k] <= REINSERT_LIMIT){
-      const remaining = pool.length - (idx + 1);
-      const offset = remaining > 0 ? (Math.floor(Math.random() * remaining) + 1) : 1;
-      pool.splice(idx + offset, 0, item);
-      el("feedback").innerHTML = `남은 문제 사이에 추가되었습니다. (재삽입 ${reinsertCount[k]}/${REINSERT_LIMIT})`;
-    } else {
-      el("feedback").innerHTML = `재삽입 한도 도달! 다음으로 넘어갑니다.`;
+    reinsertCount[k]=(reinsertCount[k]||0)+1;
+    const limit=cfg.reinsertLimit;  // ✅ 설정에서 읽음
+    if(limit>0&&reinsertCount[k]<=limit){
+      const remaining=pool.length-(idx+1);
+      const offset=remaining>0?(Math.floor(Math.random()*remaining)+1):1;
+      pool.splice(idx+offset,0,item);
+      el("feedback").innerHTML=`남은 문제 사이에 재삽입되었습니다. (${reinsertCount[k]}/${limit})`;
+    } else if(limit>0){
+      el("feedback").innerHTML="재삽입 한도 도달! 다음으로 넘어갑니다.";
     }
-    saveResumeState();
-
-    setTimeout(goNext, 500);
+    saveResumeState(); setTimeout(goNext,500);
   };
 
-  // 주관식
-  el("submitAnswerBtn").onclick = () => {
-    const user = normalizeAnswer(el("answerInput").value);
-    if(!user) return alert("정답을 입력하세요!");
-
-    const correctRaw = (quizState.dir === "en2ko" ? pool[idx].m : pool[idx].w);
-    const correct = normalizeAnswer(correctRaw);
-
-    const parts = correct
-      .split(/[;,/]/g)
-      .map(x => normalizeAnswer(x))
-      .filter(Boolean);
-
-    const isCorrect = parts.length ? parts.includes(user) : (user === correct);
-    judge(isCorrect);
+  // 주관식 ─────────────────────────────────────────────────────────────
+  el("submitAnswerBtn").onclick=()=>{
+    const user=normalizeAnswer(el("answerInput").value); if(!user) return alert("정답을 입력하세요!");
+    const correctRaw=quizState.dir==="en2ko"?pool[idx].m:pool[idx].w;
+    const correct=normalizeAnswer(correctRaw);
+    const parts=correct.split(/[;,/]/g).map(x=>normalizeAnswer(x)).filter(Boolean);
+    judge(parts.length?parts.includes(user):(user===correct));
   };
-
-  el("answerInput").addEventListener("keydown", (e) => {
-    if(e.key === "Enter") el("submitAnswerBtn").click();
-  });
-
-  el("showAnswerBtn").onclick = () => {
+  el("answerInput").addEventListener("keydown",(e)=>{ if(e.key==="Enter") el("submitAnswerBtn").click(); });
+  el("showAnswerBtn").onclick=()=>{
     clearAutoNext();
-    const ans = (quizState.dir === "en2ko" ? pool[idx].m : pool[idx].w);
-    el("feedback").innerHTML = `정답: <b>${esc(ans)}</b>`;
-    el("nextBtn").classList.remove("hidden");
-    locked = true;
-    saveResumeState();
+    el("feedback").innerHTML=`정답: <b>${esc(quizState.dir==="en2ko"?pool[idx].m:pool[idx].w)}</b>`;
+    el("nextBtn").classList.remove("hidden"); locked=true; saveResumeState();
   };
 
   // 틀린 것만 다시 풀기
-  el("retestAllBtn").onclick = () => {
-    if(wrong.length === 0) return;
-    startQuiz(wrong, quizState.mode);
-  };
+  el("retestAllBtn").onclick=()=>{ if(wrong.length===0) return; startQuiz(wrong,quizState.mode); };
 
-  // 오답만 퀴즈(시트에서)
+  // 오답만 퀴즈 (시트)
   function startWrongOnlyQuiz(){
-    const stats = statsMap();
-    const list = Object.values(stats).filter(x => (x?.wrongCount || 0) > 0);
-    if(list.length === 0) return alert("오답노트가 비어있어요!");
-    closeSheet();
-    startQuiz(list, quizState?.mode || (isLearnTab() ? "flash" : el("modeSelect").value));
+    const list=Object.values(statsMap()).filter(x=>(x?.wrongCount||0)>0);
+    if(list.length===0) return alert("오답노트가 비어있어요!");
+    closeSheet(); startQuiz(list,quizState?.mode||(isLearnTab()?"flash":el("modeSelect").value));
   }
 
   // 끝내기
-  el("stopBtn").onclick = () => {
-    clearAutoNext();
-    saveResumeState();
-    el("quizOverlay").classList.add("hidden");
-    updateResumeButton();
-  };
+  el("stopBtn").onclick=()=>{ clearAutoNext(); saveResumeState(); el("quizOverlay").classList.add("hidden"); updateResumeButton(); };
+  window.addEventListener("beforeunload",()=>saveResumeState());
 
-  window.addEventListener("beforeunload", () => {
-    saveResumeState();
-  });
-
-  document.addEventListener("keydown", (e)=>{
-    if(e.key.toLowerCase()!=="v") return;
+  // 키보드 단축키
+  document.addEventListener("keydown",(e)=>{
     if(el("quizOverlay").classList.contains("hidden")) return;
-    const ai = el("answerInput");
-    if(ai && document.activeElement===ai) return;
-    const t = getSpeakTextForCurrentQuestion();
-    if(t) speak(t);
+    if(e.key.toLowerCase()==="v"){ const ai=el("answerInput"); if(ai&&document.activeElement===ai) return; const t=getSpeakTextForCurrentQuestion(); if(t) speak(t); }
+    if(e.key==="Escape"){ clearAutoNext(); saveResumeState(); el("quizOverlay").classList.add("hidden"); updateResumeButton(); }
+  });
+  document.addEventListener("keydown",(e)=>{
+    if(e.key==="Escape"&&!overlay.classList.contains("hidden")) closeSheet();
+    if(e.key==="Escape"&&!el("settingsOverlay").classList.contains("hidden")) el("settingsOverlay").classList.add("hidden");
   });
 
-  // ESC로 닫기
-  document.addEventListener("keydown", (e) => {
-    if(e.key !== "Escape") return;
-    if(!el("quizOverlay").classList.contains("hidden")) { clearAutoNext(); saveResumeState(); el("quizOverlay").classList.add("hidden"); updateResumeButton(); }
-    if(!overlay.classList.contains("hidden")) closeSheet();
-  });
-
-  // ---------------- 초기 로드 ----------------
-  // 초기 상태 Learn 고정
+  // ===================================================================
+  // 초기 로드
+  // ===================================================================
   modeField.classList.add("hidden");
-  el("modeSelect").value = "flash";
+  el("modeSelect").value="flash";
   showMainPanel("learn");
   updateScopeBar();
   ensureLoaded();

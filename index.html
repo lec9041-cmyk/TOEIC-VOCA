@@ -493,7 +493,7 @@
       <div class="field hidden" id="modeField">
         <label>시험 모드</label>
         <select id="modeSelect">
-          <option value="flash">속독 암기 (Flashcard)</option>
+          <option id="modeFlashOption" value="flash">속독 암기 (Flashcard)</option>
           <option value="mc">4지선다</option>
           <option value="sa">주관식</option>
         </select>
@@ -1012,15 +1012,21 @@
   // ===================================================================
   const mainTabLearn=el("mainTabLearn"), mainTabTest=el("mainTabTest"), mainTabStats=el("mainTabStats");
   const modeField=el("modeField"), startBtn=el("startBtn");
+  const modeFlashOption=el("modeFlashOption");
   const learnSettingsCard=el("learnSettingsCard"), bottomToolsCard=el("bottomToolsCard"), statsCard=el("statsCard");
   let statsViewY=new Date().getFullYear(), statsViewM=new Date().getMonth(), calClickBound=false;
   function isLearnTab(){ return mainTabLearn.classList.contains("active"); }
+  function setFlashOptionEnabled(enabled){
+    if(!modeFlashOption) return;
+    modeFlashOption.disabled=!enabled;
+    modeFlashOption.hidden=!enabled;
+  }
   function showMainPanel(panel){
     const isStats=panel==="stats";
     mainTabLearn.classList.toggle("active",panel==="learn"); mainTabTest.classList.toggle("active",panel==="test"); mainTabStats.classList.toggle("active",isStats);
     learnSettingsCard.classList.toggle("hidden",isStats); bottomToolsCard.classList.toggle("hidden",isStats); statsCard.classList.toggle("hidden",!isStats);
-    if(panel==="learn"){ el("modeSelect").value="flash"; modeField.classList.add("hidden"); if(!startBtn.disabled) setStartButtonState(false); }
-    if(panel==="test"){ modeField.classList.remove("hidden"); if(el("modeSelect").value==="flash")el("modeSelect").value="mc"; if(!startBtn.disabled) setStartButtonState(false); }
+    if(panel==="learn"){ setFlashOptionEnabled(true); el("modeSelect").value="flash"; modeField.classList.add("hidden"); if(!startBtn.disabled) setStartButtonState(false); }
+    if(panel==="test"){ setFlashOptionEnabled(false); modeField.classList.remove("hidden"); if(el("modeSelect").value==="flash")el("modeSelect").value="mc"; if(!startBtn.disabled) setStartButtonState(false); }
     if(panel==="stats") renderMainCalendarSummary(statsViewY,statsViewM);
     updateFlashOffToggleState(); updateScopeBar();
   }
@@ -1166,7 +1172,10 @@
   el("wrongFirstToggle").checked=!!load(WRONG_FIRST_KEY,false);
   el("wrongFirstToggle").onchange=(e)=>{ save(WRONG_FIRST_KEY,!!e.target.checked); };
   function updateFlashOffToggleState(){ const mode=isLearnTab()?"flash":el("modeSelect").value; el("flashOffToggle").disabled=mode!=="flash"; el("flashOffHint").classList.toggle("hidden",mode==="flash"); }
-  el("modeSelect").addEventListener("change",()=>{ updateFlashOffToggleState(); updateScopeBar(); });
+  el("modeSelect").addEventListener("change",()=>{
+    if(!isLearnTab() && el("modeSelect").value==="flash") el("modeSelect").value="mc";
+    updateFlashOffToggleState(); updateScopeBar();
+  });
   el("flashOffToggle").checked=!!load(FLASH_OFF_KEY,false);
   el("flashOffToggle").onchange=(e)=>{ save(FLASH_OFF_KEY,!!e.target.checked); };
 

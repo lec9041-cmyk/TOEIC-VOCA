@@ -491,141 +491,173 @@
     }
 
 
-    /* ====== iOS-style Mobile Redesign Overrides ====== */
+    /* ====== 2025 Mobile Learning UI Redesign ====== */
     :root{
-      --app-bg:#f2f4f8;
+      --primary:#2563eb;
+      --gray-50:#f8fafc;
+      --gray-100:#f1f5f9;
+      --gray-200:#e5e7eb;
+      --text:#0f172a;
+      --muted:#64748b;
       --card-bg:#ffffff;
-      --card-shadow:0 10px 30px rgba(15,23,42,.08);
-      --card-shadow-strong:0 14px 36px rgba(15,23,42,.12);
-      --blue:#2563eb;
-      --blue-2:#3b82f6;
-      --green-soft:#dcfce7;
-      --red-soft:#fee2e2;
+      --spacing-8:8px;
+      --spacing-12:12px;
+      --spacing-16:16px;
+      --spacing-24:24px;
+      --spacing-32:32px;
+      --radius-12:12px;
+      --radius-18:18px;
+      --radius-24:24px;
+      --card-shadow:0 10px 30px rgba(0,0,0,0.06);
+      --card-shadow-hover:0 14px 36px rgba(0,0,0,0.09);
     }
-    body{
-      background: radial-gradient(circle at top, #f8fafc 0%, var(--app-bg) 42%, #eef2f7 100%);
-      margin:0 auto;
-      padding:20px 14px calc(96px + env(safe-area-inset-bottom));
-      max-width:700px;
-      line-height:1.45;
-    }
-    h1{font-size:28px;margin:8px 4px 14px;font-weight:900;letter-spacing:-.02em;}
-    .sub{margin:0 4px 18px;font-size:13px;}
 
-    .card{
-      border:0;
-      border-radius:24px;
-      padding:20px;
-      margin:0 0 16px;
-      background:var(--card-bg);
-      box-shadow:var(--card-shadow);
+    body{
+      margin:0 auto;
+      max-width:720px;
+      padding:var(--spacing-24) var(--spacing-16) calc(104px + env(safe-area-inset-bottom));
+      background:linear-gradient(180deg,#fbfdff 0%, var(--gray-50) 100%);
+      color:var(--text);
+      line-height:1.45;
+      letter-spacing:-0.01em;
     }
-    .card h2{font-size:17px;margin-bottom:14px;letter-spacing:-.01em;}
-    .grid,.chips,.actions,.choices,.field,.sheetBody,#quizModalBody,#settingsBody,#dayPickBody{gap:14px;}
-    .row{gap:12px;}
+    h1{font-size:28px;margin:0 0 var(--spacing-8);font-weight:800;}
+    .sub{margin:0 0 var(--spacing-24);font-size:13px;color:var(--muted);}
 
     .main-tabs{
       position:sticky;
-      top:10px;
+      top:12px;
       z-index:10;
-      gap:8px;
-      padding:6px;
-      margin-bottom:16px;
-      border:0;
-      border-radius:20px;
-      background:#e9edf4;
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.85);
-      backdrop-filter: blur(8px);
+      display:flex;
+      gap:var(--spacing-8);
+      margin-bottom:var(--spacing-16);
+      padding:var(--spacing-8);
+      border-radius:var(--radius-24);
+      border:1px solid var(--gray-200);
+      background:var(--gray-100);
+      transition:0.15s ease;
     }
     .main-tab{
-      border-radius:15px;
-      padding:13px 8px;
-      color:#64748b;
+      flex:1;
+      min-width:0;
+      border-radius:var(--radius-18);
+      padding:14px var(--spacing-8);
       font-size:14px;
-      font-weight:800;
+      font-weight:700;
+      color:#475569;
+      transition:0.15s ease;
     }
     .main-tab.active{
       background:#fff;
-      color:#1e3a8a;
-      box-shadow:0 6px 16px rgba(15,23,42,.10);
+      color:var(--primary);
+      box-shadow:0 8px 20px rgba(0,0,0,0.08);
     }
+
+    .card{
+      background:var(--card-bg);
+      border:1px solid var(--gray-200);
+      border-radius:var(--radius-24);
+      padding:20px;
+      margin:0 0 var(--spacing-16);
+      box-shadow:var(--card-shadow);
+      transition:0.15s ease;
+    }
+    .card:hover{box-shadow:var(--card-shadow-hover);}
+    .card h2{font-size:17px;margin:0 0 var(--spacing-16);font-weight:800;}
+
+    .grid,.chips,.actions,.choices,.field,.sheetBody,#quizModalBody,#settingsBody,#dayPickBody{gap:var(--spacing-12);}
+    .row{gap:var(--spacing-8);}
 
     select,input,button{
-      border:1px solid #d8e0ea;
-      border-radius:18px;
       min-height:56px;
-      padding:14px 14px;
+      padding:14px 16px;
       font-size:15px;
+      border:1px solid var(--gray-200);
+      border-radius:var(--radius-18);
       background:#fff;
+      transition:0.15s ease;
     }
-    #dayPickOpenBtn,.btn,.actions button,#nextBtn,#startBtn,.settings-save-btn{
+    button:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 8px 22px rgba(15,23,42,0.08);}
+
+    .btn,#startBtn,#nextBtn,.settings-save-btn,.actions button,#dayPickOpenBtn{
       min-height:56px;
-      border-radius:18px;
-      font-weight:800;
+      border-radius:var(--radius-18);
+      font-weight:700;
     }
     .btn-primary,#startBtn,#nextBtn,.settings-save-btn{
-      background:linear-gradient(135deg, var(--blue) 0%, var(--blue-2) 100%);
-      border-color:transparent;
+      background:var(--primary);
       color:#fff;
-      box-shadow:0 10px 20px rgba(37,99,235,.28);
+      border-color:var(--primary);
+      box-shadow:0 8px 20px rgba(37,99,235,0.3);
     }
+    .btn-soft,.btn-ghost,#resumeBtn,#dayPickOpenBtn{background:var(--gray-100);}
 
     .q{
-      font-size: clamp(38px, 9vw, 46px);
+      font-size:40px;
       font-weight:800;
-      border:0;
-      border-radius:28px;
-      padding:32px 20px;
-      margin:18px auto 22px;
-      background:linear-gradient(180deg, #ffffff 0%, #f9fbff 100%);
-      box-shadow:var(--card-shadow-strong);
+      text-align:center;
+      margin:var(--spacing-16) auto;
+      padding:var(--spacing-32);
+      border-radius:var(--radius-24);
+      border:1px solid var(--gray-200);
+      background:#fff;
+      box-shadow:0 10px 30px rgba(0,0,0,0.08);
     }
 
     .choices button{
-      border:1px solid #dbe3ef;
-      border-radius:18px;
+      text-align:left;
       min-height:62px;
-      padding:16px 18px;
-      font-size:16px;
+      padding:18px;
+      border-radius:var(--radius-18);
+      background:#fff;
+      border:1px solid var(--gray-200);
+      box-shadow:none;
       font-weight:700;
-      box-shadow:0 6px 18px rgba(15,23,42,.06);
-      transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease, background-color .18s ease;
     }
     .choices button:hover:not(:disabled){
       transform:translateY(-2px);
-      box-shadow:0 10px 20px rgba(15,23,42,.11);
-      border-color:#93c5fd;
+      box-shadow:0 6px 20px rgba(0,0,0,0.06);
+      border-color:#cbd5e1;
     }
-    .choices button:active{transform:translateY(0);}
-    .choices button.ok{background:var(--green-soft);border-color:#86efac;color:#14532d;}
-    .choices button.bad{background:var(--red-soft);border-color:#fca5a5;color:#7f1d1d;}
+    .choices button:focus-visible{
+      outline:none;
+      box-shadow:0 0 0 3px rgba(37,99,235,0.18), 0 6px 20px rgba(0,0,0,0.06);
+      border-color:var(--primary);
+    }
 
-    .progress-container{
-      height:14px;
-      background:#e5ebf3;
+    .chip,.pill,.badge,#sessionTimerPill{
+      background:var(--gray-100);
+      border:1px solid var(--gray-200);
       border-radius:999px;
-      margin:12px 0;
-      overflow:hidden;
-      position:relative;
     }
-    .progress-bar{
-      background:linear-gradient(90deg,#3b82f6 0%, #60a5fa 45%, #22c55e 100%);
-      border-radius:inherit;
-    }
-    .scope-meta,#scopeCoverageText,#scopeCoverageCount,#progressPill{font-weight:800;}
+
+    .progress-container{height:12px;background:var(--gray-100);border-radius:999px;}
+    .progress-bar{background:linear-gradient(90deg,var(--primary),#60a5fa);}
 
     .sheet,#quizModal,#settingsSheet,#dayPickSheet,#tutorialModal{
-      border:0;
-      border-radius:24px;
-      box-shadow:0 18px 44px rgba(15,23,42,.18);
+      border:1px solid var(--gray-200);
+      border-radius:var(--radius-24);
+      box-shadow:0 18px 48px rgba(15,23,42,0.2);
     }
 
+    #settingsOpenBtn{
+      width:56px;
+      height:56px;
+      border-radius:50%;
+      background:var(--primary);
+      box-shadow:0 12px 28px rgba(37,99,235,0.35);
+      transition:0.15s ease;
+    }
+    #settingsOpenBtn:hover{transform:translateY(-1px);}
+
     @media (max-width: 420px){
-      body{padding:16px 12px calc(92px + env(safe-area-inset-bottom));}
+      body{padding:var(--spacing-16) var(--spacing-12) calc(96px + env(safe-area-inset-bottom));}
       h1{font-size:24px;}
       .card{padding:18px;}
-      .main-tab{font-size:13px;}
+      .main-tab{font-size:13px;padding:12px 8px;}
+      .q{font-size:36px;padding:24px;}
     }
+
 
   </style>
 </head>

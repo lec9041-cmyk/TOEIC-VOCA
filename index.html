@@ -671,6 +671,12 @@
     .comeback-banner{margin-top:8px;padding:8px 10px;border-radius:10px;background:#eff6ff;color:#1e40af;font-size:12px;font-weight:700;}
     .mission-list{display:grid;gap:6px;margin-top:8px;}
     .mission-row{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;font-size:12px;padding:6px 8px;border:1px solid #e5e7eb;border-radius:10px;background:#f8fafc;}
+    .mission-title{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;font-size:13px;font-weight:800;}
+    .mission-today{font-size:12px;color:#475569;font-weight:700;}
+    .mission-status{font-size:11px;font-weight:800;color:#64748b;}
+    .mission-row.mission-done{border-color:#bfdbfe;background:#eff6ff;}
+    .mission-row.mission-active{border-color:#dbeafe;background:#f8fbff;}
+    .mission-row.mission-wait{background:#f8fafc;}
     .mini-progress{height:6px;background:#e5e7eb;border-radius:999px;overflow:hidden;}
     .mini-progress > span{display:block;height:100%;background:#3B82F6;width:0%;}
     .xp-box{margin-top:8px;padding:8px 10px;border:1px solid #dbeafe;border-radius:10px;background:#f8fbff;}
@@ -687,6 +693,8 @@
     .start-actions{display:grid;gap:8px;}
     #startBtn{width:100%;min-height:50px;border-radius:14px;background:#3B82F6;border-color:#3B82F6;font-size:18px;font-weight:800;}
     #resumeBtn{width:100%;min-height:42px;border-radius:12px;}
+    .continue-summary{font-size:12px;color:#334155;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:8px 10px;}
+    .continue-summary.hidden{display:none;}
     #settingsOpenBtn{right:12px;bottom:14px;width:auto;height:44px;border-radius:999px;padding:0 14px;font-size:15px;font-weight:700;background:#3B82F6;display:flex;gap:6px;}
     #settingsOpenBtn::after{content:'Settings';}
     .q{font-size:34px;padding:20px 12px;margin:10px auto;border-radius:16px;}
@@ -718,14 +726,15 @@
       <span class="pill" id="selectedDaysPill">선택 DAY: -</span>
     </div>
     <div id="comebackBanner" class="comeback-banner hidden">오랜만이에요 🙂 다시 시작해봐요!</div>
+    <div class="mission-title"><span>오늘의 미션</span><span class="mission-today" id="missionTodaySummary">오늘 0문제 완료</span></div>
     <div class="study-count">오늘 학습 <b id="studyCardToday">0</b> / <b id="studyCardGoal">30</b></div>
     <div class="progress-container" style="margin:8px 0 0">
       <div id="studyCardBar" class="progress-bar"></div>
     </div>
     <div class="mission-list" id="missionList">
-      <div class="mission-row"><span>✅</span><span>출석 미션 5문제</span><span id="missionAttendance">0/5</span><div class="mini-progress" style="grid-column:1/4;"><span id="missionAttendanceBar"></span></div></div>
-      <div class="mission-row"><span>🎯</span><span>기본 미션 10문제</span><span id="missionBasic">0/10</span><div class="mini-progress" style="grid-column:1/4;"><span id="missionBasicBar"></span></div></div>
-      <div class="mission-row"><span>⭐</span><span>보너스 미션 30문제</span><span id="missionBonus">0/30</span><div class="mini-progress" style="grid-column:1/4;"><span id="missionBonusBar"></span></div></div>
+      <div class="mission-row" id="missionAttendanceRow"><span class="mission-status" id="missionAttendanceStatus">[대기]</span><span>출석 미션 5문제</span><span id="missionAttendance">대기</span><div class="mini-progress" style="grid-column:1/4;"><span id="missionAttendanceBar"></span></div></div>
+      <div class="mission-row" id="missionBasicRow"><span class="mission-status" id="missionBasicStatus">[대기]</span><span>기본 미션 10문제</span><span id="missionBasic">대기</span><div class="mini-progress" style="grid-column:1/4;"><span id="missionBasicBar"></span></div></div>
+      <div class="mission-row" id="missionBonusRow"><span class="mission-status" id="missionBonusStatus">[대기]</span><span>보너스 미션 30문제</span><span id="missionBonus">대기</span><div class="mini-progress" style="grid-column:1/4;"><span id="missionBonusBar"></span></div></div>
     </div>
     <div class="xp-box">
       <div class="xp-line"><span>레벨 <b id="xpLevel">1</b></span><span>XP <b id="xpCurrent">0</b> / <b id="xpNeed">40</b></span></div>
@@ -736,6 +745,12 @@
   <!-- 섹션 1: 설정 & 시작 -->
   <div class="card" id="learnSettingsCard">
     <h2>학습 설정</h2>
+
+    <div class="start-actions" style="margin-top:8px; margin-bottom:10px;">
+      <button id="startBtn" class="btn" type="button" disabled>🚀 암기 시작</button>
+      <div id="continueSummary" class="continue-summary hidden"></div>
+      <button id="resumeBtn" class="btn btn-primary" type="button" disabled>이어서 학습 (저장된 기록 없음)</button>
+    </div>
 
     <!-- DAY 선택 버튼 (팝업으로 분리) -->
     <div class="field" style="margin-bottom:10px;">
@@ -824,10 +839,7 @@
       </div>
     </div>
 
-    <!-- 시작/이어하기 -->
     <div class="start-actions" style="margin-top:8px;">
-      <button id="startBtn" class="btn" type="button" disabled>🚀 암기 시작</button>
-      <button id="resumeBtn" class="btn btn-soft" type="button" disabled>이어서 학습 (저장된 기록 없음)</button>
       <button id="todayWrongBtn" class="btn btn-ghost" type="button">오늘 오답 복습</button>
     </div>
   </div>
@@ -1277,6 +1289,7 @@
       ts:Date.now()
     };
     save(LAST_STUDY_SETTINGS_KEY,payload);
+    updateContinueSummary();
   }
   function applyLastStudySettings(){
     const st=load(LAST_STUDY_SETTINGS_KEY,null); if(!st) return false;
@@ -1304,14 +1317,41 @@
     save(WRONG_LOG_KEY,arr);
   }
   function updateMissionsAndBonuses(todaySolved){
-    DAILY_MISSIONS.forEach(m=>{
-      const done=Math.min(todaySolved,m.target),pct=Math.round((done/m.target)*100);
+    const solved=Math.max(0,Number(todaySolved)||0);
+    if(el("missionTodaySummary")) el("missionTodaySummary").textContent=`오늘 ${solved}문제 완료`;
+    DAILY_MISSIONS.forEach((m,idx)=>{
+      const done=Math.min(solved,m.target),pct=Math.round((done/m.target)*100);
       const idTail=m.id.charAt(0).toUpperCase()+m.id.slice(1);
-      const txtEl=el(`mission${idTail}`),barEl=el(`mission${idTail}Bar`);
-      if(txtEl) txtEl.textContent=`${done}/${m.target}`;
+      const txtEl=el(`mission${idTail}`),barEl=el(`mission${idTail}Bar`),statusEl=el(`mission${idTail}Status`),rowEl=el(`mission${idTail}Row`);
+      const isDone=solved>=m.target;
+      const nextTarget=(DAILY_MISSIONS[idx+1]||{}).target||Infinity;
+      const isActive=!isDone&&solved>=(idx===0?0:DAILY_MISSIONS[idx-1].target)&&solved<nextTarget;
+      const status=isDone?"완료":(isActive?"진행중":"대기");
+      if(txtEl) txtEl.textContent=status;
+      if(statusEl) statusEl.textContent=`[${status}]`;
       if(barEl) barEl.style.width=`${Math.max(0,Math.min(100,pct))}%`;
-      if(todaySolved>=m.target && !isXpBonusDone(`mission_${m.id}`)){ addXp(m.bonusXp,`mission_${m.id}`); markXpBonusDone(`mission_${m.id}`); }
+      if(rowEl){
+        rowEl.classList.remove("mission-done","mission-active","mission-wait");
+        rowEl.classList.add(isDone?"mission-done":(isActive?"mission-active":"mission-wait"));
+      }
+      if(solved>=m.target && !isXpBonusDone(`mission_${m.id}`)){ addXp(m.bonusXp,`mission_${m.id}`); markXpBonusDone(`mission_${m.id}`); }
     });
+  }
+  function updateContinueSummary(){
+    const summaryEl=el("continueSummary"); if(!summaryEl) return;
+    const st=load(LAST_STUDY_SETTINGS_KEY,null);
+    if(!st){ summaryEl.classList.add("hidden"); return; }
+    const dayText=Array.isArray(st.dayKeys)&&st.dayKeys.length?st.dayKeys.map(dayLabel).join(", "):"DAY 미선택";
+    const ranges=[];
+    if(st.ranges?.core) ranges.push("핵심빈출");
+    if(st.ranges?.basic) ranges.push("토익기초");
+    if(st.ranges?.s800) ranges.push("800점");
+    if(st.ranges?.s900) ranges.push("900점");
+    const rangeText=ranges.length?ranges.join("+"):"범위 미선택";
+    const dirText=st.dir==="ko2en"?"뜻→영":"영→뜻";
+    const modeText=st.mode==="mc"?"시험":(st.mode==="sa"?"주관식":"암기");
+    summaryEl.textContent=`최근 학습: ${dayText} / ${rangeText} / ${dirText} / ${modeText}`;
+    summaryEl.classList.remove("hidden");
   }
   function updateComebackBanner(todaySolved){
     const banner=el("comebackBanner"); if(!banner) return;
@@ -1826,11 +1866,13 @@
 
   function updateResumeButton(){
     const hasSession=!!load(RESUME_KEY,null), hasLast=!!load(LAST_STUDY_SETTINGS_KEY,null), btn=el("resumeBtn");
+    if(!btn) return;
     const enabled=hasSession||hasLast;
     btn.disabled=!enabled;
     if(hasSession) btn.textContent="이어서 학습";
     else if(hasLast) btn.textContent="이어서 학습 (마지막 설정)";
     else btn.textContent="이어서 학습 (저장된 기록 없음)";
+    updateContinueSummary();
   }
   function saveResumeState(){
     if(el("quizOverlay").classList.contains("hidden")) return;

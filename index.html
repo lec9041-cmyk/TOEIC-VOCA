@@ -681,6 +681,9 @@
     .mini-progress > span{display:block;height:100%;background:#3B82F6;width:0%;}
     .xp-box{margin-top:8px;padding:8px 10px;border:1px solid #dbeafe;border-radius:10px;background:#f8fbff;}
     .xp-line{display:flex;justify-content:space-between;gap:8px;font-size:12px;font-weight:700;margin-bottom:6px;}
+    .xp-sub{font-size:11px;color:#64748b;margin-top:6px;}
+    .xp-feedback{margin-top:6px;font-size:12px;color:#1e40af;min-height:16px;opacity:0;transition:opacity .2s ease;}
+    .xp-feedback.show{opacity:1;}
     .advanced-settings{margin-top:8px;border:1px solid var(--gray-200);border-radius:12px;padding:8px;background:#f8fafc;}
     .advanced-settings summary{cursor:pointer;font-size:13px;font-weight:700;color:#475569;}
     .advanced-settings[open] summary{margin-bottom:6px;}
@@ -737,8 +740,10 @@
       <div class="mission-row" id="missionBonusRow"><span class="mission-status" id="missionBonusStatus">[대기]</span><span>보너스 미션 30문제</span><span id="missionBonus">대기</span><div class="mini-progress" style="grid-column:1/4;"><span id="missionBonusBar"></span></div></div>
     </div>
     <div class="xp-box">
-      <div class="xp-line"><span>레벨 <b id="xpLevel">1</b></span><span>XP <b id="xpCurrent">0</b> / <b id="xpNeed">40</b></span></div>
+      <div class="xp-line"><span>Lv. <b id="xpLevel">1</b></span><span>XP <b id="xpCurrent">0</b> / <b id="xpNeed">100</b></span></div>
       <div class="progress-container" style="margin:0"><div id="xpBar" class="progress-bar"></div></div>
+      <div class="xp-sub" id="xpToNext">다음 레벨까지 100 XP</div>
+      <div class="xp-feedback" id="xpFeedback" aria-live="polite"></div>
     </div>
   </div>
 
@@ -1194,9 +1199,9 @@
   const LAST_ACTIVE_KEY    = "toeic_last_active_date_v1";
   const DEFAULT_GOAL = 30;
   const DAILY_MISSIONS = [
-    { id:"attendance", label:"출석 미션", target:5, bonusXp:5 },
-    { id:"basic", label:"기본 미션", target:10, bonusXp:10 },
-    { id:"bonus", label:"보너스 미션", target:30, bonusXp:20 },
+    { id:"attendance", label:"출석 미션", target:5, bonusXp:0 },
+    { id:"basic", label:"기본 미션", target:10, bonusXp:5 },
+    { id:"bonus", label:"보너스 미션", target:30, bonusXp:10 },
   ];
 
   const CFG_DEFAULTS = {
@@ -1207,6 +1212,7 @@
   };
 
   let autoNextTimer = null;
+  let xpFeedbackTimer = null;
   function clearAutoNext(){ if(autoNextTimer){ clearTimeout(autoNextTimer); autoNextTimer = null; } }
 
   // ===================================================================
@@ -1260,13 +1266,28 @@
   function xpState(){ return load(XP_KEY,{xp:0}); }
   function xpLevelInfo(totalXp){
     const xp=Math.max(0,Number(totalXp)||0);
-    const level=Math.floor(xp/40)+1;
-    const cur=xp%40;
-    return {level,cur,need:40,pct:Math.round((cur/40)*100)};
+    const step=100;
+    const level=Math.floor(xp/step)+1;
+    const levelBase=(level-1)*step;
+    const nextTotal=level*step;
+    const inLevel=xp-levelBase;
+    const toNext=nextTotal-xp;
+    return {level,step,nextTotal,inLevel,toNext,pct:Math.round((inLevel/step)*100)};
+  }
+  function showXpFeedback(text){
+    const box=el("xpFeedback"); if(!box) return;
+    box.textContent=text;
+    box.classList.add("show");
+    if(xpFeedbackTimer) clearTimeout(xpFeedbackTimer);
+    xpFeedbackTimer=setTimeout(()=>{ box.classList.remove("show"); },1400);
   }
   function addXp(amount, reason=""){
     const n=Math.max(0,Number(amount)||0); if(!n) return;
     const st=xpState(); st.xp=(st.xp||0)+n; save(XP_KEY,st);
+    if(reason==="solve") showXpFeedback(`+${n} XP`);
+    if(reason==="mission_basic") showXpFeedback(`기본 미션 완료! +${n} XP`);
+    if(reason==="mission_bonus") showXpFeedback(`보너스 미션 완료! +${n} XP`);
+    if(reason==="todayWrongReview") showXpFeedback(`오답 복습 완료! +${n} XP`);
   }
   function xpBonusDoneMap(){ return load(XP_BONUS_DONE_KEY,{}); }
   function isXpBonusDone(id){ const m=xpBonusDoneMap(); return !!m[`${todayKey()}_${id}`]; }
@@ -1274,8 +1295,9 @@
   function updateXpUI(){
     const info=xpLevelInfo(xpState().xp||0);
     if(el("xpLevel")) el("xpLevel").textContent=info.level;
-    if(el("xpCurrent")) el("xpCurrent").textContent=info.cur;
-    if(el("xpNeed")) el("xpNeed").textContent=info.need;
+    if(el("xpCurrent")) el("xpCurrent").textContent=xpState().xp||0;
+    if(el("xpNeed")) el("xpNeed").textContent=info.nextTotal;
+    if(el("xpToNext")) el("xpToNext").textContent=`다음 레벨까지 ${info.toNext} XP`;
     if(el("xpBar")) el("xpBar").style.width=`${info.pct}%`;
   }
   function saveLastStudySettings(){
@@ -1334,7 +1356,7 @@
         rowEl.classList.remove("mission-done","mission-active","mission-wait");
         rowEl.classList.add(isDone?"mission-done":(isActive?"mission-active":"mission-wait"));
       }
-      if(solved>=m.target && !isXpBonusDone(`mission_${m.id}`)){ addXp(m.bonusXp,`mission_${m.id}`); markXpBonusDone(`mission_${m.id}`); }
+      if(m.bonusXp>0 && solved>=m.target && !isXpBonusDone(`mission_${m.id}`)){ addXp(m.bonusXp,`mission_${m.id}`); markXpBonusDone(`mission_${m.id}`); }
     });
   }
   function updateContinueSummary(){
@@ -1989,7 +2011,7 @@
     ["choices","shortAnswer","flashAnswerBox","flashModeActions","nextBtn"].forEach(id=>el(id).classList.add("hidden"));
     locked=true; if(wrong.length>0) el("retestBox").classList.remove("hidden");
     recordSession({mode:quizState.mode,dir:quizState.dir,total:pool.length,score,wrongCount:wrong.length,days:quizState.days||[],ranges:quizState.ranges||"-"});
-    if(quizState?.reviewType==="todayWrong" && !isXpBonusDone("todayWrongReview")){ addXp(8,"todayWrongReview"); markXpBonusDone("todayWrongReview"); updateXpUI(); }
+    if(quizState?.reviewType==="todayWrong"){ addXp(3,"todayWrongReview"); updateXpUI(); }
     clearResumeState();
   }
 

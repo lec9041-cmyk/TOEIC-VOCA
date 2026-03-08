@@ -731,9 +731,31 @@
     #flashRevealBtn{min-height:48px;width:100%;font-size:18px;font-weight:800;}
     .actions button{min-height:56px;}
     .plant-card{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 8px;margin-bottom:8px;background:#f8fbff;border:1px solid #e2e8f0;border-radius:12px;}
-    .plant-emoji{font-size:52px;line-height:1;transition:transform .28s ease, opacity .28s ease;}
-    .plant-emoji.grow{animation:plant-grow .45s ease;}
-    @keyframes plant-grow{0%{transform:scale(.9);opacity:.78;}55%{transform:scale(1.05);opacity:1;}100%{transform:scale(1);opacity:1;}}
+    .plant-container{
+      width:150px;
+      height:150px;
+      display:flex;
+      align-items:flex-end;
+      justify-content:center;
+      margin:0 auto;
+    }
+    .plant-container img{
+      max-width:120px;
+      max-height:120px;
+      animation: plantIdle 3s ease-in-out infinite;
+      transform-origin:50% 100%;
+    }
+    .plant-container img.grow{animation:plant-level-up .6s ease, plantIdle 3s ease-in-out .6s infinite;}
+    @keyframes plantIdle{
+      0%{transform:translateY(0)}
+      50%{transform:translateY(-5px)}
+      100%{transform:translateY(0)}
+    }
+    @keyframes plant-level-up{
+      0%{transform:scale(.8)}
+      60%{transform:scale(1.1)}
+      100%{transform:scale(1)}
+    }
     .plant-meta{font-size:12px;color:#475569;}
     .levelup-overlay{position:fixed;inset:0;background:rgba(15,23,42,.42);display:flex;align-items:center;justify-content:center;padding:18px;z-index:130;}
     .levelup-modal{width:min(340px,100%);background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:16px;box-shadow:0 12px 34px rgba(15,23,42,.18);text-align:center;}
@@ -783,11 +805,13 @@
   <div class="card" id="learnSettingsCard">
     <h2 id="mainActionTitle">학습 시작</h2>
 
-    <!-- Lightweight plant growth indicator -->
+    <!-- Plant growth indicator -->
     <div class="plant-card">
-      <div id="plantEmoji" class="plant-emoji" aria-label="학습 나무">🌱</div>
-      <div id="plantLevelText" class="plant-meta">Lv.1</div>
-      <div id="plantNextText" class="plant-meta">다음 레벨까지 100 XP</div>
+      <div class="plant-container">
+        <img id="plantImage" src="plant_lv1.png" alt="단어 나무 Lv.1" loading="lazy" />
+      </div>
+      <div id="plantLevelText" class="plant-meta">단어 나무 Lv.1</div>
+      <div id="plantNextText" class="plant-meta">다음 성장까지 100 XP</div>
     </div>
     <div class="field" style="margin-bottom:10px;">
       <label>선택 DAY</label>
@@ -1312,14 +1336,24 @@
     requestAnimationFrame(step);
   }
   function getPlantImage(level){
-    const stage=Math.max(1,Math.min(10,Number(level)||1));
-    const map=["🌱","🌿","🪴","🌳","🌳","🌲","🌸🌳","🌳✨","🍎🌳","🌳🏆"];
-    return map[stage-1]||"🌱";
+    const stage=Math.max(1,Math.min(6,Number(level)||1));
+    return `plant_lv${stage}.png`;
+  }
+  function getPlantFallbackEmoji(level){
+    const stage=Math.max(1,Math.min(6,Number(level)||1));
+    if(stage<=2) return "🌱";
+    if(stage<=4) return "🌿";
+    return "🌳";
+  }
+  function makePlantEmojiDataUri(level){
+    const emoji=getPlantFallbackEmoji(level);
+    const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"><text x="50%" y="58%" dominant-baseline="middle" text-anchor="middle" font-size="84">${emoji}</text></svg>`;
+    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
   }
   function showLevelUpModal(prevLevel,newLevel){
     if(newLevel<=prevLevel) return;
-    if(el("levelUpFrom")) el("levelUpFrom").textContent=getPlantImage(prevLevel);
-    if(el("levelUpTo")) el("levelUpTo").textContent=getPlantImage(newLevel);
+    if(el("levelUpFrom")) el("levelUpFrom").textContent=`Lv.${prevLevel}`;
+    if(el("levelUpTo")) el("levelUpTo").textContent=`Lv.${newLevel}`;
     if(el("levelUpLv")) el("levelUpLv").textContent=newLevel;
     el("levelUpOverlay")?.classList.remove("hidden");
   }
@@ -1375,16 +1409,22 @@
   function updateXpUI(){
     const xpTotal=xpState().xp||0;
     const info=xpLevelInfo(xpTotal);
-    const plant=el("plantEmoji");
+    const plant=el("plantImage");
     if(el("xpLevel")) el("xpLevel").textContent=info.level;
     if(el("xpCurrent")) el("xpCurrent").textContent=xpTotal;
     if(el("xpNeed")) el("xpNeed").textContent=info.nextTotal;
     if(el("xpToNext")) el("xpToNext").textContent=`다음 레벨까지 ${info.toNext} XP`;
     if(el("xpBar")) el("xpBar").style.width=`${info.pct}%`;
-    if(el("plantLevelText")) el("plantLevelText").textContent=`Lv.${info.level}`;
-    if(el("plantNextText")) el("plantNextText").textContent=`Next level in ${info.toNext} XP`;
+    if(el("plantLevelText")) el("plantLevelText").textContent=`단어 나무 Lv.${info.level}`;
+    if(el("plantNextText")) el("plantNextText").textContent=`다음 성장까지 ${info.toNext} XP`;
     if(plant){
-      plant.textContent=getPlantImage(info.level);
+      plant.onerror=()=>{
+        plant.onerror=null;
+        plant.src=makePlantEmojiDataUri(info.level);
+        plant.alt=`단어 나무 ${getPlantFallbackEmoji(info.level)}`;
+      };
+      plant.src=getPlantImage(info.level);
+      plant.alt=`단어 나무 Lv.${info.level}`;
       if(prevXpLevel!==info.level){ plant.classList.remove("grow"); void plant.offsetWidth; plant.classList.add("grow"); }
     }
     prevXpLevel=info.level;
@@ -1781,7 +1821,7 @@
     el("statsTotalSolved").textContent=totalSolved; el("statsTotalWrong").textContent=totalWrong; el("statsFavCount").textContent=favCount;
     drawCalendarGrid(el("mainCalGrid"),{year:statsViewY,month0:statsViewM,daily,goal});
   }
-  function renderLearnDayProgress(){ const wrap=el("learnDayProgress"); if(!wrap) return; const data=load(WORDS_KEY,{}),stats=statsMap(),allDays=getAllDays(data); wrap.innerHTML=""; if(allDays.length===0){wrap.innerHTML=`<div class="item"><div class="muted">DAY 데이터가 없어요.</div></div>`;return;} const pct=(a,b)=>b?Math.round((a/b)*100):0; let prevIncomplete=false; allDays.forEach(day=>{ const words=data[day]||[],total=words.length,keys=words.map(keyOf),logged=keys.reduce((acc,k)=>acc+(((stats[k]?.correctCount||0)+(stats[k]?.wrongCount||0)>0)?1:0),0),wrongN=keys.reduce((acc,k)=>acc+((stats[k]?.wrongCount||0)>0?1:0),0),progressPct=pct(logged,total); const locked=prevIncomplete&&logged===0; let emoji="🌱"; if(locked) emoji="🔒"; else if(logged===0) emoji="🌱"; else if(logged>=total&&wrongN===0&&total>0) emoji="🌳"; else if(logged>=total) emoji="🌿"; else emoji="🔥"; prevIncomplete=logged<total; const row=document.createElement("div"); row.className="item"; row.innerHTML=`<div class="itemTop" style="margin-bottom:6px;align-items:center;"><div class="itemWord">${emoji} ${esc(dayLabel(day))}</div><span class="badge">${progressPct}%</span></div><div class="muted" style="font-size:12px;">학습 ${logged}/${total} · 오답 ${wrongN}</div><div class="progress-container" style="margin:8px 0 0;"><div class="progress-bar" style="width:${progressPct}%"></div></div>`; wrap.appendChild(row); }); }
+  function renderLearnDayProgress(){ const wrap=el("learnDayProgress"); if(!wrap) return; const data=load(WORDS_KEY,{}),stats=statsMap(),allDays=getAllDays(data); wrap.innerHTML=""; if(allDays.length===0){wrap.innerHTML=`<div class="item"><div class="muted">DAY 데이터가 없어요.</div></div>`;return;} const legend=document.createElement("div"); legend.className="muted"; legend.style.fontSize="12px"; legend.style.marginBottom="2px"; legend.textContent="🌱 미시작 · 🔥 진행중 · 🌿 완료 · 🌳 마스터"; wrap.appendChild(legend); const pct=(a,b)=>b?Math.round((a/b)*100):0; allDays.forEach(day=>{ const words=data[day]||[],total=words.length,keys=words.map(keyOf),logged=keys.reduce((acc,k)=>acc+(((stats[k]?.correctCount||0)+(stats[k]?.wrongCount||0)>0)?1:0),0),wrongN=keys.reduce((acc,k)=>acc+((stats[k]?.wrongCount||0)>0?1:0),0),progressPct=pct(logged,total); let emoji="🌱"; if(logged===0) emoji="🌱"; else if(logged>=total&&wrongN===0&&total>0) emoji="🌳"; else if(logged>=total) emoji="🌿"; else emoji="🔥"; const row=document.createElement("div"); row.className="item"; row.innerHTML=`<div class="itemTop" style="margin-bottom:6px;align-items:center;"><div class="itemWord">${emoji} ${esc(dayLabel(day))}</div><span class="badge">${progressPct}%</span></div><div class="muted" style="font-size:12px;">학습 ${logged}/${total} · 오답 ${wrongN}</div><div class="progress-container" style="margin:8px 0 0;"><div class="progress-bar" style="width:${progressPct}%"></div></div>`; wrap.appendChild(row); }); }
   function updateDailyUI(){
     const daily=load(DAILY_KEY,{}),today=daily[todayKey()]||0,streak=calcStreak(),goal=getGoal(),pct=Math.max(0,Math.min(100,Math.round((today/goal)*100)));
     el("todayCountPill").textContent=today;

@@ -655,7 +655,7 @@
 
     /* ===== compact mobile study-focused refresh ===== */
     :root{ --blue:#3B82F6; }
-    body{background:#F3F4F6;max-width:760px;padding:12px 12px calc(90px + env(safe-area-inset-bottom));}
+    body{background:#F3F4F6;max-width:760px;padding:12px 12px calc(104px + env(safe-area-inset-bottom));}
     .app-header{margin-bottom:8px;}
     h1{font-size:24px;margin:0 0 2px;font-weight:800;}
     .sub{margin:0;font-size:12px;}
@@ -698,72 +698,70 @@
     #resumeBtn{width:100%;min-height:42px;border-radius:12px;}
     .continue-summary{font-size:12px;color:#334155;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:8px 10px;}
     .continue-summary.hidden{display:none;}
-    #settingsOpenBtn{right:12px;bottom:14px;width:auto;height:44px;border-radius:999px;padding:0 14px;font-size:15px;font-weight:700;background:#3B82F6;display:flex;gap:6px;}
-    #settingsOpenBtn::after{content:'Settings';}
+    .compact-header{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+    .quick-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}
+    .quick-stat{background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:8px 10px;display:flex;flex-direction:column;gap:2px;}
+    .quick-stat .label{font-size:11px;color:#64748b;}
+    .quick-stat b{font-size:16px;line-height:1.2;}
+    .selected-day-row{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px;}
+    .bottom-nav{position:fixed;left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:45;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;padding:6px;border-radius:14px;background:#fff;border:1px solid #e2e8f0;box-shadow:0 8px 24px rgba(15,23,42,.12);}
+    .bottom-nav__item{min-height:44px;border:none;background:transparent;border-radius:10px;padding:8px 4px;font-size:12px;font-weight:700;color:#64748b;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+    .bottom-nav__item.active{background:#eff6ff;color:#2563eb;}
+    #settingsOpenBtn{display:none;}
     .q{font-size:34px;padding:20px 12px;margin:10px auto;border-radius:16px;}
     .answer-box{padding:14px;min-height:80px;border-radius:14px;margin:12px 0;display:flex;flex-direction:column;gap:8px;}
     #flashRevealBtn{min-height:48px;width:100%;font-size:18px;font-weight:800;}
     .actions button{min-height:56px;}
+
+    @media (max-width: 420px){ .bottom-nav{left:8px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom));} .bottom-nav__item{min-height:42px;font-size:11px;} }
 
 
   </style>
 </head>
 
 <body>
-  <header class="app-header">
-    <h1>TOEIC Master 📚</h1>
-    <div class="sub" id="headerTodayProgress">Today progress 0 / 30 words</div>
+  <header class="app-header compact-header">
+    <div>
+      <h1>TOEIC Master</h1>
+      <div class="sub" id="headerTodayProgress">Today progress 0 / 30 words</div>
+    </div>
   </header>
 
-  <div class="main-tabs">
-    <div id="mainTabLearn" class="main-tab active">📚 단어 암기</div>
-    <div id="mainTabTest" class="main-tab">✍️ 단어 시험</div>
-    <div id="mainTabStats" class="main-tab">📊 학습현황</div>
+  <div class="card" id="todayStudyCard">
+    <div class="quick-stats">
+      <div class="quick-stat"><span class="label">Today</span><b id="studyCardToday">0</b></div>
+      <div class="quick-stat"><span class="label">Streak</span><b><span id="studyCardStreak">0</span>일</b></div>
+      <div class="quick-stat"><span class="label">Level</span><b>Lv.<span id="xpLevel">1</span></b></div>
+    </div>
+    <div class="selected-day-row">
+      <span class="pill" id="selectedDaysPill">선택 DAY: -</span>
+      <span class="muted" id="missionTodaySummary">오늘 0문제 완료</span>
+    </div>
+    <div class="progress-container" style="margin:8px 0 4px">
+      <div id="studyCardBar" class="progress-bar"></div>
+    </div>
+    <div class="xp-sub" id="xpToNext">다음 레벨까지 100 XP</div>
+    <div class="xp-feedback" id="xpFeedback" aria-live="polite"></div>
+    <div id="comebackBanner" class="comeback-banner hidden">오랜만이에요 🙂 다시 시작해봐요!</div>
   </div>
 
   <div class="sub app-meta">내장 로드: <code>/toeic_words_day1_30.csv</code> <span class="muted" id="dataStatus"></span></div>
 
-  <div class="card" id="todayStudyCard">
-    <div class="study-card-top">
-      <div class="study-streak">🔥 연속 학습 <b id="studyCardStreak">0</b>일</div>
-      <span class="pill" id="selectedDaysPill">선택 DAY: -</span>
-    </div>
-    <div id="comebackBanner" class="comeback-banner hidden">오랜만이에요 🙂 다시 시작해봐요!</div>
-    <div class="mission-title"><span>오늘의 미션</span><span class="mission-today" id="missionTodaySummary">오늘 0문제 완료</span></div>
-    <div class="study-count">오늘 학습 <b id="studyCardToday">0</b> / <b id="studyCardGoal">30</b></div>
-    <div class="progress-container" style="margin:8px 0 0">
-      <div id="studyCardBar" class="progress-bar"></div>
-    </div>
-    <div class="mission-list" id="missionList">
-      <div class="mission-row" id="missionAttendanceRow"><span class="mission-status" id="missionAttendanceStatus">[대기]</span><span>출석 미션 5문제</span><span id="missionAttendance">대기</span><div class="mini-progress" style="grid-column:1/4;"><span id="missionAttendanceBar"></span></div></div>
-      <div class="mission-row" id="missionBasicRow"><span class="mission-status" id="missionBasicStatus">[대기]</span><span>기본 미션 10문제</span><span id="missionBasic">대기</span><div class="mini-progress" style="grid-column:1/4;"><span id="missionBasicBar"></span></div></div>
-      <div class="mission-row" id="missionBonusRow"><span class="mission-status" id="missionBonusStatus">[대기]</span><span>보너스 미션 30문제</span><span id="missionBonus">대기</span><div class="mini-progress" style="grid-column:1/4;"><span id="missionBonusBar"></span></div></div>
-    </div>
-    <div class="xp-box">
-      <div class="xp-line"><span>Lv. <b id="xpLevel">1</b></span><span>XP <b id="xpCurrent">0</b> / <b id="xpNeed">100</b></span></div>
-      <div class="progress-container" style="margin:0"><div id="xpBar" class="progress-bar"></div></div>
-      <div class="xp-sub" id="xpToNext">다음 레벨까지 100 XP</div>
-      <div class="xp-feedback" id="xpFeedback" aria-live="polite"></div>
-    </div>
-  </div>
-
-  <!-- 섹션 1: 설정 & 시작 -->
   <div class="card" id="learnSettingsCard">
-    <h2>학습 설정</h2>
-
-    <div class="start-actions" style="margin-top:8px; margin-bottom:10px;">
-      <button id="startBtn" class="btn" type="button" disabled>🚀 암기 시작</button>
-      <div id="continueSummary" class="continue-summary hidden"></div>
-      <button id="resumeBtn" class="btn btn-primary" type="button" disabled>이어서 학습 (저장된 기록 없음)</button>
-    </div>
-
-    <!-- DAY 선택 버튼 (팝업으로 분리) -->
+    <h2 id="mainActionTitle">학습 시작</h2>
     <div class="field" style="margin-bottom:10px;">
-      <label>DAY 선택</label>
+      <label>선택 DAY</label>
       <button id="dayPickOpenBtn" type="button">
         <span class="dpLabel" id="dayPickLabel">선택된 DAY 없음</span>
         <span class="dpArrow">▼</span>
       </button>
+    </div>
+
+    <div class="start-actions" style="margin-top:8px; margin-bottom:12px;">
+      <button id="startBtn" class="btn" type="button" disabled>🚀 암기 시작</button>
+      <div id="continueSummary" class="continue-summary hidden"></div>
+      <button id="resumeBtn" class="btn btn-soft" type="button" disabled>이어하기</button>
+      <button id="todayWrongBtn" class="btn btn-ghost" type="button">오늘 오답 복습</button>
     </div>
 
     <!-- 옵션 그리드 -->
@@ -793,7 +791,7 @@
     </div>
 
     <details class="advanced-settings">
-      <summary>고급 설정 ▼</summary>
+      <summary>고급 설정</summary>
       <div class="grid" style="margin-top:10px;">
         <div class="field">
           <label>발음 선택</label>
@@ -820,13 +818,13 @@
     </details>
 
     <div class="row compact-pills" style="margin-top:8px">
-      <span class="pill">오늘 학습: <b id="todayCountPill">0</b></span>
-      <span class="pill">연속: <b id="streakPill">0</b>일</span>
+      <span class="pill">오늘 <b id="todayCountPill">0</b></span>
+      <span class="pill">연속 <b id="streakPill">0</b>일</span>
+      <span class="pill">XP <b id="xpCurrent">0</b>/<b id="xpNeed">100</b></span>
     </div>
 
-    <!-- 범위(커버리지) -->
-    <div class="card" id="scopeCard" style="margin:12px 0 10px;">
-      <div style="font-weight:900; font-size:14px; margin:0 0 8px;">범위 선택</div>
+    <div id="scopeCard" style="margin:12px 0 4px;">
+      <div style="font-weight:900; font-size:14px; margin:0 0 8px;">학습 범위</div>
       <div class="chips">
         <label class="chip"><input id="cb_core" type="checkbox" checked /> 핵심빈출 (1~40)</label>
         <label class="chip"><input id="cb_basic" type="checkbox" checked /> 토익기초 (41~68)</label>
@@ -844,66 +842,56 @@
       </div>
     </div>
 
-    <div class="start-actions" style="margin-top:8px;">
-      <button id="todayWrongBtn" class="btn btn-ghost" type="button">오늘 오답 복습</button>
-    </div>
   </div>
 
-  <!-- 섹션 2: 기록 & 관리 -->
   <div class="card" id="bottomToolsCard">
-    <h2>2) 기록 & 관리</h2>
+    <h2>학습 기록</h2>
     <div class="actions">
       <button id="openSheetBtn" class="btn btn-ghost" type="button">오답·기록 보기</button>
       <button id="resetStatsBtn" class="btn btn-danger" type="button">전체 초기화</button>
     </div>
-    <details id="learnProgressDetails" class="card" style="margin-top:12px;">
-      <summary style="font-weight:900; cursor:pointer;">📚 단어암기 리스트/진행도 (퍼센트)</summary>
+    <details id="learnProgressDetails" style="margin-top:12px;">
+      <summary style="font-weight:900; cursor:pointer;">DAY 진행도 보기</summary>
       <div id="learnDayProgress" class="list" style="margin-top:10px;"></div>
     </details>
-    <div class="muted" style="margin-top:10px;">팁: "오답·기록 보기"에서 오답노트/즐겨찾기/기록을 확인하세요.</div>
   </div>
 
-  <!-- 학습현황 탭 -->
   <div class="card hidden" id="statsCard">
-    <h2>📊 학습현황</h2>
+    <h2>학습 통계</h2>
+    <div class="summaryStats" style="margin:0 0 12px;">
+      <div class="summaryStat"><div class="k">오늘 학습</div><div class="v" id="mainCalTodayCount">0</div></div>
+      <div class="summaryStat"><div class="k">연속 학습일</div><div class="v" id="mainCalStreak">0일</div></div>
+      <div class="summaryStat"><div class="k">이번달 학습일</div><div class="v" id="mainCalMonthDays">0일</div></div>
+      <div class="summaryStat"><div class="k">총 학습</div><div class="v" id="statsTotalSolved">0</div></div>
+      <div class="summaryStat"><div class="k">총 오답</div><div class="v" id="statsTotalWrong">0</div></div>
+      <div class="summaryStat"><div class="k">즐겨찾기</div><div class="v" id="statsFavCount">0</div></div>
+    </div>
     <div class="item" style="margin-bottom:10px;">
       <div class="itemWord">학습 달력</div>
-      <div class="summaryStats" style="margin:8px 0 10px;">
-        <div class="summaryStat"><div class="k">오늘 학습 문제수</div><div class="v" id="mainCalTodayCount">0</div></div>
-        <div class="summaryStat"><div class="k">연속 학습일</div><div class="v" id="mainCalStreak">0일</div></div>
-        <div class="summaryStat"><div class="k">이번달 학습일수</div><div class="v" id="mainCalMonthDays">0일</div></div>
-      </div>
       <div class="muted" id="mainCalMonthLabel" style="margin-bottom:8px"></div>
       <div class="miniBtns" style="margin-bottom:8px;">
         <button class="btn btn-ghost" type="button" id="mainCalPrevBtn">◀ 이전달</button>
         <button class="btn btn-soft" type="button" id="mainCalTodayBtn">이번달</button>
         <button class="btn btn-ghost" type="button" id="mainCalNextBtn">다음달 ▶</button>
       </div>
-      <div class="muted" style="margin-bottom:10px">표시: 학습한 날(파랑 톤) · 목표 달성(테두리)</div>
       <div class="calGrid" id="mainCalGrid"></div>
     </div>
     <div class="item" style="margin-bottom:10px;">
       <div class="itemTop"><div>
-        <div class="itemWord">오늘 학습 정보</div>
+        <div class="itemWord">오늘 진행률</div>
         <div class="muted">오늘 학습: <b id="statsTodayLine">0문제</b> · 연속 학습: <b id="statsStreakLine">0일</b></div>
       </div></div>
-    </div>
-    <div class="item" style="margin-bottom:10px;">
-      <div class="itemTop"><div>
-        <div class="itemWord">학습 목표 진행률</div>
-        <div class="muted">오늘 목표 <b id="statsGoalPill">30</b> · 진행 <b id="statsGoalProgress">0 / 30</b></div>
-      </div></div>
+      <div class="muted">목표 <b id="statsGoalPill">30</b> · 진행 <b id="statsGoalProgress">0 / 30</b></div>
       <div class="progress-container" style="margin:10px 0 0;"><div id="statsGoalBar" class="progress-bar"></div></div>
     </div>
-    <div class="item">
-      <div class="itemWord" style="margin-bottom:8px;">전체 학습 통계</div>
-      <div class="summaryStats">
-        <div class="summaryStat"><div class="k">총 학습 문제수</div><div class="v" id="statsTotalSolved">0</div></div>
-        <div class="summaryStat"><div class="k">총 틀린 문제수</div><div class="v" id="statsTotalWrong">0</div></div>
-        <div class="summaryStat"><div class="k">즐겨찾기 단어 수</div><div class="v" id="statsFavCount">0</div></div>
-      </div>
-    </div>
   </div>
+
+  <nav class="bottom-nav" aria-label="주요 탐색">
+    <button id="mainTabLearn" class="bottom-nav__item active" type="button">학습</button>
+    <button id="mainTabTest" class="bottom-nav__item" type="button">시험</button>
+    <button id="mainTabStats" class="bottom-nav__item" type="button">통계</button>
+    <button id="mainTabSettings" class="bottom-nav__item" type="button">설정</button>
+  </nav>
 
   <!-- CONFETTI -->
   <canvas id="confettiCanvas" class="hidden"></canvas>
@@ -1421,7 +1409,7 @@
   // ===================================================================
   // 탭 전환
   // ===================================================================
-  const mainTabLearn=el("mainTabLearn"), mainTabTest=el("mainTabTest"), mainTabStats=el("mainTabStats");
+  const mainTabLearn=el("mainTabLearn"), mainTabTest=el("mainTabTest"), mainTabStats=el("mainTabStats"), mainTabSettings=el("mainTabSettings");
   const modeField=el("modeField"), startBtn=el("startBtn");
   const modeFlashOption=el("modeFlashOption");
   const learnSettingsCard=el("learnSettingsCard"), bottomToolsCard=el("bottomToolsCard"), statsCard=el("statsCard");
@@ -1435,7 +1423,9 @@
   function showMainPanel(panel){
     const isStats=panel==="stats";
     mainTabLearn.classList.toggle("active",panel==="learn"); mainTabTest.classList.toggle("active",panel==="test"); mainTabStats.classList.toggle("active",isStats);
+    if(mainTabSettings) mainTabSettings.classList.toggle("active",false);
     learnSettingsCard.classList.toggle("hidden",isStats); bottomToolsCard.classList.toggle("hidden",isStats); statsCard.classList.toggle("hidden",!isStats);
+    if(el("mainActionTitle")) el("mainActionTitle").textContent=panel==="test"?"시험 시작":"학습 시작";
     if(panel==="learn"){ setFlashOptionEnabled(true); el("modeSelect").value="flash"; modeField.classList.add("hidden"); if(!startBtn.disabled) setStartButtonState(false); }
     if(panel==="test"){ setFlashOptionEnabled(false); modeField.classList.remove("hidden"); if(el("modeSelect").value==="flash")el("modeSelect").value="mc"; if(!startBtn.disabled) setStartButtonState(false); }
     if(panel==="stats") renderMainCalendarSummary(statsViewY,statsViewM);
@@ -1445,6 +1435,7 @@
   mainTabLearn.onclick=()=>showMainPanel("learn");
   mainTabTest.onclick=()=>showMainPanel("test");
   mainTabStats.onclick=()=>showMainPanel("stats");
+  if(mainTabSettings) mainTabSettings.onclick=()=>{ applySettingsToUI(); el("settingsOverlay").classList.remove("hidden"); mainTabSettings.classList.add("active"); };
   function bindStatsCalNav(){
     el("mainCalPrevBtn").onclick=()=>{ statsViewM--; if(statsViewM<0){statsViewM=11;statsViewY--;} renderMainCalendarSummary(statsViewY,statsViewM); };
     el("mainCalNextBtn").onclick=()=>{ statsViewM++; if(statsViewM>11){statsViewM=0;statsViewY++;} renderMainCalendarSummary(statsViewY,statsViewM); };
@@ -1633,12 +1624,13 @@
     };
   }
   el("cfg_timerOn").onchange=(e)=>{ el("timerOptionsWrap").style.opacity=e.target.checked?"1":"0.45"; el("timerOptionsWrap").style.pointerEvents=e.target.checked?"auto":"none"; };
-  el("settingsOpenBtn").onclick=()=>{ applySettingsToUI(); el("settingsOverlay").classList.remove("hidden"); };
+  el("settingsOpenBtn").onclick=()=>{ applySettingsToUI(); el("settingsOverlay").classList.remove("hidden"); if(mainTabSettings) mainTabSettings.classList.add("active"); };
   el("settingsHelpBtn").onclick=()=>openTutorial(0);
-  el("settingsCloseBtn").onclick=()=>el("settingsOverlay").classList.add("hidden");
-  el("settingsOverlay").addEventListener("click",(e)=>{ if(e.target===el("settingsOverlay")) el("settingsOverlay").classList.add("hidden"); });
+  function closeSettingsOverlay(){ el("settingsOverlay").classList.add("hidden"); if(mainTabSettings) mainTabSettings.classList.remove("active"); }
+  el("settingsCloseBtn").onclick=closeSettingsOverlay;
+  el("settingsOverlay").addEventListener("click",(e)=>{ if(e.target===el("settingsOverlay")) closeSettingsOverlay(); });
   el("settingsSaveBtn").onclick=()=>{
-    saveCfg(readSettingsFromUI()); el("settingsOverlay").classList.add("hidden");
+    saveCfg(readSettingsFromUI()); closeSettingsOverlay();
     const btn=el("settingsSaveBtn"); btn.textContent="✅ 저장됨!"; setTimeout(()=>btn.textContent="✅ 설정 저장",1200);
   };
 
@@ -1684,7 +1676,7 @@
     el("statsTotalSolved").textContent=totalSolved; el("statsTotalWrong").textContent=totalWrong; el("statsFavCount").textContent=favCount;
     drawCalendarGrid(el("mainCalGrid"),{year:statsViewY,month0:statsViewM,daily,goal});
   }
-  function renderLearnDayProgress(){ const wrap=el("learnDayProgress"); if(!wrap) return; const data=load(WORDS_KEY,{}),stats=statsMap(),allDays=getAllDays(data); wrap.innerHTML=""; if(allDays.length===0){wrap.innerHTML=`<div class="item"><div class="muted">DAY 데이터가 없어요.</div></div>`;return;} const pct=(a,b)=>b?Math.round((a/b)*100):0; allDays.forEach(day=>{ const words=data[day]||[],total=words.length,keys=words.map(keyOf),logged=keys.reduce((acc,k)=>acc+(((stats[k]?.correctCount||0)+(stats[k]?.wrongCount||0)>0)?1:0),0),wrongN=keys.reduce((acc,k)=>acc+((stats[k]?.wrongCount||0)>0?1:0),0); const row=document.createElement("div"); row.className="item"; row.innerHTML=`<div class="itemTop" style="margin-bottom:0;align-items:center;"><div class="itemWord">${esc(dayLabel(day))}</div><span class="badge">${total}개 · 기록 ${logged}개(${pct(logged,total)}%) · 오답 ${wrongN}개(${pct(wrongN,total)}%)</span></div>`; wrap.appendChild(row); }); }
+  function renderLearnDayProgress(){ const wrap=el("learnDayProgress"); if(!wrap) return; const data=load(WORDS_KEY,{}),stats=statsMap(),allDays=getAllDays(data); wrap.innerHTML=""; if(allDays.length===0){wrap.innerHTML=`<div class="item"><div class="muted">DAY 데이터가 없어요.</div></div>`;return;} const pct=(a,b)=>b?Math.round((a/b)*100):0; allDays.forEach(day=>{ const words=data[day]||[],total=words.length,keys=words.map(keyOf),logged=keys.reduce((acc,k)=>acc+(((stats[k]?.correctCount||0)+(stats[k]?.wrongCount||0)>0)?1:0),0),wrongN=keys.reduce((acc,k)=>acc+((stats[k]?.wrongCount||0)>0?1:0),0),progressPct=pct(logged,total); const row=document.createElement("div"); row.className="item"; row.innerHTML=`<div class="itemTop" style="margin-bottom:6px;align-items:center;"><div class="itemWord">${esc(dayLabel(day))}</div><span class="badge">${progressPct}%</span></div><div class="muted" style="font-size:12px;">학습 ${logged}/${total} · 오답 ${wrongN}</div><div class="progress-container" style="margin:8px 0 0;"><div class="progress-bar" style="width:${progressPct}%"></div></div>`; wrap.appendChild(row); }); }
   function updateDailyUI(){
     const daily=load(DAILY_KEY,{}),today=daily[todayKey()]||0,streak=calcStreak(),goal=getGoal(),pct=Math.max(0,Math.min(100,Math.round((today/goal)*100)));
     el("todayCountPill").textContent=today;
@@ -2064,7 +2056,7 @@
   document.addEventListener("keydown",(e)=>{
     if(e.key!=="Escape") return;
     if(!overlay.classList.contains("hidden")) closeSheet();
-    if(!el("settingsOverlay").classList.contains("hidden")) el("settingsOverlay").classList.add("hidden");
+    if(!el("settingsOverlay").classList.contains("hidden")) closeSettingsOverlay();
     if(!el("dayPickOverlay").classList.contains("hidden")) closeDayPick();
     if(!el("tutorialOverlay").classList.contains("hidden")) closeTutorial();
   });

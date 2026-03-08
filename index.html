@@ -791,7 +791,7 @@
     <!-- Plant growth indicator -->
     <div class="plant-card">
       <div class="plant-container">
-        <img id="plantImage" src="/assets/plants/plant_lv1.png" alt="단어 나무 Lv.1" loading="lazy" />
+        <img id="plantImage" src="plant_lv1.png" alt="단어 나무 Lv.1" loading="lazy" />
       </div>
       <div id="plantLevelText" class="plant-meta">단어 나무 Lv.1</div>
       <div id="plantNextText" class="plant-meta">다음 성장까지 100 XP</div>
@@ -1320,7 +1320,18 @@
   }
   function getPlantImage(level){
     const stage=Math.max(1,Math.min(6,Number(level)||1));
-    return `/assets/plants/plant_lv${stage}.png`;
+    return `plant_lv${stage}.png`;
+  }
+  function getPlantFallbackEmoji(level){
+    const stage=Math.max(1,Math.min(6,Number(level)||1));
+    if(stage<=2) return "🌱";
+    if(stage<=4) return "🌿";
+    return "🌳";
+  }
+  function makePlantEmojiDataUri(level){
+    const emoji=getPlantFallbackEmoji(level);
+    const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"><text x="50%" y="58%" dominant-baseline="middle" text-anchor="middle" font-size="84">${emoji}</text></svg>`;
+    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
   }
   function showLevelUpModal(prevLevel,newLevel){
     if(newLevel<=prevLevel) return;
@@ -1390,6 +1401,11 @@
     if(el("plantLevelText")) el("plantLevelText").textContent=`단어 나무 Lv.${info.level}`;
     if(el("plantNextText")) el("plantNextText").textContent=`다음 성장까지 ${info.toNext} XP`;
     if(plant){
+      plant.onerror=()=>{
+        plant.onerror=null;
+        plant.src=makePlantEmojiDataUri(info.level);
+        plant.alt=`단어 나무 ${getPlantFallbackEmoji(info.level)}`;
+      };
       plant.src=getPlantImage(info.level);
       plant.alt=`단어 나무 Lv.${info.level}`;
       if(prevXpLevel!==info.level){ plant.classList.remove("grow"); void plant.offsetWidth; plant.classList.add("grow"); }

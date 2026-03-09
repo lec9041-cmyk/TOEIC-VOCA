@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>TOEIC 마스터 - 암기 & 시험</title>
+  <title>토익 단어 암기</title>
 
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
   <link rel="apple-touch-icon" href="icon-192.png">
@@ -214,6 +214,10 @@
       user-select:none;
     }
     .answer-box:active { transform: scale(0.98); }
+    .answer-box{min-height:60dvh;border:1px solid var(--gray-200);border-radius:28px;background:#fff;box-shadow:0 12px 28px rgba(15,23,42,.08);display:flex;flex-direction:column;gap:14px;justify-content:center;}
+    #flashWordText{font-size:42px;font-weight:800;line-height:1.15;}
+    #flashAnswerText{font-size:30px;font-weight:700;color:#1e293b;opacity:0;transform:translateY(8px);transition:.22s ease;}
+    #flashAnswerBox.is-revealed #flashAnswerText{opacity:1;transform:translateY(0);}
     .tap-hint { color: var(--muted); font-size: 14px; font-weight: 400; }
 
     /* 효과 애니메이션 */
@@ -711,7 +715,6 @@
     #settingsOpenBtn{display:none;}
     .q{font-size:34px;padding:20px 12px;margin:10px auto;border-radius:16px;}
     .answer-box{padding:14px;min-height:80px;border-radius:14px;margin:12px 0;display:flex;flex-direction:column;gap:8px;}
-    #flashRevealBtn{min-height:48px;width:100%;font-size:18px;font-weight:800;}
     .actions button{min-height:56px;}
     #learnSettingsCard{padding:12px 11px;}
     #learnSettingsCard h2{text-align:center;margin-bottom:8px;}
@@ -771,16 +774,16 @@
 <body>
   <header class="app-header compact-header">
     <div>
-      <h1>TOEIC Master</h1>
-      <div class="sub" id="headerTodayProgress">Today progress 0 / 30 words</div>
+      <h1>다시 돌아왔어요 👋</h1>
+      <div class="sub" id="headerTodayProgress">오늘 진행 0 / 30 단어</div>
     </div>
   </header>
 
   <div class="card" id="todayStudyCard">
     <div class="quick-stats">
-      <div class="quick-stat"><span class="label">Today</span><b id="studyCardToday">0</b></div>
-      <div class="quick-stat"><span class="label">Streak</span><b><span id="studyCardStreak">0</span>일</b></div>
-      <div class="quick-stat"><span class="label">Level</span><b>Lv.<span id="xpLevel">1</span></b></div>
+      <div class="quick-stat"><span class="label">오늘 학습</span><b id="studyCardToday">0</b></div>
+      <div class="quick-stat"><span class="label">연속 학습</span><b><span id="studyCardStreak">0</span>일</b></div>
+      <div class="quick-stat"><span class="label">레벨</span><b>Lv.<span id="xpLevel">1</span></b></div>
     </div>
     <div class="selected-day-row">
       <span class="pill" id="selectedDaysPill">선택 DAY: -</span>
@@ -794,10 +797,10 @@
     <div id="comebackBanner" class="comeback-banner hidden">오랜만이에요 🙂 다시 시작해봐요!</div>
   </div>
 
-  <div class="sub app-meta">내장 로드: <code>/toeic_words_day1_30.csv</code> <span class="muted" id="dataStatus"></span></div>
+  <div class="sub app-meta">단어 데이터: <code>/toeic_words_day1_30.csv</code> <span class="muted" id="dataStatus"></span></div>
 
   <div class="card" id="learnSettingsCard">
-    <h2 id="mainActionTitle">학습 시작</h2>
+    <h2 id="mainActionTitle">학습 모드 선택</h2>
 
     <!-- Plant growth indicator -->
     <div class="plant-card">
@@ -818,16 +821,16 @@
     <div class="start-actions" style="margin-top:8px; margin-bottom:12px;">
       <button id="startBtn" class="btn" type="button" disabled>🚀 암기 시작</button>
       <div id="continueSummary" class="continue-summary hidden"></div>
-      <button id="resumeBtn" class="btn btn-soft" type="button" disabled>이어하기</button>
-      <button id="todayWrongBtn" class="btn btn-ghost" type="button">오늘 오답 복습</button>
+      <button id="resumeBtn" class="btn btn-soft" type="button" disabled>이어 학습</button>
+      <button id="todayWrongBtn" class="btn btn-ghost" type="button">오답 복습</button>
     </div>
 
     <!-- 옵션 그리드 -->
     <div class="grid">
       <div class="field hidden" id="modeField">
-        <label>시험 모드</label>
+        <label>학습 모드</label>
         <select id="modeSelect">
-          <option id="modeFlashOption" value="flash">속독 암기 (Flashcard)</option>
+          <option id="modeFlashOption" value="flash">플래시카드</option>
           <option value="mc">4지선다</option>
           <option value="sa">주관식</option>
         </select>
@@ -945,8 +948,8 @@
   </div>
 
   <nav class="bottom-nav" aria-label="주요 탐색">
-    <button id="mainTabLearn" class="bottom-nav__item active" type="button">학습</button>
-    <button id="mainTabTest" class="bottom-nav__item" type="button">시험</button>
+    <button id="mainTabHome" class="bottom-nav__item active" type="button">홈</button>
+    <button id="mainTabLearn" class="bottom-nav__item" type="button">학습</button>
     <button id="mainTabStats" class="bottom-nav__item" type="button">통계</button>
     <button id="mainTabSettings" class="bottom-nav__item" type="button">설정</button>
   </nav>
@@ -967,7 +970,7 @@
       <div id="quizModalBody">
         <div class="topPills">
           <span class="pill" id="progressPill">0/0</span>
-          <span class="pill">점수: <b id="score">0</b></span>
+          <span class="pill">학습 점수: <b id="score">0</b></span>
           <span class="pill">오답: <b id="wrongN">0</b></span>
           <span id="sessionTimerPill" class="hidden">⏱ --:--</span>
           <button id="quizSpeakBtn" class="btn btn-ghost" type="button" style="min-height:38px;padding:8px 10px;border-radius:999px;">🔊</button>
@@ -994,14 +997,14 @@
         </div>
 
         <div id="flashAnswerBox" class="answer-box hidden">
+           <div id="flashWordText"></div>
            <span id="flashAnswerText" class="hidden"></span>
-           <button id="flashRevealBtn" type="button" class="btn btn-primary">뜻 보기</button>
-           <span id="flashTapHint" class="tap-hint hidden">탭해서 정답 보기</span>
+           <span id="flashTapHint" class="tap-hint">탭하여 뜻 보기</span>
         </div>
         <div id="flashModeActions" class="hidden" style="margin-top:12px">
           <div class="actions" style="grid-template-columns: 1fr 1fr; gap:10px;">
-            <button id="knowBtn" class="btn" style="background:#dcfce7; color:#166534; height:64px; font-size:20px;" type="button">✔ 정답</button>
-            <button id="dontKnowBtn" class="btn" style="background:#fee2e2; color:#991b1b; height:64px; font-size:20px;" type="button">✖ 오답</button>
+            <button id="dontKnowBtn" class="btn" style="background:#fee2e2; color:#991b1b; height:64px; font-size:20px;" type="button">❌ 몰라요</button>
+            <button id="knowBtn" class="btn" style="background:#dcfce7; color:#166534; height:64px; font-size:20px;" type="button">✅ 알아요</button>
           </div>
         </div>
 
@@ -1013,16 +1016,16 @@
         </div>
 
         <div id="sessionCompleteCard" class="session-complete-card hidden">
-          <div class="session-complete-title">SESSION COMPLETE</div>
-          <div class="muted">Correct: <b id="sessionCorrect">0</b> / <b id="sessionTotal">0</b></div>
-          <div class="muted">XP gained: <b id="sessionXpGained">+0</b></div>
-          <div class="muted">Wrong answers saved: <b id="sessionWrongSaved">0</b></div>
-          <div class="muted">Today progress: <b id="sessionTodayProgress">0 / 30</b></div>
-          <div class="muted">Next level: <b id="sessionNextLevel">0 XP remaining</b></div>
+          <div class="session-complete-title">세션 완료</div>
+          <div class="muted">정답: <b id="sessionCorrect">0</b> / <b id="sessionTotal">0</b></div>
+          <div class="muted">획득 XP: <b id="sessionXpGained">+0</b></div>
+          <div class="muted">저장된 오답: <b id="sessionWrongSaved">0</b></div>
+          <div class="muted">오늘 진행: <b id="sessionTodayProgress">0 / 30</b></div>
+          <div class="muted">다음 레벨까지: <b id="sessionNextLevel">0 XP</b></div>
           <div class="session-complete-actions">
-            <button id="sessionContinueBtn" class="btn btn-primary" type="button">Continue learning</button>
-            <button id="sessionReviewWrongBtn" class="btn btn-soft" type="button">Review wrong answers</button>
-            <button id="sessionBackHomeBtn" class="btn btn-ghost" type="button">Back to home</button>
+            <button id="sessionContinueBtn" class="btn btn-primary" type="button">이어 학습</button>
+            <button id="sessionReviewWrongBtn" class="btn btn-soft" type="button">오답 복습</button>
+            <button id="sessionBackHomeBtn" class="btn btn-ghost" type="button">홈으로</button>
           </div>
         </div>
       </div>
@@ -1430,7 +1433,7 @@
       dir:el("dirSelect").value,
       mode:isLearnTab()?"flash":el("modeSelect").value,
       count:el("countSelect").value,
-      tab:isLearnTab()?"learn":"test",
+      tab:isHomeTab()?"home":(isLearnTab()?"learn":"stats"),
       ts:Date.now()
     };
     save(LAST_STUDY_SETTINGS_KEY,payload);
@@ -1441,8 +1444,10 @@
     if(Array.isArray(st.dayKeys)&&st.dayKeys.length){ dayPickSelected=new Set(st.dayKeys.filter(Boolean)); updateDayPickLabel(); renderDayPickGrid(); }
     if(st.ranges){ el("cb_core").checked=!!st.ranges.core; el("cb_basic").checked=!!st.ranges.basic; el("cb_800").checked=!!st.ranges.s800; el("cb_900").checked=!!st.ranges.s900; }
     if(st.dir) el("dirSelect").value=st.dir;
-    if(st.tab==="test") showMainPanel("test");
-    if(st.mode&&!isLearnTab()) el("modeSelect").value=st.mode;
+    if(st.tab==="learn") showMainPanel("learn");
+    else if(st.tab==="stats") showMainPanel("stats");
+    else showMainPanel("home");
+    if(st.mode&&isLearnTab()) el("modeSelect").value=st.mode;
     updateScopeBar();
     if(st.count&&Array.from(el("countSelect").options).some(o=>o.value===String(st.count))) el("countSelect").value=String(st.count);
     return true;
@@ -1546,12 +1551,13 @@
   // ===================================================================
   // 탭 전환
   // ===================================================================
-  const mainTabLearn=el("mainTabLearn"), mainTabTest=el("mainTabTest"), mainTabStats=el("mainTabStats"), mainTabSettings=el("mainTabSettings");
+  const mainTabHome=el("mainTabHome"), mainTabLearn=el("mainTabLearn"), mainTabStats=el("mainTabStats"), mainTabSettings=el("mainTabSettings");
   const modeField=el("modeField"), startBtn=el("startBtn");
   const modeFlashOption=el("modeFlashOption");
-  const learnSettingsCard=el("learnSettingsCard"), bottomToolsCard=el("bottomToolsCard"), statsCard=el("statsCard");
+  const todayStudyCard=el("todayStudyCard"), learnSettingsCard=el("learnSettingsCard"), bottomToolsCard=el("bottomToolsCard"), statsCard=el("statsCard");
   let statsViewY=new Date().getFullYear(), statsViewM=new Date().getMonth(), calClickBound=false;
   function isLearnTab(){ return mainTabLearn.classList.contains("active"); }
+  function isHomeTab(){ return mainTabHome.classList.contains("active"); }
   function setFlashOptionEnabled(enabled){
     if(!modeFlashOption) return;
     modeFlashOption.disabled=!enabled;
@@ -1559,18 +1565,25 @@
   }
   function showMainPanel(panel){
     const isStats=panel==="stats";
-    mainTabLearn.classList.toggle("active",panel==="learn"); mainTabTest.classList.toggle("active",panel==="test"); mainTabStats.classList.toggle("active",isStats);
+    const isHome=panel==="home";
+    mainTabHome.classList.toggle("active",isHome);
+    mainTabLearn.classList.toggle("active",panel==="learn");
+    mainTabStats.classList.toggle("active",isStats);
     if(mainTabSettings) mainTabSettings.classList.toggle("active",false);
-    learnSettingsCard.classList.toggle("hidden",isStats); bottomToolsCard.classList.toggle("hidden",isStats); statsCard.classList.toggle("hidden",!isStats);
-    if(el("mainActionTitle")) el("mainActionTitle").textContent=panel==="test"?"시험 시작":"학습 시작";
-    if(panel==="learn"){ setFlashOptionEnabled(true); el("modeSelect").value="flash"; modeField.classList.add("hidden"); if(!startBtn.disabled) setStartButtonState(false); }
-    if(panel==="test"){ setFlashOptionEnabled(false); modeField.classList.remove("hidden"); if(el("modeSelect").value==="flash")el("modeSelect").value="mc"; if(!startBtn.disabled) setStartButtonState(false); }
+    const showLearn = panel==="learn";
+    const showHome = panel==="home";
+    learnSettingsCard.classList.toggle("hidden",!showLearn);
+    todayStudyCard.classList.toggle("hidden",!showHome);
+    bottomToolsCard.classList.toggle("hidden",!(showLearn||isStats));
+    statsCard.classList.toggle("hidden",!isStats);
+    if(showLearn){ modeField.classList.remove("hidden"); if(!startBtn.disabled) setStartButtonState(false); }
+    if(showHome){ modeField.classList.add("hidden"); el("modeSelect").value="flash"; if(!startBtn.disabled) setStartButtonState(false); }
     if(panel==="stats") renderMainCalendarSummary(statsViewY,statsViewM);
     updateFlashOffToggleState(); updateScopeBar(); saveLastStudySettings();
   }
-  function setStartButtonState(locked){ startBtn.disabled=!!locked; startBtn.textContent=locked?"로딩 중...":(isLearnTab()?"🚀 암기 시작":"✍️ 시험 시작"); }
+  function setStartButtonState(locked){ startBtn.disabled=!!locked; startBtn.textContent=locked?"로딩 중...":"🚀 암기 시작"; }
+  mainTabHome.onclick=()=>showMainPanel("home");
   mainTabLearn.onclick=()=>showMainPanel("learn");
-  mainTabTest.onclick=()=>showMainPanel("test");
   mainTabStats.onclick=()=>showMainPanel("stats");
   if(mainTabSettings) mainTabSettings.onclick=()=>{ applySettingsToUI(); el("settingsOverlay").classList.remove("hidden"); mainTabSettings.classList.add("active"); };
   function bindStatsCalNav(){
@@ -1824,7 +1837,7 @@
     if(el("studyCardGoal")) el("studyCardGoal").textContent=goal;
     if(el("studyCardStreak")) el("studyCardStreak").textContent=streak;
     if(el("studyCardBar")) el("studyCardBar").style.width=`${pct}%`;
-    if(el("headerTodayProgress")) el("headerTodayProgress").textContent=`Today progress ${today} / ${goal} words`;
+    if(el("headerTodayProgress")) el("headerTodayProgress").textContent=`오늘 진행 ${today} / ${goal} 단어`;
     updateMissionsAndBonuses(today);
     updateComebackBanner(today);
     updateXpUI();
@@ -2060,7 +2073,7 @@
     if(!el("cb_core").checked&&!el("cb_basic").checked&&!el("cb_800").checked&&!el("cb_900").checked) return alert("범위를 최소 1개 이상 선택해야 시작돼요!");
     const {targetDays,filtered}=buildPoolFromSelection(), usePool=customPool||filtered;
     if(usePool.length===0) return alert("선택한 범위에 단어가 없습니다!");
-    const fixedMode=forceMode||(isLearnTab()?"flash":el("modeSelect").value), fixedDir=el("dirSelect").value;
+    const fixedMode=forceMode||((isHomeTab())?"flash":el("modeSelect").value), fixedDir=el("dirSelect").value;
     const count=parseInt(el("countSelect").value,10);
     pool=pickQuizItems(usePool,Number.isFinite(count)?count:usePool.length);
     idx=0; score=0; wrong=[]; locked=false; sessionXpEarned=0;
@@ -2095,7 +2108,7 @@
     locked=false;
     const item=pool[idx]; if(!item){finishQuiz();return;}
     const {mode,dir}=quizState, cfg=loadCfg();
-    el("quizMeta").textContent=`(${mode==="flash"?"Flash":(mode==="mc"?"MC":"SA")} · ${dir==="en2ko"?"영→뜻":"뜻→영"})`;
+    el("quizMeta").textContent=`(${mode==="flash"?"플래시카드":(mode==="mc"?"객관식":"주관식")} · ${dir==="en2ko"?"영→뜻":"뜻→영"})`;
     el("sessionCompleteCard")?.classList.add("hidden");
     setQuizHeaderScope(); updateQuizQuickButtons(item);
     el("progressPill").textContent=`${idx+1}/${pool.length}`; el("progressBar").style.width=`${((idx+1)/pool.length)*100}%`;
@@ -2103,9 +2116,10 @@
     el("feedback").textContent=""; el("oxMark").textContent=""; el("nextBtn").classList.add("hidden");
     const qText=dir==="en2ko"?item.w:item.m;
     el("question").textContent=`${isWrongMarked(item)?"🟥 ":""}${qText}`;
+    el("flashWordText").textContent=qText;
     if(dir==="en2ko") speak(item.w);
     ["choices","shortAnswer","flashAnswerBox","flashModeActions"].forEach(id=>el(id).classList.add("hidden"));
-    el("flashAnswerText").classList.add("hidden"); el("flashTapHint").classList.remove("hidden");
+    el("flashAnswerText").classList.add("hidden"); el("flashTapHint").classList.remove("hidden"); el("flashAnswerBox").classList.remove("is-revealed");
     if(mode==="mc"){ el("choices").classList.remove("hidden"); renderMC(item,dir); }
     else if(mode==="sa"){ el("shortAnswer").classList.remove("hidden"); el("answerInput").value=""; el("answerInput").focus(); }
     else {
@@ -2160,7 +2174,7 @@
     if(el("sessionXpGained")) el("sessionXpGained").textContent=`+${sessionXpEarned}`;
     if(el("sessionWrongSaved")) el("sessionWrongSaved").textContent=String(wrong.length);
     if(el("sessionTodayProgress")) el("sessionTodayProgress").textContent=`${today} / ${goal}`;
-    if(el("sessionNextLevel")) el("sessionNextLevel").textContent=`${info.toNext} XP remaining`;
+    if(el("sessionNextLevel")) el("sessionNextLevel").textContent=`${info.toNext} XP`;
     el("sessionCompleteCard")?.classList.remove("hidden");
     clearResumeState();
   }
@@ -2168,11 +2182,11 @@
   function goNext(){ clearAutoNext(); if(idx>=pool.length-1){idx=pool.length;finishQuiz();return;} idx++; renderQuiz(); }
   el("nextBtn").onclick=()=>{ clearAutoNext(); if(locked) goNext(); };
 
-  el("flashRevealBtn").onclick=(e)=>{ e.stopPropagation(); el("flashAnswerBox").click(); };
   el("flashAnswerBox").onclick=()=>{
+    if(el("flashAnswerBox").classList.contains("is-revealed")) return;
     const cfg=loadCfg(), delay=cfg.flashRevealDelay||0;
     const reveal=()=>{
-      el("flashAnswerText").classList.remove("hidden"); el("flashTapHint").classList.add("hidden"); el("flashModeActions").classList.remove("hidden");
+      el("flashAnswerText").classList.remove("hidden"); el("flashTapHint").classList.add("hidden"); el("flashModeActions").classList.remove("hidden"); el("flashAnswerBox").classList.add("is-revealed");
       if(cfg.speakOnReveal){ const t=getSpeakTextForCurrentQuestion(); if(t) speak(t); }
     };
     if(delay>0) setTimeout(reveal,delay); else reveal();
@@ -2188,7 +2202,7 @@
     const limit=cfg.reinsertLimit;
     if(limit>0&&reinsertCount[k]<=limit){ const rem=pool.length-(idx+1); pool.splice(idx+(rem>0?(Math.floor(Math.random()*rem)+1):1),0,item); el("feedback").innerHTML=`재삽입되었습니다. (${reinsertCount[k]}/${limit})`; }
     else if(limit>0){ el("feedback").innerHTML="재삽입 한도 도달! 다음으로 넘어갑니다."; }
-    saveResumeState(); setTimeout(goNext,500);
+    saveResumeState(); setTimeout(goNext,350);
   };
 
   el("submitAnswerBtn").onclick=()=>{ const user=normalizeAnswer(el("answerInput").value); if(!user) return alert("정답을 입력하세요!"); const correctRaw=quizState.dir==="en2ko"?pool[idx].m:pool[idx].w; const correct=normalizeAnswer(correctRaw); const parts=correct.split(/[;,/]/g).map(x=>normalizeAnswer(x)).filter(Boolean); judge(parts.length?parts.includes(user):(user===correct)); };
@@ -2209,6 +2223,20 @@
   el("stopBtn").onclick=()=>{ clearAutoNext(); clearAllTimers(); saveResumeState(); el("quizOverlay").classList.add("hidden"); el("sessionTimerPill").classList.add("hidden"); updateResumeButton(); };
   window.addEventListener("beforeunload",()=>saveResumeState());
 
+  function handleFlashSwipe(dx){
+    if(el("flashModeActions").classList.contains("hidden")) return;
+    if(dx>70) el("knowBtn").click();
+    if(dx<-70) el("dontKnowBtn").click();
+  }
+  let touchStartX=null;
+  el("flashAnswerBox").addEventListener("touchstart",(e)=>{ touchStartX=e.changedTouches?.[0]?.clientX??null; },{passive:true});
+  el("flashAnswerBox").addEventListener("touchend",(e)=>{
+    const endX=e.changedTouches?.[0]?.clientX;
+    if(touchStartX===null||typeof endX!=="number") return;
+    handleFlashSwipe(endX-touchStartX);
+    touchStartX=null;
+  });
+
   document.addEventListener("keydown",(e)=>{
     if(el("quizOverlay").classList.contains("hidden")) return;
     if(e.key.toLowerCase()==="v"){ const ai=el("answerInput"); if(ai&&document.activeElement===ai) return; const t=getSpeakTextForCurrentQuestion(); if(t) speak(t); }
@@ -2227,7 +2255,7 @@
   // ===================================================================
   modeField.classList.add("hidden");
   el("modeSelect").value="flash";
-  showMainPanel("learn");
+  showMainPanel("home");
   updateScopeBar();
   ensureLoaded();
 </script>

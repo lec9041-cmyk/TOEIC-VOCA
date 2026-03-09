@@ -9,771 +9,221 @@
   <link rel="apple-touch-icon" href="icon-192.png">
 
   <style>
-    :root{
-      --bd:#e5e7eb;
-      --muted:#6b7280;
-      --blue:#1d4ed8;
-      --bg:#ffffff;
-      --chip:#f9fafb;
-      --shadow: 0 14px 40px rgba(0,0,0,.12);
-    }
-    body{
-      font-family:system-ui,-apple-system,Segoe UI,Apple SD Gothic Neo,Malgun Gothic,sans-serif;
-      margin:12px auto;
-      line-height:1.35;
-      background:#f8fafc;
-      color:#111827;
-      max-width: 980px;
-    }
-    h1{font-size:22px;margin:10px 0 6px}
-    .sub{color:var(--muted);font-size:13px;margin-bottom:14px}
-    code{background:#f3f4f6;padding:2px 6px;border-radius:8px}
 
-    /* 메인 탭 */
-    .main-tabs {
-      display: flex;
-      flex-wrap: nowrap;
-      gap: 10px;
-      margin-bottom: 12px;
-      padding: 6px;
-      background: #f1f5f9;
-      border: 1px solid var(--bd);
-      border-radius: 24px;
-    }
-    .main-tab {
-      flex: 1;
-      min-width: 0;
-      padding: 15px;
-      text-align: center;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-weight: 900;
-      cursor: pointer;
-      border-radius: 18px;
-      transition: 0.15s ease;
-      color: #64748b;
-      user-select:none;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .main-tab.active {
-      background: #fff;
-      color: var(--blue);
-      box-shadow: 0 8px 20px rgba(17,24,39,0.08);
-    }
-
-    .card{
-      border:1px solid var(--bd);
-      border-radius:24px;
-      padding:18px;
-      margin:14px 0;
-      background:#fff;
-      box-shadow: 0 8px 24px rgba(17,24,39,0.06);
-    }
-    .card h2{font-size:15px;margin:0 0 10px}
-    .muted{color:var(--muted);font-size:13px}
-    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-    .pill{
-      display:inline-block;border:1px solid var(--bd);
-      border-radius:999px;padding:8px 12px;
-      font-size:12px;color:#374151;background:#fff
-    }
-
-    .grid{
-      display:grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap:12px;
-      align-items:end;
-    }
-    .field{
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-      min-width:0;
-    }
-    .field label{font-size:12px;color:#374151;font-weight:900}
-
-    select,input,button{
-      padding:12px 12px;
-      font-size:14px;
-      border:1px solid var(--bd);
-      border-radius:18px;
-      background:#fff;
-      min-height:46px;
-      transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
-    }
-    button{cursor:pointer}
-    button:hover:not(:disabled){transform: translateY(-1px);box-shadow: 0 6px 16px rgba(17,24,39,0.08);}
-    button:active{transform: translateY(1px) scale(.99);box-shadow:none;}
-    input::placeholder{color:#9ca3af}
-    button:disabled{ opacity:.55; cursor:not-allowed; transform:none; }
-
-    .btn{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-      font-weight:900;
-    }
-    .btn-ghost{background:#fff}
-    .btn-soft{background:#f8fafc}
-    .btn-danger{border-color:#fecaca;color:#991b1b;background:#fff}
-    .btn-primary{background:var(--blue);border-color:var(--blue);color:#fff;}
-
-    #startBtn{
-      background:var(--blue);
-      border-color:var(--blue);
-      color:#fff;
-      font-size:16px;
-      padding:14px 14px;
-      border-radius:18px;
-      width:100%;
-      box-shadow: 0 10px 18px rgba(29,78,216,0.22);
-    }
-
-    .chips{
-      display:grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap:12px;
-    }
-    .chip{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      padding:12px 12px;
-      border:1px solid var(--bd);
-      border-radius:18px;
-      background:var(--chip);
-      user-select:none;
-      font-size:13px;
-      font-weight:900;
-      white-space:nowrap;
-    }
-    .chip input{transform:scale(1.15)}
-
-    .daychip{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      border:1px solid var(--bd);
-      border-radius:999px;
-      padding:8px 10px;
-      background:#fff;
-      font-size:12px;
-      font-weight:900;
-    }
-    .daychip button{
-      border:none; background:transparent; cursor:pointer; font-size:14px; line-height:1; padding:0 2px; color:#6b7280;
-    }
-
-    /* 범위(커버리지) */
-    .scope-meter{margin-top:10px;}
-    .scope-meta{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--muted);margin-bottom:6px;}
-    .progress-container { width: 100%; height: 10px; background-color: #f3f4f6; border-radius: 999px; margin: 16px 0; overflow: hidden; }
-    .progress-bar { height: 100%; background: linear-gradient(90deg, var(--blue), #60a5fa); width: 0%; transition: width 0.3s ease; }
-
-    /* 퀴즈 UI */
-    .q{
-      font-size: clamp(36px, 7vw, 42px);
-      font-weight:900;
-      margin:18px auto;
-      text-align: center;
-      max-width: 560px;
-      padding: 28px 16px;
-      border-radius: 24px;
-      border: 1px solid var(--bd);
-      background: #fff;
-      box-shadow: 0 10px 22px rgba(17,24,39,0.08);
-    }
-    .q.clickable{cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:4px;}
-    .ox-mark{font-size:34px;font-weight:900;text-align:center;min-height:42px;margin-top:8px;}
-    .choices{display:grid;gap:12px}
-    .choices button{
-      text-align:left;
-      border:1px solid var(--bd);
-      border-radius:18px;
-      background:#fff;
-      padding:14px 16px;
-      min-height:54px;
-      box-shadow: 0 8px 18px rgba(17,24,39,0.05);
-      font-weight:700;
-    }
-    .choices button:hover:not(:disabled){transform: translateY(-2px); border-color: var(--blue);}
-    .choices button:focus-visible{outline:none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(29,78,216,.18), 0 8px 18px rgba(17,24,39,0.08);}
-    .choices button:active{transform: translateY(0);}
-    .ok{color:#0a7; font-weight: bold;}
-    .bad{color:#c23; font-weight: bold;}
-
-    /* 정답 가리기 상자 */
-    .answer-box {
-      margin: 20px 0; padding: 30px 20px; border: 2px dashed var(--bd); border-radius: 18px;
-      text-align: center; cursor: pointer; background-color: #f9fafb; min-height: 100px;
-      display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; transition: all 0.2s;
-      user-select:none;
-    }
-    .answer-box:active { transform: scale(0.98); }
-    .answer-box{min-height:60dvh;border:1px solid var(--gray-200);border-radius:28px;background:#fff;box-shadow:0 12px 28px rgba(15,23,42,.08);display:flex;flex-direction:column;gap:14px;justify-content:center;}
-    #flashWordText{font-size:42px;font-weight:800;line-height:1.15;}
-    #flashAnswerText{font-size:30px;font-weight:700;color:#1e293b;opacity:0;transform:translateY(8px);transition:.22s ease;}
-    #flashAnswerBox.is-revealed #flashAnswerText{opacity:1;transform:translateY(0);}
-    .tap-hint { color: var(--muted); font-size: 14px; font-weight: 400; }
-
-    /* 효과 애니메이션 */
-    .flash-ok { animation: flash-green 0.4s; }
-    .flash-bad { animation: flash-red 0.4s; }
-    @keyframes flash-green { 0% { background: #dcfce7; } 100% { background: #fff; } }
-    @keyframes flash-red { 0% { background: #fee2e2; } 100% { background: #fff; } }
-
-    #nextBtn{ margin-top:12px; width:100%; padding:14px 12px; border-radius:18px; font-weight:900; }
-    .actions{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:12px; }
-    .actions button{ border-radius:18px; font-weight:900; min-height:48px; }
-
-    /* Bottom Sheet */
-    .overlay{ position:fixed; inset:0; background:rgba(17,24,39,.48); display:flex; align-items:flex-end; justify-content:center; padding:14px; padding-bottom: calc(14px + env(safe-area-inset-bottom)); z-index:50; }
-    .sheet{ width:min(980px, 100%); max-height:84dvh; background:#fff; border:1px solid var(--bd); border-radius:24px; box-shadow:var(--shadow); overflow:hidden; display:flex; flex-direction:column; }
-    .sheetHead{ display:flex; align-items:center; justify-content:space-between; padding:12px; border-bottom:1px solid var(--bd); gap:10px; }
-    .sheetTitle{font-weight:900;font-size:15px}
-    .sheetBody{padding:12px;overflow:auto}
-
-    .tabs{display:flex;gap:8px;flex-wrap:wrap}
-    .tab{ padding:10px 12px; border:1px solid var(--bd); border-radius:999px; background:#fff; font-weight:900; cursor:pointer; font-size:13px; }
-    .tab.active{ background:#111827; border-color:#111827; color:#fff; }
-
-    .list{display:grid;gap:10px;margin-top:10px}
-    .item{ border:1px solid var(--bd); border-radius:20px; padding:12px; background:#fff; }
-    .itemTop{ display:flex; align-items:flex-start; justify-content:space-between; gap:10px; margin-bottom:8px; }
-    .itemWord{font-weight:900;font-size:16px;}
-    .badge{ border:1px solid var(--bd); border-radius:999px; padding:6px 10px; font-size:12px; background:#fff; }
-    .miniBtns{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;}
-    .miniBtns button{min-height:40px; padding:10px 12px; border-radius:14px; font-weight:900;}
-
-    .hidden{display:none !important;}
-
-    /* FULLSCREEN QUIZ OVERLAY */
-    #quizOverlay{ position:fixed; inset:0; background:rgba(17,24,39,.55); z-index:80; display:flex; align-items:stretch; justify-content:center; padding:12px; padding-top: calc(12px + env(safe-area-inset-top)); padding-bottom: calc(12px + env(safe-area-inset-bottom)); overscroll-behavior: contain; }
-    #quizModal{ width:min(980px, 100%); background:#fff; border:1px solid var(--bd); border-radius:24px; box-shadow:var(--shadow); overflow:hidden; display:flex; flex-direction:column; max-height: 100dvh; }
-    #quizModalHead{ display:flex; align-items:center; justify-content:space-between; padding:12px; border-bottom:1px solid var(--bd); gap:10px; }
-    #quizModalBody{ padding:16px; overflow:auto; -webkit-overflow-scrolling: touch; }
-    .topPills{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
-    #quizTitleWrap{display:flex; flex-direction:column; gap:4px;}
-    #quizModalTitle{font-weight:900;}
-    #quizScopeLine{font-size:12px; color:var(--muted);}
-
-    /* CONFETTI CANVAS */
-    #confettiCanvas{ position:fixed; inset:0; pointer-events:none; z-index:120; }
-
-    /* Calendar */
-    .calGrid{ display:grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap:8px; }
-    .calDow{font-size:12px; color:var(--muted); text-align:center; font-weight:900;}
-    .calDay{
-      border:1px solid var(--bd);
-      border-radius:12px;
-      min-height:66px;
-      background:#fff;
-      display:flex;
-      align-items:flex-start;
-      justify-content:flex-start;
-      position:relative;
-      cursor:pointer;
-      user-select:none;
-      padding:8px 8px 0 8px;
-      box-sizing:border-box;
-    }
-    .calNum{font-weight:900; font-size:16px; line-height:1;}
-    .calDot{
-      position:absolute;
-      bottom:6px;
-      left:50%;
-      transform:translateX(-50%);
-      width:14px;
-      height:4px;
-      border-radius:2px;
-      background:#2563eb;
-      opacity:.95;
-    }
-    .calL0{ background:#ffffff; }
-    .calL1{ background:#eff6ff; }
-    .calL2{ background:#dbeafe; }
-    .calL3{ background:#60a5fa; }
-    .calL4{ background:#3730a3; }
-    .calL3 .calNum, .calL4 .calNum{ color:#fff; }
-    .calL3 .calDot, .calL4 .calDot{ background:rgba(255,255,255,.92); }
-    .calGoal{ outline:2px solid #60a5fa; outline-offset:-2px; }
-    .calToday{ box-shadow: inset 0 0 0 2px #111827; }
-    .calDay.calGoal.calToday{ outline-color:#3b82f6; }
-
-    .summaryStats{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px;}
-    .summaryStat{border:1px solid var(--bd); border-radius:14px; padding:10px; background:#fff;}
-    .summaryStat .k{font-size:12px; color:var(--muted);}
-    .summaryStat .v{font-size:18px; font-weight:900; margin-top:2px;}
-
-    /* 섹션2 버튼 살짝 작게 */
-    #bottomToolsCard .actions button{min-height:44px; border-radius:16px; font-size:13px;}
-    #bottomToolsCard summary{user-select:none;}
-
-    /* ====== 설정 패널 ====== */
-    #settingsOverlay {
-      position: fixed; inset: 0; background: rgba(17,24,39,.48);
-      display: flex; align-items: flex-end; justify-content: center;
-      padding: 14px; padding-bottom: calc(14px + env(safe-area-inset-bottom));
-      z-index: 90;
-    }
-    #settingsSheet {
-      width: min(980px, 100%); max-height: 88dvh; background: #fff;
-      border: 1px solid var(--bd); border-radius: 24px; box-shadow: var(--shadow);
-      overflow: hidden; display: flex; flex-direction: column;
-    }
-    #settingsHead {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 14px 16px; border-bottom: 1px solid var(--bd);
-    }
-    #settingsBody { padding: 14px 16px; overflow: auto; display: flex; flex-direction: column; gap: 18px; }
-    .settingsSection { display: flex; flex-direction: column; gap: 10px; }
-    .settingsSectionTitle {
-      font-size: 12px; font-weight: 900; color: var(--muted);
-      text-transform: uppercase; letter-spacing: .06em; padding-bottom: 4px;
-      border-bottom: 1px solid var(--bd);
-    }
-    .settingRow {
-      display: flex; align-items: center; justify-content: space-between;
-      gap: 12px; padding: 4px 0;
-    }
-    .settingLabel { font-size: 14px; font-weight: 700; flex: 1; }
-    .settingDesc { font-size: 12px; color: var(--muted); margin-top: 2px; }
-    .settingControl { flex-shrink: 0; }
-    .settingControl select { min-height: 40px; padding: 8px 10px; border-radius: 12px; font-size: 13px; }
-    .settingControl input[type=number] { min-height: 40px; padding: 8px 10px; border-radius: 12px; font-size: 13px; width: 80px; }
-    .toggle-switch {
-      position: relative; display: inline-block; width: 48px; height: 26px;
-    }
-    .toggle-switch input { opacity: 0; width: 0; height: 0; }
-    .toggle-slider {
-      position: absolute; cursor: pointer; inset: 0; background: #d1d5db;
-      border-radius: 999px; transition: .25s;
-    }
-    .toggle-slider:before {
-      content: ""; position: absolute; width: 20px; height: 20px;
-      left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: .25s;
-      box-shadow: 0 1px 4px rgba(0,0,0,.18);
-    }
-    .toggle-switch input:checked + .toggle-slider { background: var(--blue); }
-    .toggle-switch input:checked + .toggle-slider:before { transform: translateX(22px); }
-    .settings-save-btn {
-      width: 100%; padding: 14px; border-radius: 18px; font-size: 16px;
-      font-weight: 900; background: var(--blue); color: #fff; border-color: var(--blue);
-      margin-top: 4px;
-    }
-    /* 설정 열기 버튼 (헤더 옆) */
-    #settingsOpenBtn {
-      position: fixed; bottom: 20px; right: 16px;
-      width: 52px; height: 52px; border-radius: 50%;
-      background: var(--blue); color: #fff; font-size: 22px;
-      border: none; box-shadow: 0 4px 16px rgba(29,78,216,.35);
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; z-index: 40;
-      transition: transform .15s;
-    }
-    #settingsOpenBtn:active { transform: scale(.92); }
-
-    @media (min-width: 760px){
-      body{margin:16px}
-      .grid{grid-template-columns: repeat(12, 1fr);}
-      .field{grid-column: span 3;}
-      .chips{grid-template-columns: repeat(4, minmax(0, 1fr));}
-    }
-    @media (max-width: 420px){
-      .main-tabs{gap:6px;padding:4px;}
-      .main-tab{padding:12px 8px;font-size:13px;}
-      .calGrid{gap:6px;}
-      .calDay{min-height:62px;border-radius:10px;padding:8px 8px 0 8px;}
-      .calNum{font-size:15px;}
-      .calDot{bottom:5px;}
-    }
-
-    /* ====== 타임어택 타이머 ====== */
-    #timerBar {
-      height: 10px; border-radius: 999px; background: #22c55e;
-      transition: width 0.1s linear, background 0.3s;
-      margin-bottom: 6px;
-    }
-    #timerBar.warn { background: #f59e0b; }
-    #timerBar.danger { background: #ef4444; }
-    #timerDisplay {
-      text-align: center; font-size: 13px; font-weight: 900;
-      color: var(--muted); margin-bottom: 6px; transition: color 0.3s;
-    }
-    #timerDisplay.warn { color: #f59e0b; }
-    #timerDisplay.danger { color: #ef4444; }
-    #sessionTimerPill {
-      background: #f1f5f9; border: 1px solid var(--bd);
-      border-radius: 999px; padding: 6px 12px; font-size: 13px;
-      font-weight: 900; color: #374151; flex-shrink: 0;
-    }
-    #sessionTimerPill.warn { background: #fef3c7; border-color: #f59e0b; color: #92400e; }
-    #sessionTimerPill.danger { background: #fee2e2; border-color: #ef4444; color: #991b1b; }
-
-    /* ====== DAY 선택 팝업 ====== */
-    #dayPickOverlay {
-      position: fixed; inset: 0; background: rgba(17,24,39,.48);
-      display: flex; align-items: flex-end; justify-content: center;
-      padding: 14px; padding-bottom: calc(14px + env(safe-area-inset-bottom)); z-index: 95;
-    }
-    #dayPickSheet {
-      width: min(980px, 100%); max-height: 88dvh; background: #fff;
-      border: 1px solid var(--bd); border-radius: 24px; box-shadow: var(--shadow);
-      overflow: hidden; display: flex; flex-direction: column;
-    }
-    #dayPickHead {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 14px 16px; border-bottom: 1px solid var(--bd); gap: 10px;
-    }
-    #dayPickBody { padding: 16px 18px; overflow: auto; display: flex; flex-direction: column; gap: 14px; }
-    .dayCheckGrid {
-      display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px;
-    }
-    @media(min-width:500px){ .dayCheckGrid{ grid-template-columns: repeat(3, minmax(0,1fr)); } }
-    @media(min-width:700px){ .dayCheckGrid{ grid-template-columns: repeat(5, minmax(0,1fr)); } }
-    .dayCheckItem {
-      display: flex; align-items: center; gap: 8px;
-      padding: 10px 12px; border: 1px solid var(--bd); border-radius: 14px;
-      background: #f9fafb; cursor: pointer; user-select: none;
-      font-size: 13px; font-weight: 700; transition: 0.15s;
-    }
-    .dayCheckItem:hover { border-color: #93c5fd; background: #eff6ff; }
-    .dayCheckItem.checked { border-color: var(--blue); background: #dbeafe; color: var(--blue); }
-    .dayCheckItem input { display: none; }
-
-    /* ====== 튜토리얼 모달 ====== */
-    #tutorialOverlay {
-      position: fixed; inset: 0; background: rgba(17,24,39,.6);
-      display: flex; align-items: center; justify-content: center;
-      padding: 16px; z-index: 110;
-    }
-    #tutorialModal {
-      width: min(540px, 100%); background: #fff; border-radius: 24px;
-      box-shadow: var(--shadow); overflow: hidden; display: flex; flex-direction: column;
-      max-height: 90dvh;
-    }
-    #tutorialHead {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 16px 20px; border-bottom: 1px solid var(--bd);
-    }
-    #tutorialBody { padding: 20px; overflow: auto; }
-    .tutStep { display: none; }
-    .tutStep.active { display: block; }
-    .tutStepTitle { font-size: 20px; font-weight: 900; margin-bottom: 10px; }
-    .tutStepDesc { font-size: 14px; line-height: 1.7; color: #374151; margin-bottom: 14px; }
-    .tutStepDesc b { color: #111827; }
-    .tutEmoji { font-size: 48px; text-align: center; margin-bottom: 12px; }
-    .tutDots { display: flex; gap: 8px; justify-content: center; margin: 14px 0 0; }
-    .tutDot { width: 8px; height: 8px; border-radius: 50%; background: #e5e7eb; transition: 0.2s; }
-    .tutDot.active { background: var(--blue); width: 22px; border-radius: 4px; }
-    .tutNav { display: flex; gap: 10px; margin-top: 16px; }
-    .tutNav button { flex: 1; padding: 13px; border-radius: 16px; font-weight: 900; font-size: 15px; }
-
-    /* DAY 선택 버튼 (메인 카드) */
-    #dayPickOpenBtn {
-      width: 100%; padding: 13px; border-radius: 16px; font-weight: 900;
-      font-size: 14px; background: #f8fafc; border: 1px solid var(--bd);
-      display: flex; align-items: center; justify-content: space-between; gap: 8px;
-    }
-    #dayPickOpenBtn .dpLabel { flex: 1; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    #dayPickOpenBtn .dpArrow { flex-shrink: 0; color: var(--muted); }
-
-    @media (max-width: 420px){
-      .dayCheckGrid{ grid-template-columns: repeat(2, minmax(0,1fr)); gap:6px; }
-      .dayCheckItem{ padding: 8px 10px; font-size: 12px; }
-    }
-
-
-    /* ====== 2025 Mobile Learning UI Redesign ====== */
+    /* Design tokens: consolidated for consistent spacing/shape/button language. */
     :root{
       --primary:#2563eb;
-      --gray-50:#f8fafc;
-      --gray-100:#f1f5f9;
-      --gray-200:#e5e7eb;
+      --primary-soft:#eff6ff;
+      --bg:#f3f5f8;
+      --surface:#ffffff;
+      --surface-soft:#f8fafc;
+      --border:#e2e8f0;
       --text:#0f172a;
       --muted:#64748b;
-      --card-bg:#ffffff;
-      --spacing-8:8px;
-      --spacing-12:12px;
-      --spacing-16:16px;
-      --spacing-24:24px;
-      --spacing-32:32px;
-      --radius-12:12px;
-      --radius-18:18px;
-      --radius-24:24px;
-      --card-shadow:0 10px 30px rgba(0,0,0,0.06);
-      --card-shadow-hover:0 14px 36px rgba(0,0,0,0.09);
+      --danger:#dc2626;
+      --radius-sm:12px;
+      --radius-md:16px;
+      --radius-lg:22px;
+      --shadow-sm:0 6px 18px rgba(15,23,42,.06);
+      --shadow-md:0 14px 30px rgba(15,23,42,.1);
     }
 
+    *{box-sizing:border-box}
     body{
+      font-family:system-ui,-apple-system,Segoe UI,Apple SD Gothic Neo,Malgun Gothic,sans-serif;
       margin:0 auto;
-      max-width:720px;
-      padding:var(--spacing-24) var(--spacing-16) calc(104px + env(safe-area-inset-bottom));
-      background:linear-gradient(180deg,#fbfdff 0%, var(--gray-50) 100%);
+      max-width:760px;
+      padding:20px 14px calc(114px + env(safe-area-inset-bottom));
+      background:linear-gradient(180deg,#fbfdff 0%,var(--bg) 100%);
       color:var(--text);
       line-height:1.45;
-      letter-spacing:-0.01em;
+      letter-spacing:-.01em;
     }
-    h1{font-size:28px;margin:0 0 var(--spacing-8);font-weight:800;}
-    .sub{margin:0 0 var(--spacing-24);font-size:13px;color:var(--muted);}
+    h1{margin:0;font-size:28px;font-weight:800;letter-spacing:-.02em}
+    .sub{margin:4px 0 0;font-size:13px;color:var(--muted)}
+    .muted{color:var(--muted);font-size:12px}
+    code{background:#eef2ff;padding:2px 8px;border-radius:999px;font-size:12px}
+    .hidden{display:none !important}
 
-    .main-tabs{
-      position:sticky;
-      top:12px;
-      z-index:10;
-      display:flex;
-      gap:var(--spacing-8);
-      margin-bottom:var(--spacing-16);
-      padding:var(--spacing-8);
-      border-radius:var(--radius-24);
-      border:1px solid var(--gray-200);
-      background:var(--gray-100);
-      transition:0.15s ease;
-    }
-    .main-tab{
-      flex:1;
-      min-width:0;
-      border-radius:var(--radius-18);
-      padding:14px var(--spacing-8);
-      font-size:14px;
-      font-weight:700;
-      color:#475569;
-      transition:0.15s ease;
-    }
-    .main-tab.active{
-      background:#fff;
-      color:var(--primary);
-      box-shadow:0 8px 20px rgba(0,0,0,0.08);
-    }
+    .app-header{margin-bottom:12px}
+    .app-meta{display:none}
 
-    .card{
-      background:var(--card-bg);
-      border:1px solid var(--gray-200);
-      border-radius:var(--radius-24);
-      padding:20px;
-      margin:0 0 var(--spacing-16);
-      box-shadow:var(--card-shadow);
-      transition:0.15s ease;
+    .card,.item,.summaryStat,.sheet,#quizModal,#settingsSheet,#dayPickSheet,#tutorialModal{
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:var(--radius-lg);
+      box-shadow:var(--shadow-sm);
     }
-    .card:hover{box-shadow:var(--card-shadow-hover);}
-    .card h2{font-size:17px;margin:0 0 var(--spacing-16);font-weight:800;}
+    .card{padding:16px;margin:0 0 14px}
+    .card h2{margin:0 0 12px;font-size:17px;font-weight:800}
+    .item{padding:14px}
 
-    .grid,.chips,.actions,.choices,.field,.sheetBody,#quizModalBody,#settingsBody,#dayPickBody{gap:var(--spacing-12);}
-    .row{gap:var(--spacing-8);}
+    /* Home dashboard summary: keeps only progress/streak/level/day context visually prominent. */
+    .quick-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:10px}
+    .quick-stat{padding:10px 8px;border-radius:14px;background:var(--surface-soft);display:flex;flex-direction:column;gap:4px;text-align:center}
+    .quick-stat .label{font-size:11px;color:var(--muted);font-weight:700}
+    .quick-stat b{font-size:20px;line-height:1.1}
+    .selected-day-row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+    .xp-feedback{margin-top:8px;min-height:16px;font-size:12px;color:#1e40af;opacity:0;transition:opacity .2s ease}
+    .xp-feedback.show{opacity:1}
+
+    .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    .field{display:flex;flex-direction:column;gap:6px;min-width:0}
+    .field label{font-size:12px;color:var(--muted);font-weight:700}
 
     select,input,button{
-      min-height:56px;
-      padding:14px 16px;
-      font-size:15px;
-      border:1px solid var(--gray-200);
-      border-radius:var(--radius-18);
+      width:auto;
+      min-height:46px;
+      padding:11px 14px;
+      border:1px solid var(--border);
+      border-radius:14px;
       background:#fff;
-      transition:0.15s ease;
+      font-size:14px;
+      transition:.15s ease;
     }
-    button:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 8px 22px rgba(15,23,42,0.08);}
+    button{cursor:pointer}
+    button:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 10px 20px rgba(15,23,42,.08)}
+    button:disabled{opacity:.55;cursor:not-allowed;transform:none}
 
-    .btn,#startBtn,#nextBtn,.settings-save-btn,.actions button,#dayPickOpenBtn{
-      min-height:56px;
-      border-radius:var(--radius-18);
-      font-weight:700;
-    }
-    .btn-primary,#startBtn,#nextBtn,.settings-save-btn{
-      background:var(--primary);
-      color:#fff;
-      border-color:var(--primary);
-      box-shadow:0 8px 20px rgba(37,99,235,0.3);
-    }
-    .btn-soft,.btn-ghost,#resumeBtn,#dayPickOpenBtn{background:var(--gray-100);}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:700}
+    .btn-primary,#startBtn{background:var(--primary);border-color:var(--primary);color:#fff;box-shadow:0 12px 24px rgba(37,99,235,.26)}
+    .btn-soft{background:#f1f5f9;color:#1e293b}
+    .btn-ghost{background:#fff;color:#334155}
+    .btn-danger{background:#fff;color:#b91c1c;border-color:#fecaca}
 
-    .q{
-      font-size:40px;
-      font-weight:800;
-      text-align:center;
-      margin:var(--spacing-16) auto;
-      padding:var(--spacing-32);
-      border-radius:var(--radius-24);
-      border:1px solid var(--gray-200);
-      background:#fff;
-      box-shadow:0 10px 30px rgba(0,0,0,0.08);
-    }
+    /* Study screen order emphasis: plant -> day -> start -> options -> advanced -> scope. */
+    #learnSettingsCard{padding:18px 16px}
+    .plant-card{padding:14px 12px;margin-bottom:16px;border-radius:18px;background:linear-gradient(180deg,#f5f9ff 0%,#eef5ff 100%);border:1px solid #dbeafe;box-shadow:0 10px 24px rgba(59,130,246,.12);text-align:center}
+    .plant-container{width:100%;min-height:176px;display:flex;align-items:center;justify-content:center}
+    .plant-container img{width:min(210px,72vw);height:auto;transform-origin:50% 100%;animation:plantIdle 3s ease-in-out infinite}
+    .plant-container img.grow{animation:plant-level-up .6s ease, plantIdle 3s ease-in-out .6s infinite}
+    #plantLevelText{font-size:20px;font-weight:900;color:#1e3a8a}
+    #plantNextText{font-size:12px;color:#475569}
 
-    .choices button{
-      text-align:left;
-      min-height:62px;
-      padding:18px;
-      border-radius:var(--radius-18);
-      background:#fff;
-      border:1px solid var(--gray-200);
-      box-shadow:none;
-      font-weight:700;
-    }
-    .choices button:hover:not(:disabled){
-      transform:translateY(-2px);
-      box-shadow:0 6px 20px rgba(0,0,0,0.06);
-      border-color:#cbd5e1;
-    }
-    .choices button:focus-visible{
-      outline:none;
-      box-shadow:0 0 0 3px rgba(37,99,235,0.18), 0 6px 20px rgba(0,0,0,0.06);
-      border-color:var(--primary);
-    }
+    #dayPickOpenBtn{width:100%;display:flex;justify-content:space-between;align-items:center;background:var(--surface-soft)}
+    #dayPickOpenBtn .dpLabel{flex:1;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    #dayPickOpenBtn .dpArrow{color:var(--muted)}
 
-    .chip,.pill,.badge,#sessionTimerPill{
-      background:var(--gray-100);
-      border:1px solid var(--gray-200);
-      border-radius:999px;
-    }
+    .start-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+    #startBtn{grid-column:1/-1;min-height:56px;border-radius:16px;font-size:18px;font-weight:900}
+    #resumeBtn,#todayWrongBtn,#quickTestBtn{min-height:44px;font-size:13px}
+    .continue-summary{grid-column:1/-1;font-size:12px;color:#334155;background:#f8fafc;border:1px solid var(--border);border-radius:12px;padding:9px 10px}
 
-    .progress-container{height:12px;background:var(--gray-100);border-radius:999px;}
-    .progress-bar{background:linear-gradient(90deg,var(--primary),#60a5fa);}
+    .advanced-settings{margin-top:14px;padding:10px 12px;border:1px solid var(--border);border-radius:14px;background:#f8fafc}
+    .advanced-settings summary{cursor:pointer;font-size:13px;font-weight:700;color:#475569}
+    #scopeCard{margin-top:12px;padding:10px 12px;border:1px solid var(--border);border-radius:14px;background:#fff}
+    .chips{display:flex;flex-wrap:wrap;gap:8px}
+    .chip{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;border:1px solid #d1d5db;background:#f1f5f9;font-size:13px;font-weight:700}
+    .chip input{display:none}
+    .chip:has(input:checked){background:var(--primary);border-color:var(--primary);color:#fff}
 
-    .sheet,#quizModal,#settingsSheet,#dayPickSheet,#tutorialModal{
-      border:1px solid var(--gray-200);
-      border-radius:var(--radius-24);
-      box-shadow:0 18px 48px rgba(15,23,42,0.2);
-    }
+    .pill,.badge,#sessionTimerPill{display:inline-flex;align-items:center;gap:6px;padding:7px 11px;border:1px solid var(--border);border-radius:999px;background:#f8fafc;font-size:12px;color:#334155}
+    .progress-container{width:100%;height:10px;margin:12px 0;background:#edf2f7;border-radius:999px;overflow:hidden}
+    .progress-bar{height:100%;width:0;background:linear-gradient(90deg,var(--primary),#60a5fa);transition:width .3s ease}
 
-    #settingsOpenBtn{
-      width:56px;
-      height:56px;
-      border-radius:50%;
-      background:var(--primary);
-      box-shadow:0 12px 28px rgba(37,99,235,0.35);
-      transition:0.15s ease;
-    }
-    #settingsOpenBtn:hover{transform:translateY(-1px);}
+    #statsCard .summaryStats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:12px}
+    .summaryStat{padding:11px;border-radius:14px;background:#fbfdff}
+    .summaryStat .k{font-size:11px;color:var(--muted)}
+    .summaryStat .v{margin-top:4px;font-size:18px;font-weight:900}
+    #mainCalGrid{padding-top:4px}
+    .calGrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
+    .calDow{font-size:11px;color:var(--muted);text-align:center;font-weight:700}
+    .calDay{position:relative;min-height:62px;padding:8px;border-radius:12px;border:1px solid #e6ecf4;background:#fff;display:flex;align-items:flex-start;cursor:pointer}
+    .calNum{font-size:15px;font-weight:800;line-height:1}
+    .calDot{position:absolute;left:50%;bottom:6px;transform:translateX(-50%);width:14px;height:4px;border-radius:999px;background:#2563eb}
+    .calL0{background:#fff}.calL1{background:#eff6ff}.calL2{background:#dbeafe}.calL3{background:#60a5fa}.calL4{background:#3730a3}
+    .calL3 .calNum,.calL4 .calNum{color:#fff}
+    .calL3 .calDot,.calL4 .calDot{background:rgba(255,255,255,.9)}
+    .calGoal{outline:2px solid #60a5fa;outline-offset:-2px}
+    .calToday{box-shadow:inset 0 0 0 2px #111827}
 
-    @media (max-width: 420px){
-      body{padding:var(--spacing-16) var(--spacing-12) calc(96px + env(safe-area-inset-bottom));}
-      h1{font-size:24px;}
-      .card{padding:18px;}
-      .main-tab{font-size:13px;padding:12px 8px;}
-      .q{font-size:36px;padding:24px;}
-    }
+    /* Mobile tab bar: unified container + clearer active state for touch navigation. */
+    .bottom-nav{position:fixed;left:10px;right:10px;bottom:calc(8px + env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;padding:8px;border-radius:18px;background:rgba(255,255,255,.98);border:1px solid var(--border);box-shadow:var(--shadow-md);z-index:45;backdrop-filter:blur(8px)}
+    .bottom-nav__item{min-height:48px;border:none;border-radius:12px;background:transparent;color:#64748b;font-size:12px;font-weight:700}
+    .bottom-nav__item.active{background:var(--primary-soft);color:var(--primary)}
 
+    .overlay,#quizOverlay,#settingsOverlay,#dayPickOverlay,#tutorialOverlay{position:fixed;inset:0;background:rgba(15,23,42,.5);display:flex;justify-content:center;z-index:80;padding:12px}
+    .overlay,#settingsOverlay,#dayPickOverlay{align-items:flex-end;padding-bottom:calc(12px + env(safe-area-inset-bottom))}
+    #quizOverlay{align-items:stretch;padding-top:calc(12px + env(safe-area-inset-top));padding-bottom:calc(12px + env(safe-area-inset-bottom));z-index:90}
 
+    .sheet,#quizModal,#settingsSheet,#dayPickSheet{width:min(760px,100%);max-height:90dvh;display:flex;flex-direction:column;overflow:hidden}
+    #quizModal{max-height:100dvh}
+    .sheetHead,#quizModalHead,#settingsHead,#dayPickHead,#tutorialHead{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border)}
+    .sheetBody,#quizModalBody,#settingsBody,#dayPickBody{padding:14px;overflow:auto}
+    .topPills{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:6px}
+    #quizModalTitle{font-weight:900}
+    #quizScopeLine{font-size:12px;color:var(--muted)}
+    #quizSpeakBtn,#quizDictBtn,#quizFavBtn{min-height:36px;padding:6px 10px;border-radius:999px}
 
-    /* ===== compact mobile dashboard refresh ===== */
-    :root{ --blue:#3B82F6; }
-    body{background:#f3f5f8;max-width:760px;padding:20px 14px calc(112px + env(safe-area-inset-bottom));}
-    .app-header{margin-bottom:14px;}
-    h1{font-size:28px;margin:0;font-weight:800;letter-spacing:-0.02em;}
-    .sub{margin:4px 0 0;font-size:13px;color:#64748b;}
-    .app-meta{margin:4px 0 12px;font-size:12px;}
-    .card{border-radius:22px;padding:16px;margin:0 0 14px;box-shadow:0 8px 24px rgba(15,23,42,.06);border:1px solid #e9edf3;background:#fff;}
+    .q{margin:12px auto;padding:24px 14px;border-radius:18px;border:1px solid var(--border);background:#fff;font-size:clamp(30px,8vw,40px);font-weight:900;text-align:center;box-shadow:0 8px 24px rgba(15,23,42,.08)}
+    .q.clickable{cursor:pointer;text-decoration:underline dotted;text-underline-offset:4px}
+    .choices{display:grid;gap:10px}
+    .choices button{text-align:left;min-height:56px;padding:14px 16px;border-radius:14px;font-weight:700;background:#fff;border:1px solid var(--border)}
+    .answer-box{margin:14px 0;padding:14px;min-height:58dvh;border-radius:18px;border:1px solid var(--border);background:#fff;display:flex;flex-direction:column;gap:10px;align-items:center;justify-content:center;text-align:center;user-select:none}
+    #flashWordText{font-size:40px;font-weight:900;line-height:1.15}
+    #flashAnswerText{font-size:28px;font-weight:700;color:#1e293b;opacity:0;transform:translateY(8px);transition:.2s}
+    #flashAnswerBox.is-revealed #flashAnswerText{opacity:1;transform:translateY(0)}
+    .tap-hint{font-size:13px;color:var(--muted)}
+    #flashModeActions .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    #flashModeActions button{min-height:58px;border-radius:14px;font-size:18px;font-weight:800}
+    .ox-mark{min-height:34px;text-align:center;font-size:28px;font-weight:900}
 
-    .dashboard-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
-    .dash-card{background:#fff;border:1px solid #e8edf5;border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:8px;min-height:116px;}
-    .dash-card h3{margin:0;font-size:13px;color:#64748b;font-weight:700;}
-    .dash-value{font-size:30px;font-weight:900;line-height:1.05;color:#0f172a;}
-    .dash-meta{font-size:12px;color:#64748b;}
-    .dash-card.progress-card .progress-container{margin:0;height:9px;background:#edf2f8;}
-    .dash-card.progress-card .xp-sub{font-size:11px;margin:0;color:#64748b;}
+    #nextBtn{width:100%}
+    .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .session-complete-card{margin-top:10px;padding:14px;border:1px solid #dbeafe;border-radius:14px;background:#f8fbff}
+    .session-complete-title{font-size:15px;font-weight:900;margin-bottom:8px}
+    .session-complete-actions{display:grid;gap:8px;margin-top:10px}
 
-    #learnSettingsCard{padding:18px 16px;}
-    #learnSettingsCard h2{text-align:left;font-size:20px;margin-bottom:10px;}
-    .plant-card{display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;padding:14px 12px 12px;margin-bottom:14px;background:linear-gradient(180deg,#f5f9ff 0%,#eef5ff 100%);border:1px solid #dbeafe;border-radius:20px;box-shadow:0 8px 22px rgba(59,130,246,.14);}
-    .plant-container{width:100%;min-height:180px;display:flex;align-items:center;justify-content:center;margin:0 auto;}
-    .plant-container img{width:min(210px,72vw);max-width:100%;height:auto;animation: plantIdle 3s ease-in-out infinite;transform-origin:50% 100%;}
-    #plantLevelText{font-size:20px;font-weight:900;color:#1e3a8a;line-height:1.2;}
-    #plantNextText{font-size:12px;color:#475569;line-height:1.3;}
+    .tabs{display:flex;gap:8px;flex-wrap:wrap}
+    .tab{padding:10px 12px;border:1px solid var(--border);border-radius:999px;background:#fff;font-size:13px;font-weight:800}
+    .tab.active{background:#111827;border-color:#111827;color:#fff}
+    .list{display:grid;gap:10px;margin-top:10px}
+    .itemTop{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px}
+    .itemWord{font-size:16px;font-weight:900}
+    .miniBtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+    .miniBtns button{min-height:38px;padding:8px 10px;border-radius:12px}
 
-    .field{gap:6px;}
-    .field label{font-size:12px;color:#64748b;font-weight:700;}
-    select,input,button{min-height:48px;padding:11px 14px;border-radius:14px;font-size:14px;border:1px solid #e5e7eb;background:#fff;}
-    #dayPickOpenBtn{min-height:48px;border-radius:14px;background:#f8fafc;}
+    .settingsSection{display:flex;flex-direction:column;gap:10px}
+    .settingsSectionTitle{font-size:12px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);padding-bottom:4px}
+    .settingRow{display:flex;justify-content:space-between;align-items:center;gap:12px}
+    .settingLabel{font-size:14px;font-weight:700}
+    .settingDesc{font-size:12px;color:var(--muted);margin-top:2px}
+    .toggle-switch{position:relative;display:inline-block;width:48px;height:26px}
+    .toggle-switch input{opacity:0;width:0;height:0}
+    .toggle-slider{position:absolute;inset:0;border-radius:999px;background:#d1d5db}
+    .toggle-slider:before{content:'';position:absolute;left:3px;bottom:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.2s}
+    .toggle-switch input:checked + .toggle-slider{background:var(--primary)}
+    .toggle-switch input:checked + .toggle-slider:before{transform:translateX(22px)}
 
-    .start-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px !important;margin-bottom:10px !important;}
-    #startBtn{grid-column:1 / -1;min-height:56px;border-radius:16px;background:#3B82F6;border-color:#3B82F6;font-size:19px;font-weight:900;box-shadow:0 14px 28px rgba(59,130,246,.28);}
-    #resumeBtn,#todayWrongBtn,#quickTestBtn{min-height:44px;border-radius:13px;font-size:13px;}
-    #quickTestBtn{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;font-weight:700;}
-    .continue-summary{grid-column:1 / -1;font-size:12px;color:#334155;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:9px 10px;}
+    .dayCheckGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+    .dayCheckItem{display:flex;align-items:center;gap:8px;padding:10px;border:1px solid var(--border);border-radius:12px;background:#f9fafb;font-size:13px;font-weight:700}
+    .dayCheckItem.checked{border-color:var(--primary);background:var(--primary-soft);color:var(--primary)}
+    .dayCheckItem input{display:none}
 
-    .advanced-settings{margin-top:8px;border:1px solid #e2e8f0;border-radius:14px;padding:10px;background:#f8fafc;}
-    .advanced-settings summary{cursor:pointer;font-size:13px;font-weight:700;color:#475569;}
-    .chips{display:flex;flex-wrap:wrap;gap:8px;}
-    .chip{display:inline-flex;padding:8px 12px;border-radius:999px;background:#e5e7eb;border:1px solid #e5e7eb;font-size:13px;}
-    .chip input{display:none;}
-    .chip:has(input:checked){background:#3B82F6;border-color:#3B82F6;color:#fff;}
+    #settingsOpenBtn{display:none}
+    #confettiCanvas{position:fixed;inset:0;pointer-events:none;z-index:120}
+    .levelup-overlay{position:fixed;inset:0;z-index:130;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(15,23,42,.42)}
+    .levelup-modal{width:min(340px,100%);padding:16px;text-align:center;border:1px solid var(--border);border-radius:16px;background:#fff;box-shadow:var(--shadow-md)}
+    .levelup-modal .grow-line{font-size:24px;margin:8px 0}
 
-    .compact-header{display:flex;align-items:center;justify-content:space-between;gap:10px;}
-    .selected-day-row{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:10px;}
-    .xp-feedback{margin-top:6px;font-size:12px;color:#1e40af;min-height:16px;opacity:0;transition:opacity .2s ease;}
-    .xp-feedback.show{opacity:1;}
-
-    .bottom-nav{position:fixed;left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom));z-index:45;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;padding:6px;border-radius:16px;background:#fff;border:1px solid #e2e8f0;box-shadow:0 10px 28px rgba(15,23,42,.12);}
-    .bottom-nav__item{min-height:44px;border:none;background:transparent;border-radius:11px;padding:8px 4px;font-size:11px;font-weight:700;color:#64748b;display:flex;align-items:center;justify-content:center;cursor:pointer;}
-    .bottom-nav__item.active{background:#eff6ff;color:#2563eb;}
-    #settingsOpenBtn{display:none;}
-    .q{font-size:34px;padding:20px 12px;margin:10px auto;border-radius:16px;}
-    .answer-box{padding:14px;min-height:80px;border-radius:14px;margin:12px 0;display:flex;flex-direction:column;gap:8px;}
-    .actions button{min-height:56px;}
-    #learnSettingsCard{padding:12px 11px;}
-    #learnSettingsCard h2{text-align:center;margin-bottom:8px;}
-    .plant-card{display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px;padding:10px 8px 8px;margin-bottom:8px;background:linear-gradient(180deg,#f3f8ff 0%,#eef5ff 100%);border:1px solid #dbeafe;border-radius:14px;box-shadow:0 8px 16px rgba(59,130,246,.12);}
-    .plant-container{
-      width:100%;
-      min-height:168px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      margin:0 auto;
-    }
-    .plant-container img{
-      width:min(210px,72vw);
-      max-width:100%;
-      height:auto;
-      animation: plantIdle 3s ease-in-out infinite;
-      transform-origin:50% 100%;
-    }
-    .plant-container img.grow{animation:plant-level-up .6s ease, plantIdle 3s ease-in-out .6s infinite;}
-    @keyframes plantIdle{
-      0%{transform:translateY(0)}
-      50%{transform:translateY(-5px)}
-      100%{transform:translateY(0)}
-    }
-    @keyframes plant-level-up{
-      0%{transform:scale(.8)}
-      60%{transform:scale(1.1)}
-      100%{transform:scale(1)}
-    }
-    #plantLevelText{font-size:18px;font-weight:900;color:#1e3a8a;line-height:1.2;}
-    #plantNextText{font-size:12px;color:#475569;line-height:1.3;}
+    .ok{color:#0a7;font-weight:bold}.bad{color:#c23;font-weight:bold}
+    .flash-ok{animation:flash-green .4s}.flash-bad{animation:flash-red .4s}
+    @keyframes flash-green{0%{background:#dcfce7}100%{background:#fff}}
+    @keyframes flash-red{0%{background:#fee2e2}100%{background:#fff}}
+    @keyframes plantIdle{0%{transform:translateY(0)}50%{transform:translateY(-5px)}100%{transform:translateY(0)}}
+    @keyframes plant-level-up{0%{transform:scale(.8)}60%{transform:scale(1.1)}100%{transform:scale(1)}}
 
     @media (max-width:520px){
-      body{padding:16px 12px calc(108px + env(safe-area-inset-bottom));}
-      h1{font-size:25px;}
-      .card{padding:14px;border-radius:20px;}
-      .dashboard-grid{gap:8px;}
-      .dash-card{padding:12px;min-height:106px;}
-      .dash-value{font-size:26px;}
-      .plant-container{min-height:164px;}
-      .plant-container img{width:min(195px,76vw);}
-      #startBtn{min-height:54px;font-size:18px;}
+      body{padding:16px 12px calc(108px + env(safe-area-inset-bottom))}
+      h1{font-size:25px}
+      .quick-stat b{font-size:18px}
+      .card{padding:14px}
+      .summaryStat .v{font-size:16px}
+      .bottom-nav__item{font-size:11px}
+      .calDay{min-height:58px}
     }
-
-    @media (max-width:420px){
-      .bottom-nav{left:8px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom));}
-      .bottom-nav__item{min-height:42px;font-size:10px;}
-    }
-
-    .levelup-overlay{position:fixed;inset:0;background:rgba(15,23,42,.42);display:flex;align-items:center;justify-content:center;padding:18px;z-index:130;}
-    .levelup-modal{width:min(340px,100%);background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:16px;box-shadow:0 12px 34px rgba(15,23,42,.18);text-align:center;}
-    .levelup-modal h3{margin:0 0 6px;font-size:18px;}
-    .levelup-modal .grow-line{font-size:24px;margin:8px 0;}
-    .session-complete-card{margin-top:10px;padding:12px;border:1px solid #dbeafe;border-radius:12px;background:#f8fbff;}
-    .session-complete-title{font-size:14px;font-weight:900;margin-bottom:6px;}
-    .session-complete-actions{display:grid;gap:8px;margin-top:10px;}
-    .session-complete-actions button{min-height:42px;}
-
-    @media (max-width: 420px){ .bottom-nav{left:8px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom));} .bottom-nav__item{min-height:42px;font-size:11px;} }
-
-    @media (max-width: 420px){ .bottom-nav{left:8px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom));} .bottom-nav__item{min-height:42px;font-size:11px;} }
-
+    @media (min-width:700px){.dayCheckGrid{grid-template-columns:repeat(5,minmax(0,1fr))}}
 
   </style>
 </head>

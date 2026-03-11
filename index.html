@@ -160,7 +160,7 @@
     .q.clickable{cursor:pointer;text-decoration:underline dotted;text-underline-offset:4px}
     .choices{display:grid;gap:10px}
     .choices button{text-align:left;min-height:56px;padding:14px 16px;border-radius:14px;font-weight:700;background:#fff;border:1px solid var(--border)}
-    .answer-box{margin:14px 0;padding:14px;min-height:58dvh;border-radius:18px;border:1px solid var(--border);background:#fff;display:flex;flex-direction:column;gap:10px;align-items:center;justify-content:center;text-align:center;user-select:none}
+    .answer-box{margin:10px 0;padding:16px 14px;min-height:40dvh;border-radius:18px;border:1px solid var(--border);background:#fff;display:flex;flex-direction:column;gap:10px;align-items:center;justify-content:center;text-align:center;user-select:none}
     #flashWordText{font-size:40px;font-weight:900;line-height:1.15}
     #flashAnswerText{font-size:28px;font-weight:700;color:#1e293b;opacity:0;transform:translateY(8px);transition:.2s}
     #flashAnswerBox.is-revealed #flashAnswerText{opacity:1;transform:translateY(0)}
@@ -168,6 +168,22 @@
     #flashModeActions .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
     #flashModeActions button{min-height:58px;border-radius:14px;font-size:18px;font-weight:800}
     .ox-mark{min-height:34px;text-align:center;font-size:28px;font-weight:900}
+
+    /* Flash mode only: keep one compact main card and bring actions upward on mobile. */
+    #quizModal.flash-mode #quizModalHead{padding:10px 12px}
+    #quizModalBody.flash-mode{display:flex;flex-direction:column;gap:8px;padding:10px 12px 12px}
+    #quizModalBody.flash-mode .topPills{margin-bottom:0}
+    #quizModalBody.flash-mode .progress-container{margin:6px 0}
+    #quizModalBody.flash-mode #question{display:none}
+    #quizModalBody.flash-mode #flashAnswerBox{margin:6px 0 4px;min-height:36dvh}
+    #quizModalBody.flash-mode #flashModeActions{margin-top:4px !important}
+
+    @media (max-width:520px){
+      #quizModalBody.flash-mode #flashAnswerBox{min-height:34dvh;padding:14px 12px}
+      #quizModalBody.flash-mode #flashWordText{font-size:34px}
+      #quizModalBody.flash-mode #flashAnswerText{font-size:24px}
+      #quizModalBody.flash-mode #flashModeActions button{min-height:52px;font-size:17px}
+    }
 
     #nextBtn{width:100%}
     .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -1565,6 +1581,9 @@
     const item=pool[idx]; if(!item){finishQuiz();return;}
     const {mode,dir}=quizState, cfg=loadCfg();
     el("quizMeta").textContent=`(${mode==="flash"?"플래시카드":(mode==="mc"?"객관식":"주관식")} · ${dir==="en2ko"?"영→뜻":"뜻→영"})`;
+    // flash-mode layout hook: applies compact flashcard-only UI without touching other modes
+    el("quizModal").classList.toggle("flash-mode",mode==="flash");
+    el("quizModalBody").classList.toggle("flash-mode",mode==="flash");
     el("sessionCompleteCard")?.classList.add("hidden");
     setQuizHeaderScope(); updateQuizQuickButtons(item);
     el("progressPill").textContent=`${idx+1}/${pool.length}`; el("progressBar").style.width=`${((idx+1)/pool.length)*100}%`;

@@ -803,6 +803,12 @@
 
   let autoNextTimer = null;
   let xpFeedbackTimer = null;
+  let resumeSaveTimer = null;
+  let resumeDirty = false;
+  const scheduleIdle = (cb, timeout=500)=>{
+    if("requestIdleCallback" in window) return window.requestIdleCallback(cb,{timeout});
+    return setTimeout(cb,120);
+  };
   function clearAutoNext(){ if(autoNextTimer){ clearTimeout(autoNextTimer); autoNextTimer = null; } }
 
   // ===================================================================
@@ -1397,16 +1403,42 @@
   // ===================================================================
   // 범위 / 카운트
   // ===================================================================
+  const poolSelectionCache={key:"",value:{targetDays:[],intervals:[],filtered:[]}};
   function selectedDaysForPool(){ return [...dayPickSelected].filter(Boolean); }
   function selectedRanges(){ const arr=[]; if(el("cb_core").checked)arr.push([1,40]); if(el("cb_basic").checked)arr.push([41,68]); if(el("cb_800").checked)arr.push([69,136]); if(el("cb_900").checked)arr.push([137,999999]); return arr; }
   function inRanges(n,ranges){ return ranges.some(([s,e])=>n>=s&&n<=e); }
-  function buildPoolFromSelection(){ const data=load(WORDS_KEY,{}),targetDays=selectedDaysForPool(); let combined=[]; targetDays.forEach(d=>{ combined=combined.concat(data[d]||[]); }); const intervals=selectedRanges(); return {targetDays,intervals,filtered:combined.filter(item=>inRanges(item.n,intervals))}; }
+  function invalidatePoolSelectionCache(){ poolSelectionCache.key=""; }
+  function buildPoolFromSelection(){
+    const data=load(WORDS_KEY,{});
+    const targetDays=selectedDaysForPool();
+    const intervals=selectedRanges();
+    const cacheKey=`${targetDays.join("|")}::${intervals.map(([s,e])=>`${s}-${e}`).join("|")}::${Object.keys(data).length}`;
+    if(poolSelectionCache.key===cacheKey) return poolSelectionCache.value;
+    let combined=[]; targetDays.forEach(d=>{ combined=combined.concat(data[d]||[]); });
+    const next={targetDays,intervals,filtered:combined.filter(item=>inRanges(item.n,intervals))};
+    poolSelectionCache.key=cacheKey;
+    poolSelectionCache.value=next;
+    return next;
+  }
   function getCurrentPoolSize(){ return buildPoolFromSelection().filtered.length; }
-  function refreshCountSelectOptions(){ const sel=el("countSelect"),poolSize=getCurrentPoolSize(),prev=parseInt(sel.value,10); if(poolSize<=0){sel.innerHTML="";sel.add(new Option("0","0"));sel.value="0";return;} const base=[10,20,30,50,100].filter(v=>v<poolSize); const options=[...base,poolSize]; sel.innerHTML=""; options.forEach(v=>sel.add(new Option(v===poolSize?`${v} (전체)`:String(v),String(v)))); if(isLearnTab()){sel.value=String(poolSize);return;} let next=options.includes(prev)?prev:null; if(next===null) next=options.includes(30)?30:options[0]; sel.value=String(next); }
+  function refreshCountSelectOptions(){
+    const sel=el("countSelect"),poolSize=getCurrentPoolSize(),prev=parseInt(sel.value,10);
+    if(poolSize<=0){ sel.innerHTML=""; sel.add(new Option("0","0")); sel.value="0"; return; }
+    const base=[10,20,30,50,100].filter(v=>v<poolSize);
+    const options=[...base,poolSize];
+    sel.innerHTML="";
+    options.forEach(v=>sel.add(new Option(v===poolSize?`${v} (전체)`:String(v),String(v))));
+    let next=options.includes(prev)?prev:null;
+    if(next===null){
+      if(isLearnTab()) next=poolSize>=30?(options.includes(20)?20:(options.includes(30)?30:options[0])):poolSize;
+      else next=options.includes(30)?30:options[0];
+    }
+    sel.value=String(next);
+  }
   function updateScopeCoverage(){ const data=load(WORDS_KEY,{}),days=selectedDaysForPool(),ranges=selectedRanges(); let all=[]; days.forEach(d=>{all=all.concat(data[d]||[]);}); const picked=all.filter(x=>inRanges(x.n,ranges)).length,total=all.length,percent=total?Math.round((picked/total)*100):0; el("scopeCoverageText").textContent=`현재 학습 범위 ${percent}%`; el("scopeCoverageCount").textContent=`${picked} / ${total} 단어`; el("scopeCoverageBar").style.width=`${percent}%`; }
   function updateScopeBar(){ updateScopeCoverage(); refreshCountSelectOptions(); }
-  ["dirSelect","countSelect","voiceSelect"].forEach(id=>el(id).addEventListener("change",()=>{ updateScopeBar(); saveLastStudySettings(); }));
-  ["cb_core","cb_basic","cb_800","cb_900"].forEach(id=>el(id).addEventListener("change",()=>{ updateScopeBar(); saveLastStudySettings(); }));
+  ["dirSelect","countSelect","voiceSelect"].forEach(id=>el(id).addEventListener("change",()=>{ invalidatePoolSelectionCache(); updateScopeBar(); saveLastStudySettings(); }));
+  ["cb_core","cb_basic","cb_800","cb_900"].forEach(id=>el(id).addEventListener("change",()=>{ invalidatePoolSelectionCache(); updateScopeBar(); saveLastStudySettings(); }));
 
   // ===================================================================
   // Bottom Sheet
@@ -1588,18 +1620,45 @@
     if(el("recentContinueBtn")) el("recentContinueBtn").disabled=!enabled;
     updateContinueSummary();
   }
+  function queueResumeSave(){
+    resumeDirty=true;
+    if(resumeSaveTimer) return;
+    resumeSaveTimer=scheduleIdle(()=>{
+      resumeSaveTimer=null;
+      if(!resumeDirty) return;
+      resumeDirty=false;
+      saveResumeState();
+    },700);
+  }
   function saveResumeState(){
     if(el("quizOverlay").classList.contains("hidden")) return;
     if(!quizState||!Array.isArray(pool)||pool.length===0) return;
-    try{ localStorage.setItem(RESUME_KEY,JSON.stringify({poolKeys:pool.map(keyOf),idx,score,wrongKeys:wrong.map(keyOf),quizState,reinsertCount,timestamp:Date.now()})); updateResumeButton(); }catch(e){}
+    try{
+      const payload={
+        poolKeys:pool.map(keyOf),
+        idx,
+        score,
+        wrongKeys:wrong.map(keyOf),
+        mode:quizState.mode,
+        dir:quizState.dir,
+        days:quizState.days||[],
+        ranges:quizState.ranges||"-",
+        count:quizState.count??pool.length,
+        reviewType:quizState.reviewType||null,
+        reinsertCount,
+        timestamp:Date.now()
+      };
+      localStorage.setItem(RESUME_KEY,JSON.stringify(payload));
+      updateResumeButton();
+    }catch(e){}
   }
   function clearResumeState(){ localStorage.removeItem(RESUME_KEY); updateResumeButton(); }
   function resumeQuiz(){ saveLastStudySettings();
-    const r=load(RESUME_KEY,null); if(!r||!Array.isArray(r.poolKeys)||!r.quizState) return alert("이어할 퀴즈가 없어요.");
+    const r=load(RESUME_KEY,null); if(!r||!Array.isArray(r.poolKeys)) return alert("이어할 퀴즈가 없어요.");
     const allWords=Object.values(load(WORDS_KEY,{})).flat(), wordMap=new Map(allWords.map(it=>[keyOf(it),it]));
     pool=r.poolKeys.map(k=>wordMap.get(k)).filter(Boolean); if(pool.length===0){clearResumeState();return alert("이어할 문제를 복원하지 못했어요.");}
     wrong=(r.wrongKeys||[]).map(k=>wordMap.get(k)).filter(Boolean); idx=Number.isFinite(r.idx)?r.idx:0; score=Number.isFinite(r.score)?r.score:0;
-    quizState=r.quizState; reinsertCount=r.reinsertCount||{}; locked=false; mcReinserted=new Set();
+    quizState=r.quizState||{mode:r.mode,dir:r.dir,days:r.days||[],ranges:r.ranges||"-",count:r.count||pool.length,reviewType:r.reviewType||null}; reinsertCount=r.reinsertCount||{}; locked=false; mcReinserted=new Set();
     if(idx>=pool.length) idx=Math.max(0,pool.length-1);
     el("retestBox").classList.add("hidden"); el("quizOverlay").classList.remove("hidden"); renderQuiz();
   }
@@ -1618,25 +1677,32 @@
     clearAutoNext(); clearAllTimers(); reinsertCount={}; mcReinserted=new Set();
     const dataNow=load(WORDS_KEY,{}); if(!dataNow||Object.keys(dataNow).length===0) return alert("단어 데이터가 없어요!");
     if(!el("cb_core").checked&&!el("cb_basic").checked&&!el("cb_800").checked&&!el("cb_900").checked) return alert("범위를 최소 1개 이상 선택해야 시작돼요!");
-    const {targetDays,filtered}=buildPoolFromSelection(), usePool=customPool||filtered;
-    if(usePool.length===0) return alert("선택한 범위에 단어가 없습니다!");
-    const fixedMode=forceMode||((isHomeTab())?"flash":el("modeSelect").value), fixedDir=el("dirSelect").value;
+    const fixedMode=forceMode||((isHomeTab())?"flash":el("modeSelect").value);
+    const fixedDir=el("dirSelect").value;
     const count=parseInt(el("countSelect").value,10);
-    pool=pickQuizItems(usePool,Number.isFinite(count)?count:usePool.length);
-    idx=0; score=0; wrong=[]; locked=false; sessionXpEarned=0;
-    quizState={mode:fixedMode,dir:fixedDir,days:targetDays,ranges:rangeLabel(),count:pool.length};
-
-    // 세션 타이머 UI 초기화
-    const cfg=loadCfg();
-    el("sessionTimerPill").classList.add("hidden");
-    el("sessionTimerPill").className="";
-    const showPerQ=cfg.timerOn&&(cfg.timerMode==="perQ"||cfg.timerMode==="both");
-    el("perQTimerWrap").classList.toggle("hidden",!showPerQ);
-
     el("retestBox").classList.add("hidden");
     el("sessionCompleteCard")?.classList.add("hidden");
     el("quizOverlay").classList.remove("hidden");
-    renderQuiz();
+    el("question").textContent="문제를 준비하는 중...";
+    el("feedback").textContent="";
+    el("oxMark").textContent="";
+    ["choices","shortAnswer","flashAnswerBox","flashModeActions","nextBtn"].forEach(id=>el(id).classList.add("hidden"));
+    requestAnimationFrame(()=>{
+      setTimeout(()=>{
+        const {targetDays,filtered}=buildPoolFromSelection();
+        const usePool=customPool||filtered;
+        if(usePool.length===0){ el("quizOverlay").classList.add("hidden"); return alert("선택한 범위에 단어가 없습니다!"); }
+        pool=pickQuizItems(usePool,Number.isFinite(count)?count:usePool.length);
+        idx=0; score=0; wrong=[]; locked=false; sessionXpEarned=0;
+        quizState={mode:fixedMode,dir:fixedDir,days:targetDays,ranges:rangeLabel(),count:pool.length};
+        const cfg=loadCfg();
+        el("sessionTimerPill").classList.add("hidden");
+        el("sessionTimerPill").className="";
+        const showPerQ=cfg.timerOn&&(cfg.timerMode==="perQ"||cfg.timerMode==="both");
+        el("perQTimerWrap").classList.toggle("hidden",!showPerQ);
+        renderQuiz();
+      },0);
+    });
   }
 
   function startFromHomeCTA(){
@@ -1682,7 +1748,6 @@
     const qText=dir==="en2ko"?item.w:item.m;
     el("question").textContent=`${isWrongMarked(item)?"🟥 ":""}${qText}`;
     el("flashWordText").textContent=qText;
-    if(dir==="en2ko") speak(item.w);
     ["choices","shortAnswer","flashAnswerBox","flashModeActions"].forEach(id=>el(id).classList.add("hidden"));
     el("flashAnswerText").classList.add("hidden"); el("flashTapHint").classList.remove("hidden"); el("flashAnswerBox").classList.remove("is-revealed");
     if(mode==="mc"){ el("choices").classList.remove("hidden"); renderMC(item,dir); }
@@ -1694,7 +1759,6 @@
     }
     // 타이머 시작
     setupTimersForQuestion();
-    saveResumeState();
   }
 
   function renderMC(item,dir){
@@ -1720,7 +1784,7 @@
       el("oxMark").innerHTML="<span class='bad'>X</span>"; el("feedback").innerHTML=`<span class='bad'>오답!</span> 정답: <b>${esc(quizState.dir==="en2ko"?item.m:item.w)}</b>`;
       if(cfg.mcReinsert&&(quizState.mode==="mc"||quizState.mode==="sa")&&!mcReinserted.has(k)){ mcReinserted.add(k); const rem=pool.length-(idx+1); pool.splice(idx+(rem>0?(Math.floor(Math.random()*rem)+1):1),0,item); }
     }
-    el("nextBtn").classList.remove("hidden"); saveResumeState();
+    el("nextBtn").classList.remove("hidden"); queueResumeSave();
     const delay=cfg.autoNextMs; if(delay>0){ autoNextTimer=setTimeout(()=>{ autoNextTimer=null; goNext(); },delay); }
   }
 
@@ -1744,7 +1808,7 @@
     clearResumeState();
   }
 
-  function goNext(){ clearAutoNext(); if(idx>=pool.length-1){idx=pool.length;finishQuiz();return;} idx++; renderQuiz(); }
+  function goNext(){ clearAutoNext(); queueResumeSave(); if(idx>=pool.length-1){idx=pool.length;finishQuiz();return;} idx++; renderQuiz(); }
   el("nextBtn").onclick=()=>{ clearAutoNext(); if(locked) goNext(); };
 
   el("flashAnswerBox").onclick=()=>{
@@ -1757,7 +1821,7 @@
     if(delay>0) setTimeout(reveal,delay); else reveal();
   };
 
-  el("knowBtn").onclick=()=>{ clearAllTimers(); markAttempt(true); const item=pool[idx]; score++; if(item) saveCorrectStat(item); saveResumeState(); goNext(); };
+  el("knowBtn").onclick=()=>{ clearAllTimers(); markAttempt(true); const item=pool[idx]; score++; if(item) saveCorrectStat(item); queueResumeSave(); goNext(); };
   el("dontKnowBtn").onclick=()=>{
     clearAutoNext(); clearAllTimers();
     const item=pool[idx],cfg=loadCfg(),k=keyOf(item);
@@ -1767,12 +1831,12 @@
     const limit=cfg.reinsertLimit;
     if(limit>0&&reinsertCount[k]<=limit){ const rem=pool.length-(idx+1); pool.splice(idx+(rem>0?(Math.floor(Math.random()*rem)+1):1),0,item); el("feedback").innerHTML=`재삽입되었습니다. (${reinsertCount[k]}/${limit})`; }
     else if(limit>0){ el("feedback").innerHTML="재삽입 한도 도달! 다음으로 넘어갑니다."; }
-    saveResumeState(); setTimeout(goNext,350);
+    queueResumeSave(); setTimeout(goNext,350);
   };
 
   el("submitAnswerBtn").onclick=()=>{ const user=normalizeAnswer(el("answerInput").value); if(!user) return alert("정답을 입력하세요!"); const correctRaw=quizState.dir==="en2ko"?pool[idx].m:pool[idx].w; const correct=normalizeAnswer(correctRaw); const parts=correct.split(/[;,/]/g).map(x=>normalizeAnswer(x)).filter(Boolean); judge(parts.length?parts.includes(user):(user===correct)); };
   el("answerInput").addEventListener("keydown",(e)=>{ if(e.key==="Enter") el("submitAnswerBtn").click(); });
-  el("showAnswerBtn").onclick=()=>{ clearAutoNext(); clearAllTimers(); el("feedback").innerHTML=`정답: <b>${esc(quizState.dir==="en2ko"?pool[idx].m:pool[idx].w)}</b>`; el("nextBtn").classList.remove("hidden"); locked=true; saveResumeState(); };
+  el("showAnswerBtn").onclick=()=>{ clearAutoNext(); clearAllTimers(); el("feedback").innerHTML=`정답: <b>${esc(quizState.dir==="en2ko"?pool[idx].m:pool[idx].w)}</b>`; el("nextBtn").classList.remove("hidden"); locked=true; queueResumeSave(); };
   el("retestAllBtn").onclick=()=>{ if(wrong.length===0) return; startQuiz(wrong,quizState.mode); };
   function startWrongOnlyQuiz(){ const list=Object.values(statsMap()).filter(x=>(x?.wrongCount||0)>0); if(list.length===0) return alert("오답노트가 비어있어요!"); closeSheet(); startQuiz(list,quizState?.mode||(isLearnTab()?"flash":el("modeSelect").value)); }
   function startTodayWrongReview(){

@@ -167,6 +167,20 @@
     .topPills{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:6px}
     #quizModalTitle{font-weight:900}
     #quizScopeLine{font-size:12px;color:var(--muted)}
+    .quiz-word-band{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      margin:6px 0 2px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid #bfdbfe;
+      background:#eff6ff;
+      color:#1e40af;
+      font-size:12px;
+      font-weight:800;
+      letter-spacing:.01em;
+    }
     #quizSpeakBtn,#quizDictBtn,#quizFavBtn{min-height:36px;padding:6px 10px;border-radius:999px}
 
     .q{margin:12px auto;padding:24px 14px;border-radius:18px;border:1px solid var(--border);background:#fff;font-size:clamp(30px,8vw,40px);font-weight:900;text-align:center;box-shadow:0 8px 24px rgba(15,23,42,.08)}
@@ -503,6 +517,7 @@
         </div>
 
         <div class="progress-container"><div id="progressBar" class="progress-bar"></div></div>
+        <div id="quizWordBand" class="quiz-word-band">범위: -</div>
         <div class="q clickable" id="question" title="클릭하면 네이버 사전으로 이동"></div>
         <div class="choices" id="choices"></div>
 
@@ -1404,6 +1419,14 @@
   function recordSession({mode,dir,total,score,wrongCount,days,ranges}){ const sessions=load(SESSION_KEY,[]); sessions.unshift({ts:Date.now(),mode,dir,total,score,wrongCount,days,ranges}); if(sessions.length>200) sessions.length=200; save(SESSION_KEY,sessions); }
   function normalizeAnswer(s){ return String(s??"").trim().toLowerCase().replace(/\s+/g," "); }
   function rangeLabel(){ const parts=[]; if(el("cb_core").checked)parts.push("핵심(1~40)"); if(el("cb_basic").checked)parts.push("기초(41~68)"); if(el("cb_800").checked)parts.push("800(69~136)"); if(el("cb_900").checked)parts.push("900(137~)"); return parts.length?parts.join(", "):"선택없음"; }
+  function wordBandLabel(n){
+    const num=Number(n)||0;
+    if(num>=1&&num<=40) return "핵심빈출";
+    if(num>=41&&num<=68) return "기초완성";
+    if(num>=69&&num<=136) return "800단어";
+    if(num>=137) return "900단어";
+    return "범위미지정";
+  }
 
   // ===================================================================
   // 범위 / 카운트
@@ -1765,6 +1788,7 @@
     el("progressPill").textContent=`${idx+1}/${pool.length}`; el("progressBar").style.width=`${((idx+1)/pool.length)*100}%`;
     el("score").textContent=score; el("wrongN").textContent=wrong.length;
     el("feedback").textContent=""; el("oxMark").textContent=""; el("nextBtn").classList.add("hidden");
+    el("quizWordBand").textContent=`현재 단어 범위: ${wordBandLabel(item?.n)} (${Number(item?.n)||"-"}번)`;
     const qText=dir==="en2ko"?item.w:item.m;
     el("question").textContent=`${isWrongMarked(item)?"🟥 ":""}${qText}`;
     el("flashWordText").textContent=qText;
@@ -1811,6 +1835,7 @@
   function finishQuiz(){
     clearAutoNext(); clearAllTimers();
     el("question").textContent="학습 완료! 🎉"; el("oxMark").textContent=""; el("feedback").innerHTML=`최종 점수: <b>${score}</b> / ${pool.length}`;
+    el("quizWordBand").textContent="현재 단어 범위: -";
     el("progressBar").style.width="100%"; el("sessionTimerPill").classList.add("hidden");
     ["choices","shortAnswer","flashAnswerBox","flashModeActions","nextBtn"].forEach(id=>el(id).classList.add("hidden"));
     locked=true; if(wrong.length>0) el("retestBox").classList.remove("hidden");

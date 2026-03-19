@@ -156,8 +156,8 @@
     .bottom-nav__item{min-height:48px;border:none;border-radius:12px;background:transparent;color:#64748b;font-size:12px;font-weight:700}
     .bottom-nav__item.active{background:var(--primary-soft);color:var(--primary)}
 
-    .overlay,#quizOverlay,#settingsOverlay,#dayPickOverlay,#tutorialOverlay{position:fixed;inset:0;background:rgba(15,23,42,.5);display:flex;justify-content:center;z-index:80;padding:12px}
-    .overlay,#settingsOverlay,#dayPickOverlay{align-items:flex-end;padding-bottom:calc(12px + env(safe-area-inset-bottom))}
+    .overlay,#quizOverlay,#dayPickOverlay,#tutorialOverlay{position:fixed;inset:0;background:rgba(15,23,42,.5);display:flex;justify-content:center;z-index:80;padding:12px}
+    .overlay,#dayPickOverlay{align-items:flex-end;padding-bottom:calc(12px + env(safe-area-inset-bottom))}
     #quizOverlay{align-items:stretch;padding-top:calc(12px + env(safe-area-inset-top));padding-bottom:calc(12px + env(safe-area-inset-bottom));z-index:90}
 
     .sheet,#quizModal,#settingsSheet,#dayPickSheet{width:min(760px,100%);max-height:90dvh;display:flex;flex-direction:column;overflow:hidden}
@@ -215,6 +215,9 @@
 
     .settingsSection{display:flex;flex-direction:column;gap:10px}
     .settingsSectionTitle{font-size:12px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);padding-bottom:4px}
+    #settingsCard #settingsSheet{width:100%;max-height:none;border:none;box-shadow:none}
+    #settingsCard #settingsHead{padding:0 0 12px}
+    #settingsCard #settingsBody{padding:14px 0 0}
     .settingRow{display:flex;justify-content:space-between;align-items:center;gap:12px}
     .settingLabel{font-size:14px;font-weight:700}
     .settingDesc{font-size:12px;color:var(--muted);margin-top:2px}
@@ -610,12 +613,12 @@
     </div>
   </div>
 
-  <!-- 설정 패널 -->
-  <div id="settingsOverlay" class="hidden">
+  <!-- 설정 페이지 -->
+  <div id="settingsCard" class="card hidden">
     <div id="settingsSheet">
       <div id="settingsHead">
         <span style="font-weight:900;font-size:16px;">⚙️ 퀴즈 세부 설정</span>
-        <button id="settingsCloseBtn" class="btn btn-ghost" type="button">닫기</button>
+        <button id="settingsCloseBtn" class="btn btn-ghost" type="button">홈으로</button>
       </div>
       <div id="settingsBody">
 
@@ -957,7 +960,7 @@
       dir:el("dirSelect").value,
       mode:isLearnTab()?"flash":el("modeSelect").value,
       count:el("countSelect").value,
-      tab:isHomeTab()?"home":(isLearnTab()?"learn":"stats"),
+      tab:isHomeTab()?"home":(isLearnTab()?"learn":(mainTabSettings?.classList.contains("active")?"settings":"stats")),
       ts:Date.now()
     };
     save(LAST_STUDY_SETTINGS_KEY,payload);
@@ -970,6 +973,7 @@
     if(st.dir) el("dirSelect").value=st.dir;
     if(st.tab==="learn") showMainPanel("learn");
     else if(st.tab==="stats") showMainPanel("stats");
+    else if(st.tab==="settings") showMainPanel("settings");
     else showMainPanel("home");
     if(st.mode&&isLearnTab()) el("modeSelect").value=st.mode;
     updateScopeBar();
@@ -1078,7 +1082,7 @@
   const mainTabHome=el("mainTabHome"), mainTabLearn=el("mainTabLearn"), mainTabStats=el("mainTabStats"), mainTabSettings=el("mainTabSettings");
   const modeField=el("modeField"), startBtn=el("startBtn");
   const modeFlashOption=el("modeFlashOption");
-  const todayStudyCard=el("todayStudyCard"), learnSettingsCard=el("learnSettingsCard"), bottomToolsCard=el("bottomToolsCard"), statsCard=el("statsCard");
+  const todayStudyCard=el("todayStudyCard"), learnSettingsCard=el("learnSettingsCard"), bottomToolsCard=el("bottomToolsCard"), statsCard=el("statsCard"), settingsCard=el("settingsCard");
   let statsViewY=new Date().getFullYear(), statsViewM=new Date().getMonth(), calClickBound=false;
   function isLearnTab(){ return mainTabLearn.classList.contains("active"); }
   function isHomeTab(){ return mainTabHome.classList.contains("active"); }
@@ -1090,18 +1094,21 @@
   function showMainPanel(panel){
     const isStats=panel==="stats";
     const isHome=panel==="home";
+    const isSettings=panel==="settings";
     mainTabHome.classList.toggle("active",isHome);
     mainTabLearn.classList.toggle("active",panel==="learn");
     mainTabStats.classList.toggle("active",isStats);
-    if(mainTabSettings) mainTabSettings.classList.toggle("active",false);
+    if(mainTabSettings) mainTabSettings.classList.toggle("active",isSettings);
     const showLearn = panel==="learn";
     const showHome = panel==="home";
     learnSettingsCard.classList.toggle("hidden",!showLearn);
     todayStudyCard.classList.toggle("hidden",!showHome);
     bottomToolsCard.classList.toggle("hidden",!(showLearn||isStats));
     statsCard.classList.toggle("hidden",!isStats);
+    if(settingsCard) settingsCard.classList.toggle("hidden",!isSettings);
     if(showLearn){ modeField.classList.remove("hidden"); if(!startBtn.disabled) setStartButtonState(false); }
     if(showHome){ modeField.classList.add("hidden"); el("modeSelect").value="flash"; if(!startBtn.disabled) setStartButtonState(false); }
+    if(isSettings){ modeField.classList.add("hidden"); applySettingsToUI(); }
     if(panel==="stats") renderMainCalendarSummary(statsViewY,statsViewM);
     updateFlashOffToggleState(); updateScopeBar(); saveLastStudySettings();
   }
@@ -1109,7 +1116,7 @@
   mainTabHome.onclick=()=>showMainPanel("home");
   mainTabLearn.onclick=()=>showMainPanel("learn");
   mainTabStats.onclick=()=>showMainPanel("stats");
-  if(mainTabSettings) mainTabSettings.onclick=()=>{ applySettingsToUI(); el("settingsOverlay").classList.remove("hidden"); mainTabSettings.classList.add("active"); };
+  if(mainTabSettings) mainTabSettings.onclick=()=>showMainPanel("settings");
   function bindStatsCalNav(){
     el("mainCalPrevBtn").onclick=()=>{ statsViewM--; if(statsViewM<0){statsViewM=11;statsViewY--;} renderMainCalendarSummary(statsViewY,statsViewM); };
     el("mainCalNextBtn").onclick=()=>{ statsViewM++; if(statsViewM>11){statsViewM=0;statsViewY++;} renderMainCalendarSummary(statsViewY,statsViewM); };
@@ -1298,13 +1305,11 @@
     };
   }
   el("cfg_timerOn").onchange=(e)=>{ el("timerOptionsWrap").style.opacity=e.target.checked?"1":"0.45"; el("timerOptionsWrap").style.pointerEvents=e.target.checked?"auto":"none"; };
-  el("settingsOpenBtn").onclick=()=>{ applySettingsToUI(); el("settingsOverlay").classList.remove("hidden"); if(mainTabSettings) mainTabSettings.classList.add("active"); };
+  el("settingsOpenBtn").onclick=()=>showMainPanel("settings");
   el("settingsHelpBtn").onclick=()=>openTutorial(0);
-  function closeSettingsOverlay(){ el("settingsOverlay").classList.add("hidden"); if(mainTabSettings) mainTabSettings.classList.remove("active"); }
-  el("settingsCloseBtn").onclick=closeSettingsOverlay;
-  el("settingsOverlay").addEventListener("click",(e)=>{ if(e.target===el("settingsOverlay")) closeSettingsOverlay(); });
+  el("settingsCloseBtn").onclick=()=>showMainPanel("home");
   el("settingsSaveBtn").onclick=()=>{
-    saveCfg(readSettingsFromUI()); closeSettingsOverlay();
+    saveCfg(readSettingsFromUI());
     const btn=el("settingsSaveBtn"); btn.textContent="✅ 저장됨!"; setTimeout(()=>btn.textContent="✅ 설정 저장",1200);
   };
   el("levelUpCloseBtn").onclick=closeLevelUpModal;
@@ -1890,7 +1895,6 @@
   document.addEventListener("keydown",(e)=>{
     if(e.key!=="Escape") return;
     if(!overlay.classList.contains("hidden")) closeSheet();
-    if(!el("settingsOverlay").classList.contains("hidden")) closeSettingsOverlay();
     if(!el("dayPickOverlay").classList.contains("hidden")) closeDayPick();
     if(!el("tutorialOverlay").classList.contains("hidden")) closeTutorial();
   });

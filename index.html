@@ -59,10 +59,23 @@
     .item{padding:14px}
 
     /* Home dashboard summary: keeps only progress/streak/level/day context visually prominent. */
-    .quick-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:10px}
-    .quick-stat{padding:10px 8px;border-radius:14px;background:var(--surface-soft);display:flex;flex-direction:column;gap:4px;text-align:center}
-    .quick-stat .label{font-size:11px;color:var(--muted);font-weight:700}
-    .quick-stat b{font-size:20px;line-height:1.1}
+    .dashboard-stack{display:grid;gap:14px}
+    .dashboard-card{padding:16px;border:1px solid var(--border);border-radius:18px;background:var(--surface);box-shadow:var(--shadow-sm)}
+    .goal-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+    .goal-title{font-size:18px;font-weight:900}
+    .goal-main{font-size:14px;font-weight:700;color:#1f2937;margin-top:4px}
+    .goal-progress{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;color:#334155}
+    .quick-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+    .quick-action-btn{min-height:56px;border-radius:16px;font-size:13px;font-weight:800;background:#f8fbff;border:1px solid #dbeafe;color:#1e3a8a}
+    .quick-action-btn:hover:not(:disabled){box-shadow:0 10px 24px rgba(37,99,235,.16)}
+    .growth-card{background:linear-gradient(135deg,#eff6ff 0%,#dbeafe 100%);border-color:#bfdbfe}
+    .growth-title{font-size:18px;font-weight:900;color:#1e3a8a}
+    .growth-sub{margin-top:6px;font-size:14px;font-weight:700;color:#334155}
+    .growth-motivate{margin-top:8px;font-size:13px;color:#1e40af;font-weight:700}
+    .recent-line{font-size:13px;color:#64748b;margin-top:3px}
+    .recommend-list{display:grid;gap:8px;margin-top:10px}
+    .recommend-item{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:52px;padding:0 14px;border-radius:14px;background:#fff;border:1px solid var(--border);font-weight:700;color:#1e293b}
+    .recommend-item b{color:#2563eb}
     .selected-day-row{display:flex;justify-content:space-between;align-items:center;gap:8px}
     .xp-feedback{margin-top:8px;min-height:16px;font-size:12px;color:#1e40af;opacity:0;transition:opacity .2s ease}
     .xp-feedback.show{opacity:1}
@@ -253,14 +266,37 @@
   </header>
 
   <div class="card" id="todayStudyCard">
-    <div class="quick-stats">
-      <div class="quick-stat"><span class="label">오늘 학습</span><b id="studyCardToday">0</b></div>
-      <div class="quick-stat"><span class="label">연속 학습</span><b><span id="studyCardStreak">0</span>일</b></div>
-      <div class="quick-stat"><span class="label">레벨</span><b>Lv.<span id="xpLevel">1</span></b></div>
-    </div>
-    <div class="selected-day-row">
-      <span class="pill" id="selectedDaysPill">선택 DAY: -</span>
-      <span class="muted" id="missionTodaySummary">오늘 0문제 완료</span>
+    <div class="dashboard-stack">
+      <section class="dashboard-card">
+        <div class="goal-head">
+          <div>
+            <div class="goal-title">오늘 목표 🎯</div>
+            <div class="goal-main" id="todayGoalTitle">DAY5 단어 30개</div>
+          </div>
+          <span class="pill" id="selectedDaysPill">선택 DAY: -</span>
+        </div>
+        <div class="goal-progress" style="margin-top:10px;">
+          <span id="todayGoalProgress">0 / 30</span>
+          <span class="muted" id="missionTodaySummary">오늘 0문제 완료</span>
+        </div>
+        <div class="progress-container" style="margin:10px 0 14px;"><div id="studyCardBar" class="progress-bar"></div></div>
+        <button id="homeStartPrimary" class="btn btn-primary" type="button" style="width:100%;min-height:56px;font-size:18px;font-weight:900;">🚀 바로 공부 시작</button>
+      </section>
+
+      <section class="dashboard-card">
+        <div class="goal-title" style="font-size:16px;">빠른 액션</div>
+        <div class="quick-actions" style="margin-top:10px;">
+          <button id="homeResumeActionBtn" class="quick-action-btn" type="button">🚀 이어서 학습</button>
+          <button id="homeWrongActionBtn" class="quick-action-btn" type="button">🔁 오답 복습</button>
+          <button id="homeGoalActionBtn" class="quick-action-btn" type="button">🎯 오늘 목표</button>
+        </div>
+      </section>
+
+      <section class="dashboard-card growth-card">
+        <div class="growth-title" id="growthHeadline">🔥 1일 연속 학습 중!</div>
+        <div class="growth-sub" id="growthXpRemaining">다음 레벨까지 100 XP 남음</div>
+        <div class="growth-motivate">오늘 1세트 더 하면 레벨업!</div>
+      </section>
     </div>
     <div class="xp-feedback" id="xpFeedback" aria-live="polite"></div>
     <div id="comebackBanner" class="comeback-banner hidden">오랜만이에요 🙂 다시 시작해봐요!</div>
@@ -375,8 +411,18 @@
   </div>
 
   <div class="card" id="bottomToolsCard">
-    <h2>학습 기록</h2>
-    <div class="actions">
+    <h2>최근 학습</h2>
+    <div class="dashboard-card" style="padding:14px;">
+      <div class="itemWord" id="recentStudyDay">최근 학습 DAY: -</div>
+      <div class="recent-line" id="recentStudyMode">학습 모드: -</div>
+      <button id="recentContinueBtn" class="btn btn-soft" type="button" style="margin-top:10px;min-height:44px;">이어서 ▶</button>
+    </div>
+    <h2 style="margin-top:14px;">추천 학습 💡</h2>
+    <div class="recommend-list">
+      <button id="recommendWrongBtn" class="recommend-item" type="button"><span>자주 틀린 단어</span><b>열기 ▶</b></button>
+      <button id="recommendNextDayBtn" class="recommend-item" type="button"><span>다음 DAY 시작</span><b>시작 ▶</b></button>
+    </div>
+    <div class="actions" style="margin-top:12px;">
       <button id="openSheetBtn" class="btn btn-ghost" type="button">오답·기록 보기</button>
       <button id="resetStatsBtn" class="btn btn-danger" type="button">전체 초기화</button>
     </div>
@@ -882,6 +928,7 @@
     if(el("xpNeed")) el("xpNeed").textContent=info.nextTotal;
     if(el("xpNeedPill")) el("xpNeedPill").textContent=info.nextTotal;
     if(el("xpToNext")) el("xpToNext").textContent=`다음 레벨까지 ${info.toNext} XP`;
+    if(el("growthXpRemaining")) el("growthXpRemaining").textContent=`다음 레벨까지 ${info.toNext} XP 남음`;
     if(el("xpBar")) el("xpBar").style.width=`${info.pct}%`;
     if(el("plantLevelText")) el("plantLevelText").textContent=`단어 나무 Lv.${info.level}`;
     if(el("plantNextText")) el("plantNextText").textContent=`다음 성장까지 ${info.toNext} XP`;
@@ -1305,17 +1352,43 @@
     el("todayCountPill").textContent=today;
     el("streakPill").textContent=streak;
     if(el("studyCardToday")) el("studyCardToday").textContent=today;
-    if(el("homeSolvedToday")) el("homeSolvedToday").textContent=today;
-    if(el("studyCardGoal")) el("studyCardGoal").textContent=goal;
+    if(el("todayGoalProgress")) el("todayGoalProgress").textContent=`${today} / ${goal}`;
     if(el("studyCardStreak")) el("studyCardStreak").textContent=streak;
     if(el("studyCardBar")) el("studyCardBar").style.width=`${pct}%`;
+    if(el("growthHeadline")) el("growthHeadline").textContent=`🔥 ${Math.max(streak,1)}일 연속 학습 중!`;
     if(el("headerTodayProgress")) el("headerTodayProgress").textContent=`오늘 진행 ${today} / ${goal} 단어`;
+    const selected=selectedDaysForPool();
+    if(el("todayGoalTitle")) el("todayGoalTitle").textContent=`${selected.length?dayLabel(selected[0]):"DAY 선택"} 단어 ${goal}개`;
     updateMissionsAndBonuses(today);
     updateComebackBanner(today);
     updateXpUI();
+    updateHomeRecommendations();
     renderMainCalendarSummary(statsViewY,statsViewM);
     if(el("learnProgressDetails")?.open) renderLearnDayProgress();
     checkGoalAndCelebrate();
+  }
+  function formatStudyMode(mode="",dir=""){
+    const modeText=mode==="flash"?"플래시카드":(mode==="mc"?"객관식":"주관식");
+    const dirText=dir==="ko2en"?"뜻→영단어":"영단어→뜻";
+    return `${modeText} · ${dirText}`;
+  }
+  function findNextDayLabel(){
+    const data=load(WORDS_KEY,{}),days=getAllDays(data);
+    if(!days.length) return "-";
+    const stats=statsMap();
+    for(const d of days){
+      const words=data[d]||[];
+      const solved=words.some(item=>{ const s=stats[keyOf(item)]||{}; return (s.correctCount||0)+(s.wrongCount||0)>0; });
+      if(!solved) return dayLabel(d);
+    }
+    return dayLabel(days[days.length-1]);
+  }
+  function updateHomeRecommendations(){
+    const sessions=load(SESSION_KEY,[]);
+    const last=sessions[0];
+    if(el("recentStudyDay")) el("recentStudyDay").textContent=last?`최근 학습 DAY: ${(last.days||[]).slice(0,1).map(dayLabel).join(", ")||"-"}`:"최근 학습 DAY: -";
+    if(el("recentStudyMode")) el("recentStudyMode").textContent=last?`학습 모드: ${formatStudyMode(last.mode,last.dir)}`:"학습 모드: -";
+    if(el("recommendNextDayBtn")) el("recommendNextDayBtn").querySelector("span").textContent=`다음 DAY 시작 (${findNextDayLabel()})`;
   }
   function recordSession({mode,dir,total,score,wrongCount,days,ranges}){ const sessions=load(SESSION_KEY,[]); sessions.unshift({ts:Date.now(),mode,dir,total,score,wrongCount,days,ranges}); if(sessions.length>200) sessions.length=200; save(SESSION_KEY,sessions); }
   function normalizeAnswer(s){ return String(s??"").trim().toLowerCase().replace(/\s+/g," "); }
@@ -1511,6 +1584,8 @@
     if(hasSession) btn.textContent="이어서 학습";
     else if(hasLast) btn.textContent="이어서 학습 (마지막 설정)";
     else btn.textContent="이어서 학습 (저장된 기록 없음)";
+    if(el("homeResumeActionBtn")) el("homeResumeActionBtn").disabled=!enabled;
+    if(el("recentContinueBtn")) el("recentContinueBtn").disabled=!enabled;
     updateContinueSummary();
   }
   function saveResumeState(){
@@ -1564,8 +1639,23 @@
     renderQuiz();
   }
 
+  function startFromHomeCTA(){
+    if(load(RANDOM_DAY_AUTO_KEY,false)&&el("randomDayToggle").checked) applyRandomDays();
+    const hasDay=selectedDaysForPool().length>0;
+    if(!hasDay){ showMainPanel("learn"); alert("먼저 DAY를 선택해 주세요!"); return; }
+    saveLastStudySettings();
+    startQuiz();
+  }
+
   startBtn.onclick=()=>{ if(load(RANDOM_DAY_AUTO_KEY,false)&&el("randomDayToggle").checked) applyRandomDays(); saveLastStudySettings(); startQuiz(); };
   el("resumeBtn").onclick=()=>{ if(load(RESUME_KEY,null)) return resumeQuiz(); if(applyLastStudySettings()){ saveLastStudySettings(); startQuiz(); } else alert("저장된 학습 설정이 없어요."); };
+  el("homeStartPrimary").onclick=()=>startFromHomeCTA();
+  el("homeResumeActionBtn").onclick=()=>el("resumeBtn").click();
+  el("homeWrongActionBtn").onclick=()=>el("todayWrongBtn").click();
+  el("homeGoalActionBtn").onclick=()=>el("statsGoalPill").click();
+  el("recentContinueBtn").onclick=()=>el("resumeBtn").click();
+  el("recommendWrongBtn").onclick=()=>openSheet("wrong");
+  el("recommendNextDayBtn").onclick=()=>{ showMainPanel("learn"); openDayPick(); };
   el("question").onclick=()=>{ const word=pool[idx]?.w; if(word) openNaverDict(word); };
 
   function setQuizHeaderScope(){ const daysText=(quizState?.days||[]).map(dayLabel).join(", ")||"-"; el("quizScopeLine").textContent=`DAY: ${daysText} · 범위: ${quizState?.ranges||"-"} · 문제수: ${quizState?.count??pool.length}`; }

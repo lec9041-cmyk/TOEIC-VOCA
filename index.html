@@ -290,7 +290,7 @@
             <div class="goal-title">오늘 목표 🎯</div>
             <div class="goal-main" id="todayGoalTitle">DAY5 단어 30개</div>
           </div>
-          <span class="pill" id="selectedDaysPill">선택 DAY: -</span>
+          <button class="pill" id="selectedDaysPill" type="button" style="cursor:pointer;">선택 DAY: -</button>
         </div>
         <div class="goal-progress" style="margin-top:10px;">
           <span id="todayGoalProgress">0 / 30</span>
@@ -1247,6 +1247,7 @@
   function closeDayPick(){ el("dayPickOverlay").classList.add("hidden"); updateScopeBar(); }
 
   el("dayPickOpenBtn").onclick=openDayPick;
+  el("selectedDaysPill").onclick=openDayPick;
   el("dayPickCloseBtn").onclick=closeDayPick;
   el("dayPickOverlay").addEventListener("click",(e)=>{ if(e.target===el("dayPickOverlay")) closeDayPick(); });
 
